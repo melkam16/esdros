@@ -96,10 +96,12 @@ export async function POST(req: Request) {
       .setExpirationTime('2h')
       .sign(SECRET);
 
+    const isLocalhost = req.headers.get('host')?.includes('localhost') || req.headers.get('host')?.includes('127.0.0.1');
+
     const cookieStore = await cookies();
     cookieStore.set('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' && !isLocalhost,
       sameSite: 'lax',
       maxAge: 60 * 60 * 2, // 2 Hours
       path: '/',
