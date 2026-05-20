@@ -70,6 +70,7 @@ export default async function AdmissionsCRM() {
             reviewedAt: app.reviewedAt?.toISOString() ?? null,
             reviewNotes: app.reviewNotes,
             phone: app.phone,
+            address: app.address,
             statement: app.statement,
           }))}
           classes={classes.map((c) => ({ id: c.id, name: c.name, code: c.code }))}

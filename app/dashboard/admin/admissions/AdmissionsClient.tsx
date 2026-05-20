@@ -13,6 +13,7 @@ interface Application {
   reviewedAt: string | null;
   reviewNotes: string | null;
   phone: string | null;
+  address: string | null;
   statement: string | null;
 }
 
