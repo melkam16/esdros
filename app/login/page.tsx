@@ -1,7 +1,7 @@
 // app/login/page.tsx
 'use client';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -13,6 +13,14 @@ export default function LoginPage() {
   const [resetEmail, setResetEmail] = useState('');
   const [resetStatus, setResetStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const router = useRouter();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlError = params.get('error');
+    if (urlError) {
+      setError(decodeURIComponent(urlError));
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,10 +36,9 @@ export default function LoginPage() {
       if (!res.ok) {
         setError(data.error || 'Authentication failed. Please check your credentials.');
       } else {
-        router.refresh();
-        if (data.role === 'ADMIN') router.push('/dashboard/admin');
-        else if (data.role === 'FACULTY') router.push('/dashboard/faculty');
-        else router.push('/dashboard/student');
+        if (data.role === 'ADMIN') window.location.href = '/dashboard/admin';
+        else if (data.role === 'FACULTY') window.location.href = '/dashboard/faculty';
+        else window.location.href = '/dashboard/student';
       }
     } catch {
       setError('A network error occurred. Please try again.');

@@ -29,8 +29,10 @@ export async function middleware(req: NextRequest) {
     }
 
     return NextResponse.next();
-  } catch (err) {
-    return NextResponse.redirect(new URL('/login', req.url));
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err);
+    console.error("Auth Middleware Error:", errorMsg);
+    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(errorMsg)}`, req.url));
   }
 }
 
