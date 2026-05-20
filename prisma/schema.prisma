@@ -1,0 +1,287 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// ENUMS & TYPES
+// ==========================================
+
+enum Role {
+  ADMIN
+  FACULTY
+  STUDENT
+}
+
+enum StudentStatus {
+  APPLICANT
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  GRADUATED
+}
+
+enum ProgramTrack {
+  THEOLOGY
+  GEEZ_LANGUAGE
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+enum EnrollmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DROPPED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
+}
+
+// ==========================================
+// CORE IDENTITY & USER RELATIONSHIPS
+// ==========================================
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  studentProfile Student?
+  facultyProfile Faculty?
+  applications   AdmissionApplication[]
+}
+
+// ==========================================
+// ACADEMIC CORE ENGINE HIERARCHY
+// ==========================================
+
+model Department {
+  id          String    @id @default(uuid())
+  name        String    @unique // e.g., "Department of Theology", "Department of Semitic Languages"
+  code        String    @unique // e.g., "THEO", "SEML"
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  classes     Class[]
+  faculty     Faculty[]
+}
+
+model Class {
+  id           String     @id @default(uuid())
+  name         String     // e.g., "Theology Undergraduate Year 1", "Geez Certificate Cohort"
+  code         String     @unique // e.g., "TH-UG1", "GZ-CERT"
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  subjects     Course[]   // Links your structural Courses as subjects under this program class
+  students     Student[]  // Groups students into programmatic classes
+}
+
+// ==========================================
+// ACADEMIC STAFF & STUDENTS
+// ==========================================
+
+model Student {
+  id         String        @id @default(uuid())
+  userId     String        @unique
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     StudentStatus @default(ACTIVE)
+  track      ProgramTrack
+  
+  classId    String        // Mandates sorting students directly into an Academic Class
+  class      Class         @relation(fields: [classId], references: [id])
+  enrollDate DateTime      @default(now())
+
+  enrollments  Enrollment[]
+  invoices     Invoice[]
+  attendances  Attendance[]
+  grades       Grade[]
+}
+
+model Faculty {
+  id           String     @id @default(uuid())
+  userId       String     @unique
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  departmentId String     // Maps faculty directly to an administrative department
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  sections     CourseSection[]
+  attendances  Attendance[]
+}
+
+// ==========================================
+// SYSTEM ADMISSIONS CRM
+// ==========================================
+
+model AdmissionApplication {
+  id           String            @id @default(uuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id])
+  targetTrack  ProgramTrack
+  
+  status       ApplicationStatus @default(SUBMITTED)
+  submittedAt  DateTime          @default(now())
+  reviewedAt   DateTime?
+  reviewNotes  String?
+  // Personal info snapshot captured at application time
+  phone        String?
+  address      String?
+  statement    String?           // Personal statement / reason for applying
+}
+
+// ==========================================
+// COURSE MANAGEMENT & SCHEDULING
+// ==========================================
+
+model Course {
+  id          String        @id @default(uuid())
+  code        String        @unique // e.g., "TH-101", "GZ-202"
+  title       String
+  description String?
+  credits     Int
+  track       ProgramTrack
+  classId     String        // Connects this specific subject/course to an overarching Class row
+  class       Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  sections     CourseSection[]
+  assessments  Assessment[]
+}
+
+model CourseSection {
+  id        String   @id @default(uuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  facultyId String
+  faculty   Faculty  @relation(fields: [facultyId], references: [id])
+  semester  String   // e.g., "Fall 2026"
+  room      String?
+  capacity  Int      @default(40)
+
+  enrollments Enrollment[]
+  attendances Attendance[]
+}
+
+// ==========================================
+// ENROLLMENT ENGINE (with approval flow)
+// ==========================================
+
+model Enrollment {
+  id              String           @id @default(uuid())
+  studentId       String
+  student         Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseSectionId String
+  courseSection   CourseSection    @relation(fields: [courseSectionId], references: [id], onDelete: Cascade)
+
+  enrollmentStatus EnrollmentStatus @default(PENDING)
+  requestedAt      DateTime         @default(now())
+  decidedAt        DateTime?
+
+  grade            Float?           // Final term score
+  isLocked         Boolean          @default(false)
+  gradedAt         DateTime?
+  lockedAt         DateTime?
+
+  @@unique([studentId, courseSectionId])
+}
+
+// ==========================================
+// ATTENDANCE TRACKING
+// ==========================================
+
+model Attendance {
+  id              String           @id @default(uuid())
+  date            DateTime
+  status          AttendanceStatus @default(PRESENT)
+  studentId       String
+  student         Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseSectionId String
+  courseSection   CourseSection    @relation(fields: [courseSectionId], references: [id], onDelete: Cascade)
+  markedById      String           // Faculty who recorded this entry
+  markedBy        Faculty          @relation(fields: [markedById], references: [id])
+  notes           String?
+  createdAt       DateTime         @default(now())
+
+  @@unique([studentId, courseSectionId, date])
+}
+
+// ==========================================
+// ASSESSMENTS & GRADE BOOK ENGINE
+// ==========================================
+
+model Assessment {
+  id           String   @id @default(uuid())
+  title        String   // e.g., "Midterm Exam", "Geez Syntax Quiz"
+  type         String   // QUIZ, MIDTERM, FINAL, ASSIGNMENT
+  maxPoints    Int      @default(100)
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  grades       Grade[]
+}
+
+model Grade {
+  id           String     @id @default(uuid())
+  pointsEarned Float
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+// ==========================================
+// BILLING & REMITTANCE SYSTEM
+// ==========================================
+
+model Invoice {
+  id         String        @id @default(uuid())
+  studentId  String
+  student    Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title      String        // e.g., "Fall 2026 Tuition"
+  amount     Float
+  balanceDue Float
+  status     InvoiceStatus @default(UNPAID)
+  dueDate    DateTime
+  createdAt  DateTime      @default(now())
+
+  payments   Payment[]
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount      Float
+  method      String   // e.g., "Bank Transfer", "Credit Card"
+  referenceNo String?  // Receipt tracking reference
+  paidAt      DateTime @default(now())
+}
