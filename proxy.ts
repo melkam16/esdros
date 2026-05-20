@@ -5,20 +5,30 @@ import { jwtVerify } from 'jose';
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Bypass authentication check for prefetch requests to prevent Vercel caching issues or redirect loops
-  const isPrefetch = req.headers.get('next-router-prefetch') === '1' || 
-                     req.headers.get('purpose') === 'prefetch';
-
-  if (isPrefetch) {
-    return NextResponse.next();
-  }
+  // Detect background Next.js internal prefetch links
+  const isPrefetch = req.headers.get('next-router-prefetch') === '1' ||
+    req.headers.get('purpose') === 'prefetch';
 
   const token = req.cookies.get('token')?.value;
 
+  // Helper to safely navigate unauthorized dropouts without poisoning router page cache stores
+  const handleUnauthorized = (destinationPath: string) => {
+    if (isPrefetch) {
+      const response = NextResponse.next();
+      response.headers.set('x-middleware-redirect', new URL(destinationPath, req.url).toString());
+      response.headers.set('x-middleware-cache', 'no-cache');
+      return response;
+    }
+    const response = NextResponse.redirect(new URL(destinationPath, req.url));
+    response.headers.set('x-middleware-cache', 'no-cache');
+    return response;
+  };
+
+  // 1. Core Token Validation Check
   if (!token) {
-    console.log("Auth Proxy Info: Token is missing for path:", pathname);
+    console.log("Auth Proxy: Token missing for path:", pathname);
     if (pathname.startsWith('/dashboard')) {
-      return NextResponse.redirect(new URL('/login', req.url));
+      return handleUnauthorized('/login');
     }
     return NextResponse.next();
   }
@@ -28,25 +38,27 @@ export async function proxy(req: NextRequest) {
     const { payload } = await jwtVerify(token, SECRET);
     const userRole = payload.role as string;
 
+    // 2. Comprehensive Role Hierarchy Matrix Matchers (Includes subpages via startsWith)
     if (pathname.startsWith('/dashboard/admin') && userRole !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/dashboard/unauthorized', req.url));
+      return handleUnauthorized('/dashboard/unauthorized');
     }
     if (pathname.startsWith('/dashboard/faculty') && userRole !== 'FACULTY') {
-      return NextResponse.redirect(new URL('/dashboard/unauthorized', req.url));
+      return handleUnauthorized('/dashboard/unauthorized');
     }
     if (pathname.startsWith('/dashboard/student') && userRole !== 'STUDENT') {
-      return NextResponse.redirect(new URL('/dashboard/unauthorized', req.url));
+      return handleUnauthorized('/dashboard/unauthorized');
     }
 
     return NextResponse.next();
   } catch (err: any) {
     const errorMsg = err?.message || String(err);
-    console.error("Auth Proxy Error for path:", pathname, "-", errorMsg);
-    console.log("Auth Proxy Debug: JWT_SECRET is present in env:", !!process.env.JWT_SECRET);
-    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(errorMsg)}`, req.url));
+    console.error("Auth Proxy Validation Error for path:", pathname, "-", errorMsg);
+
+    return handleUnauthorized(`/login?error=${encodeURIComponent(errorMsg)}`);
   }
 }
 
+// Intercept wildcard catchers for all dashboards and deeper directories
 export const config = {
   matcher: ['/dashboard/:path*'],
 };

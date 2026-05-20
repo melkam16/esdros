@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '../../../../lib/prisma';
 import { SignJWT } from 'jose';
 import { hash } from 'crypto';
@@ -12,7 +11,7 @@ export async function POST(req: Request) {
     // 1. Auto-seed test accounts if no users exist yet
     const userCount = await prisma.user.count();
     if (userCount === 0) {
-      console.log("Empty database detected. Provisioning Classe365 structural test suite...");
+      console.log("Empty database detected. Provisioning Esdros Seminary structural test suite...");
 
       // A. Create default Department required for Faculty relations
       const defaultDept = await prisma.department.create({
@@ -79,13 +78,10 @@ export async function POST(req: Request) {
       console.log("Structural test suite successfully seeded into PostgreSQL database.");
     }
 
-    // 2. Fetch User Profile
+    // 2. Fetch User Profile & Check Passwords
     const user = await prisma.user.findUnique({ where: { email } });
-    
-    // Hash incoming password to check against securely created users
     const incomingHash = hash('sha256', password);
-    
-    // Allow fallback to plain text for the structural seeded test accounts
+
     if (!user || (user.passwordHash !== password && user.passwordHash !== incomingHash)) {
       return NextResponse.json({ error: 'Invalid email or password credentials' }, { status: 401 });
     }
@@ -96,21 +92,30 @@ export async function POST(req: Request) {
       .setExpirationTime('2h')
       .sign(SECRET);
 
-    const isLocalhost = req.headers.get('host')?.includes('localhost') || req.headers.get('host')?.includes('127.0.0.1');
+    // 4. Secure Cookie Environments Calculations
+    const host = req.headers.get('host') || '';
 
-    const cookieStore = await cookies();
-    cookieStore.set('token', token, {
+    // Explicitly check if running local tests to prevent dropping on http://localhost:3000
+    const isLocalTest = host.includes('localhost') || host.includes('127.0.0.1');
+
+    // Uniform Cookie Blueprints
+    const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production' && !isLocalhost,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 2, // 2 Hours
+      // CRITICAL FIX: Disable secure if it is a local production test on HTTP.
+      secure: !isLocalTest,
+      sameSite: 'lax' as const,
       path: '/',
-    });
+      maxAge: 7200, // Explicitly set 2 hours lifecycle
+    };
 
-    return NextResponse.json({ role: user.role });
+    // 5. Commit Session Store ONLY on Outbound Response Object
+    // Completely removed 'cookies()' import block to stop header cancellation collisions
+    const response = NextResponse.json({ role: user.role });
+    response.cookies.set('token', token, cookieOptions);
+
+    return response;
   } catch (error) {
     console.error("Authentication pipeline error:", error);
-
     return NextResponse.json(
       {
         error: "Internal Server Error",

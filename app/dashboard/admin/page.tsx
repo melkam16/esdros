@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma';
 import SidebarNavigation from '../../components/SidebarNavigation';
 import AdminDashboardActions from './AdminDashboardActions';
 
+// FORCE NEXT.JS TO EVALUATE THIS ROUTE DYNAMICALLY AT RUNTIME
+// This guarantees that proxy.ts intercepts the request on every navigation click
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
   // Safe default fallback metric parsing using database Try/Catch blocks
   let totalStudents = 0;
