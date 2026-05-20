@@ -42,9 +42,9 @@ export default function StudentSidebar() {
         })}
       </nav>
       <div className="p-4 border-t border-slate-800 bg-slate-950">
-        <Link href="/api/auth/logout" className="block text-center text-xs text-red-400 hover:text-red-300 font-medium py-2 rounded border border-red-900/50 hover:bg-red-950/30 transition">
+        <a href="/api/auth/logout" className="block text-center text-xs text-red-400 hover:text-red-300 font-medium py-2 rounded border border-red-900/50 hover:bg-red-950/30 transition">
           Exit Portal
-        </Link>
+        </a>
       </div>
     </aside>
   );

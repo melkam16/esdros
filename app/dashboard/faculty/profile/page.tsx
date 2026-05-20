@@ -40,17 +40,17 @@ export default function FacultyProfilePage() {
   return (
     <div className="pl-64 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-indigo-200">
       <SidebarNavigation role="FACULTY" />
-      
+
       <main className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        
+
         {/* Premium Header Container */}
         <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -mr-20 -mt-20"></div>
-          
+
           <div className="relative z-10 w-32 h-32 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-5xl shadow-lg shadow-indigo-500/30 text-white flex-shrink-0 border-4 border-white">
             👨‍🏫
           </div>
-          
+
           <div className="relative z-10 flex-1 text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 mb-3 bg-emerald-50 border border-emerald-100 rounded-full text-xs font-bold text-emerald-700">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Active Faculty Profile
@@ -62,7 +62,7 @@ export default function FacultyProfilePage() {
               {profile?.departmentName || 'Department of Instruction'}
             </p>
           </div>
-          
+
           <div className="relative z-10">
             <button
               onClick={handleLogout}

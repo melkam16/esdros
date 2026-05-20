@@ -116,9 +116,9 @@ export default function LoginPage() {
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label htmlFor="login-password" className="block text-sm font-semibold text-slate-700">Password</label>
-                    <button 
-                      type="button" 
-                      onClick={() => { setShowResetModal(true); setResetStatus('idle'); }} 
+                    <button
+                      type="button"
+                      onClick={() => { setShowResetModal(true); setResetStatus('idle'); }}
                       className="text-xs font-semibold text-[#009fe5] hover:text-[#007bb5] transition hover:underline"
                     >
                       Forgot password?

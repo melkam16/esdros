@@ -2,9 +2,9 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export type SectionType = 
-  | 'Dashboard' | 'My Courses' | 'Attendance' | 'Gradebook' 
-  | 'Students' | 'Academic Advising' | 'Schedule' | 'Messages' 
+export type SectionType =
+  | 'Dashboard' | 'My Courses' | 'Attendance' | 'Gradebook'
+  | 'Students' | 'Academic Advising' | 'Schedule' | 'Messages'
   | 'Reports' | 'Profile & Settings';
 
 interface SidebarNavigationProps {
@@ -14,11 +14,11 @@ interface SidebarNavigationProps {
   setIsOpen: (open: boolean) => void;
 }
 
-export default function SidebarNavigation({ 
-  activeSection, 
-  setActiveSection, 
-  isOpen, 
-  setIsOpen 
+export default function SidebarNavigation({
+  activeSection,
+  setActiveSection,
+  isOpen,
+  setIsOpen
 }: SidebarNavigationProps) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -58,7 +58,7 @@ export default function SidebarNavigation({
           <span className="text-indigo-400 font-mono">⚡</span> Faculty Hub
         </span>
       </div>
-      
+
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
           <button
@@ -67,11 +67,10 @@ export default function SidebarNavigation({
               setActiveSection(item.name);
               setIsOpen(false);
             }}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold tracking-wide transition-all ${
-              activeSection === item.name 
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15' 
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold tracking-wide transition-all ${activeSection === item.name
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/15'
                 : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
-            }`}
+              }`}
           >
             <span className="text-sm">{item.icon}</span>
             {item.name}
@@ -91,7 +90,7 @@ export default function SidebarNavigation({
             <p className="text-[10px] text-slate-400 truncate">Theology Dept</p>
           </div>
         </div>
-        
+
         {/* Logout Button */}
         <button
           onClick={handleLogout}
