@@ -1,5 +1,5 @@
-// app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '../../../../lib/prisma';
 import { SignJWT } from 'jose';
 import { hash } from 'crypto';
@@ -96,9 +96,8 @@ export async function POST(req: Request) {
       .setExpirationTime('2h')
       .sign(SECRET);
 
-    const response = NextResponse.json({ role: user.role });
-    
-    response.cookies.set('token', token, {
+    const cookieStore = await cookies();
+    cookieStore.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -106,7 +105,7 @@ export async function POST(req: Request) {
       path: '/',
     });
 
-    return response;
+    return NextResponse.json({ role: user.role });
   } catch (error) {
     console.error("Authentication pipeline error:", error);
 
