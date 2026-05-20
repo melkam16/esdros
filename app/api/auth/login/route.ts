@@ -4,7 +4,7 @@ import { prisma } from '../../../../lib/prisma';
 import { SignJWT } from 'jose';
 import { hash } from 'crypto';
 
-const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || '4f7c9c0b1c3e9a8d5f1a7b2c6d9e4f8a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6');
 
 export async function POST(req: Request) {
   try {
@@ -99,10 +99,9 @@ export async function POST(req: Request) {
 
     const response = NextResponse.json({ role: user.role });
     
-    // Set cookie
     response.cookies.set('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' && !req.headers.get('host')?.includes('localhost') && !req.headers.get('host')?.includes('127.0.0.1'),
       sameSite: 'lax',
       maxAge: 60 * 60 * 2, // 2 Hours
       path: '/',
