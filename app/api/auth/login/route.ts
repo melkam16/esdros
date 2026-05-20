@@ -4,10 +4,9 @@ import { prisma } from '../../../../lib/prisma';
 import { SignJWT } from 'jose';
 import { hash } from 'crypto';
 
-const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || '4f7c9c0b1c3e9a8d5f1a7b2c6d9e4f8a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6');
-
 export async function POST(req: Request) {
   try {
+    const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || '4f7c9c0b1c3e9a8d5f1a7b2c6d9e4f8a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6');
     const { email, password } = await req.json();
 
     // 1. Auto-seed test accounts if no users exist yet
