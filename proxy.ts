@@ -16,6 +16,7 @@ export async function proxy(req: NextRequest) {
   const token = req.cookies.get('token')?.value;
 
   if (!token) {
+    console.log("Auth Proxy Info: Token is missing for path:", pathname);
     if (pathname.startsWith('/dashboard')) {
       return NextResponse.redirect(new URL('/login', req.url));
     }
@@ -40,7 +41,8 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   } catch (err: any) {
     const errorMsg = err?.message || String(err);
-    console.error("Auth Proxy Error:", errorMsg);
+    console.error("Auth Proxy Error for path:", pathname, "-", errorMsg);
+    console.log("Auth Proxy Debug: JWT_SECRET is present in env:", !!process.env.JWT_SECRET);
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(errorMsg)}`, req.url));
   }
 }
