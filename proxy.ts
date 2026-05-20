@@ -2,9 +2,18 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
-export async function middleware(req: NextRequest) {
-  const token = req.cookies.get('token')?.value;
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Bypass authentication check for prefetch requests to prevent Vercel caching issues or redirect loops
+  const isPrefetch = req.headers.get('next-router-prefetch') === '1' || 
+                     req.headers.get('purpose') === 'prefetch';
+
+  if (isPrefetch) {
+    return NextResponse.next();
+  }
+
+  const token = req.cookies.get('token')?.value;
 
   if (!token) {
     if (pathname.startsWith('/dashboard')) {
@@ -31,7 +40,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   } catch (err: any) {
     const errorMsg = err?.message || String(err);
-    console.error("Auth Middleware Error:", errorMsg);
+    console.error("Auth Proxy Error:", errorMsg);
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(errorMsg)}`, req.url));
   }
 }
