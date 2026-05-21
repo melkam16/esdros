@@ -12,15 +12,27 @@ export async function proxy(req: NextRequest) {
   const token = req.cookies.get('token')?.value;
 
   // Helper to safely navigate unauthorized dropouts without poisoning router page cache stores
-  const handleUnauthorized = (destinationPath: string) => {
+  // Helper to safely navigate unauthorized dropouts without poisoning router page cache stores
+  const handleUnauthorized = (destinationPath: string, clearCookie = false) => {
+    let response;
     if (isPrefetch) {
-      const response = NextResponse.next();
+      response = NextResponse.next();
       response.headers.set('x-middleware-redirect', new URL(destinationPath, req.url).toString());
       response.headers.set('x-middleware-cache', 'no-cache');
-      return response;
+    } else {
+      response = NextResponse.redirect(new URL(destinationPath, req.url));
+      response.headers.set('x-middleware-cache', 'no-cache');
     }
-    const response = NextResponse.redirect(new URL(destinationPath, req.url));
-    response.headers.set('x-middleware-cache', 'no-cache');
+    
+    if (clearCookie) {
+      // Invalidate the invalid/expired session cookie immediately
+      response.cookies.set('token', '', {
+        httpOnly: true,
+        path: '/',
+        maxAge: 0,
+      });
+    }
+    
     return response;
   };
 
@@ -67,7 +79,7 @@ export async function proxy(req: NextRequest) {
     const errorMsg = err?.message || String(err);
     console.error("Auth Proxy Validation Error for path:", pathname, "-", errorMsg);
 
-    return handleUnauthorized(`/login?error=${encodeURIComponent(errorMsg)}`);
+    return handleUnauthorized(`/login?error=${encodeURIComponent(errorMsg)}`, true);
   }
 }
 

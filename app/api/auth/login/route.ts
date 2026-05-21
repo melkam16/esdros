@@ -67,7 +67,7 @@ export async function POST(req: Request) {
       secure: process.env.NODE_ENV === 'production' && !isLocal,
       sameSite: 'lax',
       path: '/',
-      // No maxAge — session cookie prevents clock-mismatch instant expiry
+      maxAge: 8 * 60 * 60, // 8 hours in seconds (matches JWT expiration)
     });
 
     return response;
