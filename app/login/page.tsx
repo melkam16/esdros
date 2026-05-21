@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetStatus, setResetStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [resetAction, setResetAction] = useState<'password' | 'mfa'>('password');
+  const [resetMessage, setResetMessage] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -50,15 +52,26 @@ export default function LoginPage() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setResetStatus('loading');
-    // Simulate API call for password reset since email server isn't configured
-    setTimeout(() => {
-      if (!resetEmail.includes('@')) {
+    setResetMessage('');
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail, action: resetAction }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
         setResetStatus('error');
+        setResetMessage(data.error || 'A network error occurred. Please verify input.');
       } else {
         setResetStatus('success');
+        setResetMessage(data.message || 'Instructions sent successfully!');
         setResetEmail('');
       }
-    }, 1500);
+    } catch {
+      setResetStatus('error');
+      setResetMessage('A connection error occurred. Please try again.');
+    }
   };
 
   return (
@@ -168,39 +181,57 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Password Reset Modal */}
+      {/* Password & MFA Reset Modal */}
       {showResetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Reset Password</h2>
-              <p className="text-sm text-slate-500 mt-1">Enter your institutional email and we&apos;ll send you instructions to reset your password.</p>
+              <h2 className="text-xl font-bold text-slate-900">Security Recovery</h2>
+              <p className="text-sm text-slate-500 mt-1">Recover account access or reset credential security keys.</p>
+            </div>
+
+            {/* TAB SELECTION */}
+            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+              <button
+                type="button"
+                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition ${resetAction === 'password' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                onClick={() => { setResetAction('password'); setResetStatus('idle'); setResetMessage(''); }}
+              >
+                Password Reset
+              </button>
+              <button
+                type="button"
+                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition ${resetAction === 'mfa' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                onClick={() => { setResetAction('mfa'); setResetStatus('idle'); setResetMessage(''); }}
+              >
+                MFA Reset
+              </button>
             </div>
 
             {resetStatus === 'success' ? (
-              <div className="p-4 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-sm">
-                <p className="font-semibold mb-1">✓ Instructions Sent!</p>
-                <p>If an account exists for that email, you will receive a reset link shortly.</p>
-                <button onClick={() => setShowResetModal(false)} className="mt-4 w-full py-2.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition">
+              <div className="p-4 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-sm space-y-2">
+                <p className="font-semibold flex items-center gap-1.5">✓ Success!</p>
+                <p className="text-xs leading-relaxed">{resetMessage}</p>
+                <button onClick={() => setShowResetModal(false)} className="mt-2 w-full py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition text-xs">
                   Return to Login
                 </button>
               </div>
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-4">
                 {resetStatus === 'error' && (
-                  <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm">
-                    Please enter a valid email address.
+                  <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs leading-relaxed">
+                    ⚠️ {resetMessage || 'Please enter a valid email address.'}
                   </div>
                 )}
                 <div>
-                  <label htmlFor="reset-email" className="block text-sm font-semibold text-slate-700 mb-1.5">Email Address</label>
+                  <label htmlFor="reset-email" className="block text-sm font-semibold text-slate-700 mb-1.5">Institutional Email Address</label>
                   <input
                     id="reset-email"
                     type="email"
                     required
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
-                    placeholder="you@eotcmk.org"
+                    placeholder="you@esdros.org"
                     className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009fe5] focus:border-transparent text-sm"
                   />
                 </div>
@@ -209,7 +240,7 @@ export default function LoginPage() {
                     Cancel
                   </button>
                   <button type="submit" disabled={resetStatus === 'loading'} className="flex-1 py-2.5 bg-[#009fe5] text-white font-bold rounded-lg hover:bg-[#007bb5] transition shadow disabled:opacity-60 text-sm">
-                    {resetStatus === 'loading' ? 'Sending...' : 'Send Link'}
+                    {resetStatus === 'loading' ? 'Processing...' : resetAction === 'password' ? 'Reset Password' : 'Reset MFA'}
                   </button>
                 </div>
               </form>

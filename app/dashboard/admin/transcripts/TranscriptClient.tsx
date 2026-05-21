@@ -17,12 +17,26 @@ export default function TranscriptClient({ students }: { students: any[] }) {
   };
 
   const handleEmail = async () => {
+    if (!selectedStudent) return;
     setIsSending(true);
-    // Simulate API delay for sending email
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSending(false);
-    setSentSuccess(true);
-    setTimeout(() => setSentSuccess(false), 3000);
+    try {
+      const res = await fetch('/api/admin/transcripts/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: selectedStudent.id })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to send transcript email.');
+      } else {
+        setSentSuccess(true);
+        setTimeout(() => setSentSuccess(false), 3000);
+      }
+    } catch {
+      alert('A network error occurred. Please try again.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const getLetter = (score: number | null) => {

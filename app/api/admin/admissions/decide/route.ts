@@ -86,9 +86,17 @@ export async function POST(req: Request) {
         return { application: updatedApp, student };
       });
 
+      // Send approval email to student
+      const { sendEmail } = await import('@/lib/mail');
+      await sendEmail({
+        to: application.user.email,
+        subject: 'Congratulations! Your Admission Application is Approved',
+        text: `Hello ${application.user.firstName} ${application.user.lastName},\n\nWe are pleased to inform you that your admission application to Esdros Theological Seminary for the ${application.targetTrack === 'THEOLOGY' ? 'Theology' : 'Geez Language'} track has been APPROVED!\n\nYou can now log in to the Student Portal to process your courses, attendance, and tuition balance.\n\nLogin Details:\nPortal URL: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\nUsername/Email: ${application.user.email}\nPassword: [Use the password you created during registration]\n\nIf you have forgotten your password, please use the password reset link on the login screen.\n\nWelcome to Esdros Seminary!\n\nBest regards,\nAdmissions Office\nEsdros Theological Seminary`
+      });
+
       return NextResponse.json({
         success: true,
-        message: 'Application approved. Student profile created.',
+        message: 'Application approved. Student profile created and notification sent.',
         data: {
           applicationId: result.application.id,
           studentId: result.student?.id,
