@@ -45,10 +45,10 @@ export default async function StudentDashboardHome() {
   const mockAttendanceRate = 96.4; 
 
   return (
-    <div className="pl-64 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-200">
+    <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-200">
       <SidebarNavigation role="STUDENT" />
       
-      <main className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <main className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
         {/* Welcome Hero / Glassmorphism Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white shadow-2xl shadow-blue-900/20 border border-blue-700/50">

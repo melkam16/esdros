@@ -9,9 +9,9 @@ export default async function AcademicStructureConsole() {
   const courses = await prisma.course.findMany({ include: { sections: true } }); // changed model target to prisma.course
 
   return (
-    <div className="pl-64 min-h-screen bg-slate-50">
+    <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-slate-50">
       <SidebarNavigation role="ADMIN" />
-      <main className="p-8 max-w-7xl mx-auto space-y-12">
+      <main className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Academic Structure Setup</h1>

@@ -20,10 +20,10 @@ export default function CoursesPage() {
   }, []);
 
   return (
-    <div className="pl-64 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-indigo-200">
+    <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-indigo-200">
       <SidebarNavigation role="FACULTY" />
       
-      <main className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <main className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
         {/* Premium Header */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50 to-white text-slate-900 shadow-xl shadow-slate-200/40 border border-slate-100">

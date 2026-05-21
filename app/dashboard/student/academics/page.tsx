@@ -23,9 +23,9 @@ export default async function AcademicsPage() {
   const activeCredits = record?.enrollments.reduce((acc, e) => acc + (!e.grade ? e.courseSection.course.credits : 0), 0) || 0;
 
   return (
-    <div className="pl-64 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-200">
+    <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-200">
       <SidebarNavigation role="STUDENT" />
-      <main className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
         {/* Premium Header */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl shadow-slate-900/20 border border-slate-700/50 p-10 flex flex-col md:flex-row justify-between items-center gap-6">

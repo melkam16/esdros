@@ -30,12 +30,12 @@ export default function HomePage() {
     <div className="min-h-screen bg-white font-sans antialiased text-slate-800">
 
       {/* ─── TOP BAR ─── */}
-      <div className="bg-[#1e508d] text-white text-xs py-1.5 px-6 flex items-center justify-between">
-        <span>A Seminary under <a href="https://us.eotcmk.org" className="underline hover:text-blue-200 transition">Mahibere Kidusan North America Coordinating Center</a></span>
-        <div className="flex items-center gap-4">
-          <a href="https://www.facebook.com/mahiberekidusan.mkusa" target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition">Facebook</a>
-          <a href="https://www.youtube.com/EOTCMK" target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition">YouTube</a>
-          <a href="https://x.com/kidusanpr" target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition">X</a>
+      <div className="bg-[#1e508d] text-white text-xs py-1.5 px-4 md:px-6 flex items-center justify-between gap-2">
+        <span className="truncate">A Seminary under <a href="https://us.eotcmk.org" className="underline hover:text-blue-200 transition hidden sm:inline">Mahibere Kidusan North America</a><a href="https://us.eotcmk.org" className="underline hover:text-blue-200 transition sm:hidden">MKNA</a></span>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <a href="https://www.facebook.com/mahiberekidusan.mkusa" target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition hidden sm:inline">Facebook</a>
+          <a href="https://www.youtube.com/EOTCMK" target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition hidden sm:inline">YouTube</a>
+          <a href="https://x.com/kidusanpr" target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition">X / Twitter</a>
         </div>
       </div>
 
@@ -45,22 +45,23 @@ export default function HomePage() {
       {/* ─── HERO ─── */}
       <section className="relative overflow-hidden" style={{ backgroundImage: "url('https://us.eotcmk.org/sites/default/files/styles/original/public/2025-12/esdros%20seminary_Desktop.jpg?itok=OXrr_BPc')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#009fe5]/80 to-[#1e508d]/60 mix-blend-multiply" />
-        <div className="relative max-w-5xl mx-auto px-6 py-20 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 border border-white/30 rounded-full text-white text-xs font-semibold uppercase tracking-wide backdrop-blur-sm shadow-sm">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20 text-center space-y-5">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-white/20 border border-white/30 rounded-full text-white text-xs font-semibold uppercase tracking-wide backdrop-blur-sm shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shadow-sm" />
-            Applications Open — August 1 to September 1
+            <span className="hidden sm:inline">Applications Open — August 1 to September 1</span>
+            <span className="sm:hidden">Applications Open</span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight tracking-tight drop-shadow-md">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white leading-tight tracking-tight drop-shadow-md">
             Esdros EOTC<br />Theological Seminary
           </h1>
-          <p className="max-w-xl mx-auto text-blue-50 text-lg leading-relaxed drop-shadow-sm font-medium">
+          <p className="max-w-xl mx-auto text-blue-50 text-base sm:text-lg leading-relaxed drop-shadow-sm font-medium">
             Training faithful scholars to teach and defend the ancient Orthodox faith in North America and beyond.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link href="/apply" id="hero-apply-cta" className="px-8 py-3 bg-[#c02424] text-white font-bold rounded hover:bg-red-700 transition shadow-lg text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2">
+            <Link href="/apply" id="hero-apply-cta" className="w-full sm:w-auto px-8 py-3 bg-[#c02424] text-white font-bold rounded hover:bg-red-700 transition shadow-lg text-sm text-center">
               Begin Your Application →
             </Link>
-            <a href="#about" className="px-8 py-3 bg-white/20 backdrop-blur-md text-white font-semibold rounded border border-white/40 hover:bg-white/30 transition shadow-lg text-sm">
+            <a href="#about" className="w-full sm:w-auto px-8 py-3 bg-white/20 backdrop-blur-md text-white font-semibold rounded border border-white/40 hover:bg-white/30 transition shadow-lg text-sm text-center">
               Learn More
             </a>
           </div>
@@ -68,8 +69,8 @@ export default function HomePage() {
       </section>
 
       {/* ─── ABOUT ─── */}
-      <section id="about" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+      <section id="about" className="py-14 sm:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           <div className="space-y-6">
             <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">About Esdros Seminary</span>
             <h2 className="text-3xl font-extrabold text-slate-900 leading-tight">Esdros Theological Seminary</h2>
@@ -103,8 +104,8 @@ export default function HomePage() {
       </section>
 
       {/* ─── ACADEMICS ─── */}
-      <section id="academics" className="py-24 bg-[#f0f2f5]">
-        <div className="max-w-7xl mx-auto px-6 space-y-12">
+      <section id="academics" className="py-14 sm:py-24 bg-[#f0f2f5]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-12">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
             <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">Services / Programs</span>
             <h2 className="text-3xl font-extrabold text-slate-900">Programs of Study</h2>
@@ -165,8 +166,8 @@ export default function HomePage() {
       </section>
 
       {/* ─── ADMISSIONS ─── */}
-      <section id="admissions" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+      <section id="admissions" className="py-14 sm:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           <div className="space-y-6">
             <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">Admissions</span>
             <h2 className="text-3xl font-extrabold text-slate-900">How to Apply</h2>
@@ -222,8 +223,8 @@ export default function HomePage() {
       </section>
 
       {/* ─── PORTAL CTA ─── */}
-      <section className="py-16 bg-[#009fe5]">
-        <div className="max-w-4xl mx-auto px-6 text-center space-y-5">
+      <section className="py-12 sm:py-16 bg-[#009fe5]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-5">
           <h2 className="text-2xl font-extrabold text-white">Already Enrolled?</h2>
           <p className="text-blue-50">Access your courses, grades, and attendance records through the SIS Portal.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -238,8 +239,8 @@ export default function HomePage() {
       </section>
 
       {/* ─── ALUMNI ─── */}
-      <section id="alumni" className="py-24 bg-white border-t border-slate-100">
-        <div className="max-w-6xl mx-auto px-6 space-y-12">
+      <section id="alumni" className="py-14 sm:py-24 bg-white border-t border-slate-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-12">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
             <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">Alumni Association</span>
             <h2 className="text-3xl font-extrabold text-slate-900">Graduate Roster & Resources</h2>
@@ -285,8 +286,8 @@ export default function HomePage() {
       </section>
 
       {/* ─── CONTACT ─── */}
-      <section id="contact" className="py-20 bg-[#f0f2f5]">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
+      <section id="contact" className="py-12 sm:py-20 bg-[#f0f2f5]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           <div className="space-y-5">
             <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">Contact Us</span>
             <h2 className="text-2xl font-extrabold text-slate-900">Get in Touch</h2>
@@ -316,8 +317,8 @@ export default function HomePage() {
       </section>
 
       {/* ─── FOOTER ─── */}
-      <footer style={{ background: 'linear-gradient(to right, #1e508d, #338af3)' }} className="text-white py-12">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <footer style={{ background: 'linear-gradient(to right, #1e508d, #338af3)' }} className="text-white py-10 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <img
