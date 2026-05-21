@@ -397,24 +397,26 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
                           day: 'numeric'
                         })}
                       </td>
-                      <td className="py-3.5 px-6 text-right space-x-3">
-                        {admin.facultyProfile && (
+                      <td className="py-3.5 px-6 text-right">
+                        <div className="flex justify-end items-center gap-3 whitespace-nowrap">
+                          {admin.facultyProfile && (
+                            <button
+                              onClick={() => handleToggleAdmin(admin.id, false)}
+                              className="text-xs font-bold text-amber-600 hover:text-amber-800 transition whitespace-nowrap"
+                              title="Demote user to faculty-only access level"
+                            >
+                              Revoke Admin
+                            </button>
+                          )}
                           <button
-                            onClick={() => handleToggleAdmin(admin.id, false)}
-                            className="text-xs font-bold text-amber-600 hover:text-amber-800 transition"
-                            title="Demote user to faculty-only access level"
+                            onClick={() => handleDelete(admin.id)}
+                            disabled={admin.id === currentUserId}
+                            className="text-xs font-bold text-red-600 hover:text-red-800 disabled:opacity-30 disabled:hover:text-red-600 transition whitespace-nowrap"
+                            title={admin.id === currentUserId ? "Cannot delete yourself" : "Delete administrator account"}
                           >
-                            Revoke Admin
+                            Delete Account
                           </button>
-                        )}
-                        <button
-                          onClick={() => handleDelete(admin.id)}
-                          disabled={admin.id === currentUserId}
-                          className="text-xs font-bold text-red-600 hover:text-red-800 disabled:opacity-30 disabled:hover:text-red-600 transition"
-                          title={admin.id === currentUserId ? "Cannot delete yourself" : "Delete administrator account"}
-                        >
-                          Delete Account
-                        </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

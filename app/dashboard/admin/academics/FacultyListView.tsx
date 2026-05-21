@@ -212,20 +212,20 @@ export default function FacultyListView() {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right space-x-2">
+                  <td className="px-6 py-4 text-right">
                     {activeTab === 'ACTIVE' ? (
-                      <>
+                      <div className="flex justify-end items-center gap-2 whitespace-nowrap">
                         {f.role === 'ADMIN' ? (
                           <button
                             onClick={() => handleToggleAdmin(f.userId, false)}
-                            className="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg hover:bg-amber-100 transition"
+                            className="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg hover:bg-amber-100 transition whitespace-nowrap"
                           >
                             Revoke Admin
                           </button>
                         ) : (
                           <button
                             onClick={() => handleToggleAdmin(f.userId, true)}
-                            className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg hover:bg-indigo-100 transition"
+                            className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg hover:bg-indigo-100 transition whitespace-nowrap"
                           >
                             Grant Admin
                           </button>
@@ -233,11 +233,11 @@ export default function FacultyListView() {
                         <button 
                           onClick={() => handleOffboard(f.id, f.name)}
                           disabled={isProcessing === f.id}
-                          className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 text-xs font-bold rounded-lg hover:bg-red-100 transition disabled:opacity-50"
+                          className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 text-xs font-bold rounded-lg hover:bg-red-100 transition disabled:opacity-50 whitespace-nowrap"
                         >
                           {isProcessing === f.id ? 'Processing...' : 'Offboard'}
                         </button>
-                      </>
+                      </div>
                     ) : (
                       <span className="text-xs text-slate-400 italic">Archived Record</span>
                     )}
