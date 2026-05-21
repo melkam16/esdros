@@ -67,7 +67,7 @@ export async function proxy(req: NextRequest) {
         return handleUnauthorized('/dashboard/unauthorized');
       }
     }
-    if (pathname.startsWith('/dashboard/faculty') && userRole !== 'FACULTY') {
+    if (pathname.startsWith('/dashboard/faculty') && userRole !== 'FACULTY' && userRole !== 'ADMIN') {
       return handleUnauthorized('/dashboard/unauthorized');
     }
     if (pathname.startsWith('/dashboard/student') && userRole !== 'STUDENT') {

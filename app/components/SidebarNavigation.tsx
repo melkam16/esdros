@@ -15,9 +15,17 @@ export default function SidebarNavigation({ role }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [activeRole, setActiveRole] = useState<'ADMIN' | 'FACULTY' | 'STUDENT'>(role);
+  const [hasFacultyProfile, setHasFacultyProfile] = useState(false);
+  const [dbRole, setDbRole] = useState<string | null>(null);
 
   // Close drawer on route change
   useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  // Synchronize activeRole with the current layout role prop on page transitions
+  useEffect(() => {
+    setActiveRole(role);
+  }, [role]);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -26,6 +34,8 @@ export default function SidebarNavigation({ role }: SidebarProps) {
         if (data.name) setUserName(data.name);
         if (data.id) setUserId(data.id.substring(0, 8).toUpperCase());
         if (data.isSuperAdmin) setIsSuperAdmin(true);
+        if (data.hasFacultyProfile) setHasFacultyProfile(true);
+        if (data.role) setDbRole(data.role);
       })
       .catch(err => console.error('Failed to fetch user metadata', err));
   }, []);
@@ -141,9 +151,9 @@ export default function SidebarNavigation({ role }: SidebarProps) {
     ],
   };
 
-  const rawModules = modules[role] || [];
+  const rawModules = modules[activeRole] || [];
   const activeModules = rawModules.map(module => {
-    if (role === 'ADMIN' && !isSuperAdmin) {
+    if (activeRole === 'ADMIN' && !isSuperAdmin) {
       // Regular restricted admins do not see Finance, Settings, Reports, or Manage Admins
       const filtered = module.items.filter(item => {
         return !item.href.includes('/finance') &&
@@ -177,6 +187,43 @@ export default function SidebarNavigation({ role }: SidebarProps) {
           </svg>
         </button>
       </div>
+
+      {/* Role view switcher if user has both Admin role and Faculty profile */}
+      {dbRole === 'ADMIN' && hasFacultyProfile && (
+        <div className="px-5 py-3.5 border-b border-slate-800 bg-slate-950/45">
+          <label className="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">
+            Clearance View
+          </label>
+          <div className="grid grid-cols-2 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800/80 shadow-inner">
+            <button
+              onClick={() => {
+                setActiveRole('ADMIN');
+                window.location.href = '/dashboard/admin';
+              }}
+              className={`text-center py-1.5 px-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeRole === 'ADMIN'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-900/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              }`}
+            >
+              Admin View
+            </button>
+            <button
+              onClick={() => {
+                setActiveRole('FACULTY');
+                window.location.href = '/dashboard/faculty';
+              }}
+              className={`text-center py-1.5 px-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeRole === 'FACULTY'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-900/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              }`}
+            >
+              Faculty View
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Nav links */}
       <nav className="flex-1 p-3 overflow-y-auto space-y-4">
@@ -233,7 +280,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
         </button>
         <span className="text-sm font-bold text-white">Esdros Seminary</span>
         <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-400 uppercase tracking-wider">
-          {role}
+          {activeRole}
         </span>
       </div>
 
