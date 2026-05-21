@@ -34,7 +34,15 @@ export async function GET() {
         firstName: true,
         lastName: true,
         isSuperAdmin: true,
-        createdAt: true
+        createdAt: true,
+        facultyProfile: {
+          select: {
+            id: true,
+            department: {
+              select: { name: true }
+            }
+          }
+        }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -133,5 +141,86 @@ export async function DELETE(req: Request) {
   } catch (error) {
     console.error('Error deleting admin:', error);
     return NextResponse.json({ error: 'Failed to delete admin user' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  const isSuper = await verifySuperAdmin();
+  if (!isSuper) {
+    return NextResponse.json({ error: 'Forbidden: Super Admin access required' }, { status: 403 });
+  }
+
+  try {
+    const { action, userId, departmentId, makeAdmin, isSuperAdmin } = await req.json();
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
+    }
+
+    if (action === 'toggleAdminRole') {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { facultyProfile: true }
+      });
+
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      // If revoking admin, ensure they have a faculty profile so they aren't left without any profile or role
+      if (!makeAdmin && !user.facultyProfile) {
+        return NextResponse.json({ 
+          error: 'Cannot revoke Admin access unless user has a Faculty profile connected first. Otherwise they will have no dashboard portal access.' 
+        }, { status: 400 });
+      }
+
+      const updated = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          role: makeAdmin ? 'ADMIN' : 'FACULTY',
+          isSuperAdmin: makeAdmin ? !!isSuperAdmin : false
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: makeAdmin ? 'Admin clearance granted successfully' : 'Admin clearance revoked successfully',
+        data: updated
+      });
+    }
+
+    if (action === 'linkFacultyProfile') {
+      if (!departmentId) {
+        return NextResponse.json({ error: 'Missing departmentId' }, { status: 400 });
+      }
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      const existingFaculty = await prisma.faculty.findUnique({ where: { userId } });
+      if (existingFaculty) {
+        return NextResponse.json({ error: 'Faculty profile already exists for this user' }, { status: 400 });
+      }
+
+      const faculty = await prisma.faculty.create({
+        data: {
+          userId,
+          departmentId
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Faculty profile successfully linked to user',
+        data: faculty
+      });
+    }
+
+    return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });
+  } catch (error: any) {
+    console.error('Error modifying user roles:', error);
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }

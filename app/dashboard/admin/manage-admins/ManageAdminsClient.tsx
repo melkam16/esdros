@@ -9,13 +9,28 @@ interface AdminUser {
   lastName: string;
   isSuperAdmin: boolean;
   createdAt: string;
+  facultyProfile?: {
+    id: string;
+    department: {
+      name: string;
+    };
+  } | null;
 }
 
-export default function ManageAdminsClient() {
+interface ManageAdminsProps {
+  departments: Array<{ id: string; name: string }>;
+}
+
+export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Link Faculty States
+  const [selectedDeptId, setSelectedDeptId] = useState('');
+  const [linkingUserId, setLinkingUserId] = useState<string | null>(null);
+  const [isLinking, setIsLinking] = useState(false);
 
   // Form State
   const [firstName, setFirstName] = useState('');
@@ -88,6 +103,56 @@ export default function ManageAdminsClient() {
       setFormError(err.message || 'Failed to create admin');
     } finally {
       setFormSubmitting(false);
+    }
+  };
+
+  const handleLinkFaculty = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!linkingUserId || !selectedDeptId) return;
+    setIsLinking(true);
+    try {
+      const res = await fetch('/api/admin/manage-admins', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'linkFacultyProfile',
+          userId: linkingUserId,
+          departmentId: selectedDeptId
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to link profile');
+      alert('Faculty profile successfully linked to this administrator!');
+      setLinkingUserId(null);
+      setSelectedDeptId('');
+      fetchAdmins();
+    } catch (err: any) {
+      alert(err.message || 'Error linking profile');
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  const handleToggleAdmin = async (userId: string, makeAdmin: boolean) => {
+    if (!confirm(`Are you sure you want to ${makeAdmin ? 'grant' : 'revoke'} Admin clearance for this user?`)) {
+      return;
+    }
+    try {
+      const res = await fetch('/api/admin/manage-admins', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'toggleAdminRole',
+          userId,
+          makeAdmin
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update clearance');
+      alert(data.message || 'Updated clearance successfully!');
+      fetchAdmins();
+    } catch (err: any) {
+      alert(err.message || 'Error updating clearance');
     }
   };
 
@@ -288,12 +353,28 @@ export default function ManageAdminsClient() {
                   {filteredAdmins.map((admin) => (
                     <tr key={admin.id} className="hover:bg-slate-50/50 transition">
                       <td className="py-3.5 px-6 font-semibold text-slate-950">
-                        {admin.firstName} {admin.lastName}
-                        {admin.id === currentUserId && (
-                          <span className="ml-1.5 text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded">
-                            Self
-                          </span>
-                        )}
+                        <div>
+                          {admin.firstName} {admin.lastName}
+                          {admin.id === currentUserId && (
+                            <span className="ml-1.5 text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded">
+                              Self
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] mt-1.5">
+                          {admin.facultyProfile ? (
+                            <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[9px]">
+                              👨‍🏫 Faculty Linked: {admin.facultyProfile.department.name}
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => setLinkingUserId(admin.id)}
+                              className="text-[#009fe5] hover:text-blue-700 hover:underline font-bold text-[10px]"
+                            >
+                              + Connect Faculty Profile
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3.5 px-6 font-mono text-xs">{admin.email}</td>
                       <td className="py-3.5 px-6">
@@ -316,7 +397,16 @@ export default function ManageAdminsClient() {
                           day: 'numeric'
                         })}
                       </td>
-                      <td className="py-3.5 px-6 text-right">
+                      <td className="py-3.5 px-6 text-right space-x-3">
+                        {admin.facultyProfile && (
+                          <button
+                            onClick={() => handleToggleAdmin(admin.id, false)}
+                            className="text-xs font-bold text-amber-600 hover:text-amber-800 transition"
+                            title="Demote user to faculty-only access level"
+                          >
+                            Revoke Admin
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(admin.id)}
                           disabled={admin.id === currentUserId}
@@ -334,6 +424,59 @@ export default function ManageAdminsClient() {
           </div>
         </div>
       </div>
+
+      {/* LINK FACULTY PROFILE MODAL */}
+      {linkingUserId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 max-w-md w-full animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-slate-900 mb-1.5">Connect Faculty Profile</h3>
+            <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+              Select the Department this administrator is associated with. Creating a Faculty profile enables them to teach courses, mark attendance, and submit grades.
+            </p>
+
+            <form onSubmit={handleLinkFaculty} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                  Select Department
+                </label>
+                <select
+                  required
+                  value={selectedDeptId}
+                  onChange={(e) => setSelectedDeptId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                >
+                  <option value="">-- Choose a Department --</option>
+                  {departments && departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLinkingUserId(null);
+                    setSelectedDeptId('');
+                  }}
+                  className="px-4 py-2 border border-slate-200 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLinking || !selectedDeptId}
+                  className="px-4 py-2 bg-[#009fe5] text-white text-xs font-semibold rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                >
+                  {isLinking ? 'Connecting...' : 'Connect Profile'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,9 +1,14 @@
 import SidebarNavigation from '@/app/components/SidebarNavigation';
 import ManageAdminsClient from './ManageAdminsClient';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-export default function ManageAdminsPage() {
+export default async function ManageAdminsPage() {
+  const departments = await prisma.department.findMany({
+    select: { id: true, name: true }
+  });
+
   return (
     <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-slate-50">
       <SidebarNavigation role="ADMIN" />
@@ -21,7 +26,7 @@ export default function ManageAdminsPage() {
         </div>
 
         {/* Client Side Console Component */}
-        <ManageAdminsClient />
+        <ManageAdminsClient departments={departments} />
       </main>
     </div>
   );

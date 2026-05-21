@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react';
 
 interface Faculty {
   id: string;
+  userId: string;
   name: string;
   email: string;
+  role: string;
+  isSuperAdmin: boolean;
   department: string;
   courseSections: number;
   courses: string[];
@@ -48,6 +51,27 @@ export default function FacultyListView() {
       f.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       f.department.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleToggleAdmin = async (userId: string, makeAdmin: boolean) => {
+    if (!window.confirm(`Are you sure you want to ${makeAdmin ? 'grant' : 'revoke'} Admin access for this faculty member?`)) return;
+    try {
+      const res = await fetch('/api/admin/manage-admins', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'toggleAdminRole',
+          userId,
+          makeAdmin
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update clearance');
+      alert(data.message || 'Updated clearance successfully!');
+      fetchFaculty();
+    } catch (err: any) {
+      alert(err.message || 'Error updating clearance');
+    }
+  };
 
   const handleOffboard = async (facultyId: string, name: string) => {
     if (!window.confirm(`Are you sure you want to offboard ${name}? This will revoke their system access instantly.`)) return;
@@ -137,6 +161,11 @@ export default function FacultyListView() {
                 <tr key={f.id} className="hover:bg-slate-50 transition">
                   <td className="px-6 py-4">
                     <p className="font-medium text-slate-900">{f.name}</p>
+                    {f.role === 'ADMIN' && (
+                      <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded">
+                        🛡️ Admin Clearance
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm text-slate-600">{f.email}</p>
@@ -183,15 +212,32 @@ export default function FacultyListView() {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right space-x-2">
                     {activeTab === 'ACTIVE' ? (
-                      <button 
-                        onClick={() => handleOffboard(f.id, f.name)}
-                        disabled={isProcessing === f.id}
-                        className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 text-xs font-bold rounded-lg hover:bg-red-100 transition disabled:opacity-50"
-                      >
-                        {isProcessing === f.id ? 'Processing...' : 'Offboard'}
-                      </button>
+                      <>
+                        {f.role === 'ADMIN' ? (
+                          <button
+                            onClick={() => handleToggleAdmin(f.userId, false)}
+                            className="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg hover:bg-amber-100 transition"
+                          >
+                            Revoke Admin
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleToggleAdmin(f.userId, true)}
+                            className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg hover:bg-indigo-100 transition"
+                          >
+                            Grant Admin
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => handleOffboard(f.id, f.name)}
+                          disabled={isProcessing === f.id}
+                          className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 text-xs font-bold rounded-lg hover:bg-red-100 transition disabled:opacity-50"
+                        >
+                          {isProcessing === f.id ? 'Processing...' : 'Offboard'}
+                        </button>
+                      </>
                     ) : (
                       <span className="text-xs text-slate-400 italic">Archived Record</span>
                     )}
