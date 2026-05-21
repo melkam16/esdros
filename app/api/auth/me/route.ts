@@ -15,14 +15,15 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, firstName: true, lastName: true }
+      select: { id: true, firstName: true, lastName: true, isSuperAdmin: true }
     });
 
     if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     return NextResponse.json({
       id: user.id,
-      name: `${user.firstName} ${user.lastName}`
+      name: `${user.firstName} ${user.lastName}`,
+      isSuperAdmin: user.isSuperAdmin
     });
   } catch (error) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -39,8 +39,21 @@ export async function proxy(req: NextRequest) {
     const userRole = payload.role as string;
 
     // 2. Comprehensive Role Hierarchy Matrix Matchers (Includes subpages via startsWith)
-    if (pathname.startsWith('/dashboard/admin') && userRole !== 'ADMIN') {
-      return handleUnauthorized('/dashboard/unauthorized');
+    if (pathname.startsWith('/dashboard/admin')) {
+      if (userRole !== 'ADMIN') {
+        return handleUnauthorized('/dashboard/unauthorized');
+      }
+      const isSuper = payload.isSuperAdmin as boolean;
+      const superOnlyPaths = [
+        '/dashboard/admin/finance',
+        '/dashboard/admin/settings',
+        '/dashboard/admin/reports',
+        '/dashboard/admin/manage-admins'
+      ];
+      if (superOnlyPaths.some(p => pathname.startsWith(p)) && !isSuper) {
+        console.log("Auth Proxy: Non-super-admin blocked from path:", pathname);
+        return handleUnauthorized('/dashboard/unauthorized');
+      }
     }
     if (pathname.startsWith('/dashboard/faculty') && userRole !== 'FACULTY') {
       return handleUnauthorized('/dashboard/unauthorized');

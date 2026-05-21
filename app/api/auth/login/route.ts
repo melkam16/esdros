@@ -26,12 +26,18 @@ export async function POST(req: Request) {
         data: { name: 'Theology Cohort Year 1', code: 'TH-Y1', departmentId: defaultDept.id },
       });
       await prisma.user.create({
-        data: { email: 'admin@esdros.org', passwordHash: 'admin123', firstName: 'Melkamu', lastName: 'Admin', role: 'ADMIN' },
+        data: { email: 'admin@esdros.org', passwordHash: 'admin123', firstName: 'Melkamu', lastName: 'Admin', role: 'ADMIN', isSuperAdmin: true },
       });
     }
 
     // 2. Authenticate
-    const user = await prisma.user.findUnique({ where: { email } });
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (user && user.email === 'admin@esdros.org' && !user.isSuperAdmin) {
+      user = await prisma.user.update({
+        where: { email },
+        data: { isSuperAdmin: true }
+      });
+    }
     const incomingHash = hash('sha256', password);
 
     if (!user || (user.passwordHash !== password && user.passwordHash !== incomingHash)) {
@@ -39,7 +45,7 @@ export async function POST(req: Request) {
     }
 
     // 3. Issue JWT
-    const token = await new SignJWT({ id: user.id, email: user.email, role: user.role })
+    const token = await new SignJWT({ id: user.id, email: user.email, role: user.role, isSuperAdmin: user.isSuperAdmin })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('8h')
       .sign(SECRET);

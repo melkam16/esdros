@@ -14,6 +14,8 @@ export default function SidebarNavigation({ role }: SidebarProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
   // Close drawer on route change
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
@@ -23,6 +25,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
       .then(data => {
         if (data.name) setUserName(data.name);
         if (data.id) setUserId(data.id.substring(0, 8).toUpperCase());
+        if (data.isSuperAdmin) setIsSuperAdmin(true);
       })
       .catch(err => console.error('Failed to fetch user metadata', err));
   }, []);
@@ -78,6 +81,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
       {
         title: 'System Administration',
         items: [
+          { name: 'Manage Admins', href: '/dashboard/admin/manage-admins', icon: '👥' },
           { name: 'Settings', href: '/dashboard/admin/settings', icon: '⚙️' },
         ],
       },
@@ -137,7 +141,20 @@ export default function SidebarNavigation({ role }: SidebarProps) {
     ],
   };
 
-  const activeModules = modules[role] || [];
+  const rawModules = modules[role] || [];
+  const activeModules = rawModules.map(module => {
+    if (role === 'ADMIN' && !isSuperAdmin) {
+      // Regular restricted admins do not see Finance, Settings, Reports, or Manage Admins
+      const filtered = module.items.filter(item => {
+        return !item.href.includes('/finance') &&
+               !item.href.includes('/settings') &&
+               !item.href.includes('/reports') &&
+               !item.href.includes('/manage-admins');
+      });
+      return { ...module, items: filtered };
+    }
+    return module;
+  }).filter(module => module.items.length > 0);
 
   const SidebarContent = () => (
     <>
