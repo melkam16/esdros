@@ -79,7 +79,7 @@ export default function LoginPage() {
       {/* Top bar */}
       <div className="bg-[#0e2a47]/60 px-6 py-2 flex items-center justify-between text-xs text-blue-200">
         <Link href="/" className="flex items-center gap-1.5 hover:text-white transition">
-          ← Back to Esdros Seminary
+          ← Back to Esdros Theological Seminary
         </Link>
         <span>Mahibere Kidusan North America</span>
       </div>

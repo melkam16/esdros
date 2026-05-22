@@ -52,12 +52,12 @@ export default function AlumniPage() {
       badge: 'Lifelong Learning',
       description: 'Audit new seminary courses, access guest webinars, and participate in theological workshops to continue your academic growth.',
       details: [
-        'Special alumni Moodle login credentials',
+        'Special alumni SIS portal login credentials',
         'Select audit seats in new theology cohorts',
         'Monthly patristic research webinars'
       ],
       ctaText: 'Explore Course Audits',
-      ctaAction: () => alert('Continuing Education roster is active on Moodle. Accessing courses is free for graduating classes.')
+      ctaAction: () => alert('Continuing Education roster is active on the SIS portal. Accessing courses is free for graduating classes.')
     },
     {
       title: 'Parish Placement & Network',
@@ -100,7 +100,7 @@ export default function AlumniPage() {
               🎓 Graduating Network
             </span>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-sm">
-              Esdros Alumni Portal
+              Esdros Theological Seminary Alumni Portal
             </h1>
             <p className="text-blue-100 text-lg leading-relaxed max-w-2xl mx-auto">
               Welcome back, scholars. Stay connected to the seminary community, request credentials, and access lifelong EOTC learning resources.
@@ -251,7 +251,7 @@ export default function AlumniPage() {
             {/* DONATIONS CALLOUT */}
             <div className="bg-gradient-to-br from-[#c02424] to-[#e04040] p-6 rounded-2xl text-white shadow-md text-center space-y-4 relative overflow-hidden">
               <div className="absolute inset-0 bg-white/5 opacity-50 pointer-events-none" />
-              <h4 className="font-extrabold text-base">Support Esdros Seminary</h4>
+              <h4 className="font-extrabold text-base">Support Esdros Theological Seminary</h4>
               <p className="text-xs text-red-50 leading-relaxed">
                 Empower the next cycle of scholars by donating to the Mahibere Kidusan Coordinating Center matching fund.
               </p>

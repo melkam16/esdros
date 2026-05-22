@@ -171,7 +171,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
       {/* Header */}
       <div className="p-5 border-b border-slate-800 bg-slate-950 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-base font-bold tracking-tight text-white leading-tight">Esdros Seminary</h2>
+          <h2 className="text-base font-bold tracking-tight text-white leading-tight">Esdros Theological Seminary</h2>
           <p className="text-xs text-[#009fe5] font-semibold mt-0.5 uppercase tracking-wider truncate">
             {userName && userId ? `${userName} (${userId})` : 'Class365 SMS'}
           </p>
@@ -278,7 +278,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span className="text-sm font-bold text-white">Esdros Seminary</span>
+        <span className="text-sm font-bold text-white">Esdros Theological Seminary</span>
         <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-400 uppercase tracking-wider">
           {activeRole}
         </span>

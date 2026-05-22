@@ -5,7 +5,7 @@ import { hash } from 'crypto';
 
 export async function POST(req: Request) {
   try {
-    const { firstName, lastName, email, departmentId, password } = await req.json();
+    const { firstName, lastName, email, departmentId, password, pictureUrl } = await req.json();
 
     // Validate required fields
     if (!firstName || !lastName || !email || !departmentId || !password) {
@@ -46,6 +46,7 @@ export async function POST(req: Request) {
         data: {
           userId: user.id,
           departmentId,
+          pictureUrl: pictureUrl || null,
         },
       });
 
@@ -56,8 +57,8 @@ export async function POST(req: Request) {
     const { sendEmail } = await import('@/lib/mail');
     await sendEmail({
       to: email,
-      subject: 'Welcome to Esdros Seminary - Faculty Credentials',
-      text: `Hello ${firstName} ${lastName},\n\nYou have been added as a Faculty Member on the Esdros Seminary platform inside ${department.name}.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsdros Theological Seminary`
+      subject: 'Welcome to Esdros Theological Seminary - Faculty Credentials',
+      text: `Hello ${firstName} ${lastName},\n\nYou have been added as a Faculty Member on the Esdros Theological Seminary platform inside ${department.name}.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsdros Theological Seminary`
     });
 
     return NextResponse.json(
@@ -119,6 +120,7 @@ export async function GET() {
           isSuperAdmin: f.user.isSuperAdmin,
           department: f.department.name,
           departmentId: f.department.id,
+          pictureUrl: f.pictureUrl || undefined,
           courseSections: f.sections.length,
           courses: f.sections.map((s) => s.course.title),
         })),

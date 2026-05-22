@@ -74,7 +74,7 @@ export default function TheologyProgramPage() {
             {/* Associate */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
               <h3 className="text-xl font-bold text-[#1e508d] mb-2">Associate Degree in Theology</h3>
-              <p className="text-sm text-slate-500 mb-4">A 2-year fundamental program requiring 60 credit hours.</p>
+              <p className="text-sm text-slate-500 mb-4">A 3-year fundamental program requiring 60 credit hours.</p>
               <h4 className="font-semibold text-slate-800 text-sm mb-2">Core Coursework:</h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-600">
                 <li>• Introduction to Orthodox Dogma</li>

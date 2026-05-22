@@ -97,8 +97,8 @@ export async function POST(req: Request) {
     const { sendEmail } = await import('@/lib/mail');
     await sendEmail({
       to: email,
-      subject: 'Welcome to Esdros Seminary - Administrator Access Granted',
-      text: `Hello ${firstName} ${lastName},\n\nYou have been added as an Administrator on the Esdros Seminary platform with ${isSuperAdmin ? 'Full Super Admin' : 'Restricted Admin'} clearance level.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsdros Theological Seminary`
+      subject: 'Welcome to Esdros Theological Seminary - Administrator Access Granted',
+      text: `Hello ${firstName} ${lastName},\n\nYou have been added as an Administrator on the Esdros Theological Seminary platform with ${isSuperAdmin ? 'Full Super Admin' : 'Restricted Admin'} clearance level.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsdros Theological Seminary`
     });
 
     return NextResponse.json({

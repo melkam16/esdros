@@ -183,6 +183,38 @@ export default async function StudentDashboardHome() {
                 Review Registration
               </button>
             </div>
+
+            {/* Moodle LMS Integration Card */}
+            <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 text-white p-6 shadow-xl border border-indigo-900/50 hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1">
+              <div className="absolute top-0 right-0 -mt-8 -mr-8 w-24 h-24 bg-indigo-500/20 rounded-full blur-xl mix-blend-screen transition-transform duration-500 group-hover:scale-125"></div>
+              
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-lg shadow-inner border border-white/20">
+                    🌐
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 tracking-wider">
+                    E-Learning
+                  </span>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-extrabold text-white tracking-tight">Moodle LMS Portal</h3>
+                  <p className="text-xs text-indigo-200/80 leading-relaxed mt-1 font-medium">
+                    Access your course modules, lecture notes, discussion boards, and digital syllabi directly on our traditional learning management system.
+                  </p>
+                </div>
+
+                <a 
+                  href="https://esderos.eotcmk.org/seminary" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md hover:shadow-indigo-500/20 transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  Launch Moodle Classroom ↗
+                </a>
+              </div>
+            </div>
             
           </div>
         </div>

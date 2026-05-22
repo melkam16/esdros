@@ -136,6 +136,7 @@ model Faculty {
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   departmentId String     // Maps faculty directly to an administrative department
   department   Department @relation(fields: [departmentId], references: [id])
+  pictureUrl   String?    // Optional faculty portrait photo URL
 
   sections     CourseSection[]
   attendances  Attendance[]

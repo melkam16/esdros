@@ -31,6 +31,7 @@ export async function GET() {
         email: f.user.email,
         department: f.department.name,
         departmentId: f.department.id,
+        pictureUrl: f.pictureUrl || undefined,
         courses: Array.from(new Set(f.sections.map((s) => s.course.title))),
       }))
       .filter((f) => !f.name.toLowerCase().includes('(offboarded)'));

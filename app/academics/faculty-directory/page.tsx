@@ -11,6 +11,7 @@ interface FacultyMember {
   departmentId?: string;
   courses: string[];
   title?: string;
+  pictureUrl?: string;
 }
 
 // Highly realistic and complete fallback dataset when the database is empty or unseeded.
@@ -19,41 +20,46 @@ const FALLBACK_FACULTY: FacultyMember[] = [
     id: 'f-1',
     name: 'Memhir Daniel Seife',
     email: 'daniel.seife@eotcmk.org',
-    department: 'Department of Theology',
+    department: 'Theology',
     title: 'Professor of Dogmatic Theology & Patristics',
-    courses: ['Dogmatic Theology I, II & III', 'Advanced Patristics (The Fathers)', 'Foundations of the Orthodox Faith']
+    courses: ['Dogmatic Theology I, II & III', 'Advanced Patristics (The Fathers)', 'Foundations of the Orthodox Faith'],
+    pictureUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?fit=crop&w=300&h=300&q=80'
   },
   {
     id: 'f-2',
     name: 'Dr. Tedla Gebre-Yesus',
     email: 'tedla.gebreyesus@eotcmk.org',
-    department: 'Department of Theology',
+    department: 'Theology',
     title: 'Senior Lecturer in Biblical Exegesis & Canon Law',
-    courses: ['Old & New Testament Exegesis', 'Canon Law (Fetha Negest)', 'Introduction to the Bible']
+    courses: ['Old & New Testament Exegesis', 'Canon Law (Fetha Negest)', 'Introduction to the Bible'],
+    pictureUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?fit=crop&w=300&h=300&q=80'
   },
   {
     id: 'f-3',
     name: 'Memhir Abayneh Kassahun',
     email: 'abayneh.kassahun@eotcmk.org',
-    department: 'Department of Semitic Languages',
+    department: 'Geez Language',
     title: 'Instructor in Classical Geez & Philology',
-    courses: ['Advanced Geez Grammar & Syntax (Sawasew)', 'Ethiopian Paleography & Philology', 'Basic Geez Grammar']
+    courses: ['Advanced Geez Grammar & Syntax (Sawasew)', 'Ethiopian Paleography & Philology', 'Basic Geez Grammar'],
+    pictureUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?fit=crop&w=300&h=300&q=80'
   },
   {
     id: 'f-4',
     name: 'Qesis Melaku Welde-Tsadik',
     email: 'melaku.welde@eotcmk.org',
-    department: 'Department of Semitic Languages',
+    department: 'Geez Language',
     title: 'Lecturer in Liturgical Chanting & Traditional Poetry',
-    courses: ['Geez Qine I, II & III (Classical Poetry)', 'Zema (Liturgical Chanting)', 'Liturgical Translation']
+    courses: ['Geez Qine I, II & III (Classical Poetry)', 'Zema (Liturgical Chanting)', 'Liturgical Translation'],
+    pictureUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?fit=crop&w=300&h=300&q=80'
   },
   {
     id: 'f-5',
     name: 'Dr. Hermela Tekle-Mariam',
     email: 'hermela.tekle@eotcmk.org',
-    department: 'Department of Theology',
+    department: 'Theology',
     title: 'Assistant Professor of Church History & Counseling',
-    courses: ['Church History (Universal & Ethiopian)', 'Pastoral Counseling & Liturgics', 'Lives of the Saints']
+    courses: ['Church History (Universal & Ethiopian)', 'Pastoral Counseling & Liturgics', 'Lives of the Saints'],
+    pictureUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?fit=crop&w=300&h=300&q=80'
   }
 ];
 
@@ -86,7 +92,7 @@ export default function FacultyDirectoryPage() {
               ...f,
               title: f.title || (f.department.includes('Theology')
                 ? 'Lecturer in Theological Studies'
-                : 'Instructor in Semitic Languages')
+                : 'Instructor in Geez Language')
             }));
             setFaculty(mappedData);
           } else {
@@ -136,7 +142,7 @@ export default function FacultyDirectoryPage() {
     const matchesDept =
       selectedDept === 'ALL' ||
       (selectedDept === 'THEOLOGY' && f.department.toLowerCase().includes('theology')) ||
-      (selectedDept === 'SEMITIC' && (f.department.toLowerCase().includes('semitic') || f.department.toLowerCase().includes('geez')));
+      (selectedDept === 'GEEZ' && (f.department.toLowerCase().includes('geez') || f.department.toLowerCase().includes('semitic') || f.department.toLowerCase().includes('language')));
 
     return matchesSearch && matchesDept;
   });
@@ -187,7 +193,7 @@ export default function FacultyDirectoryPage() {
               {[
                 { key: 'ALL', label: 'All Departments' },
                 { key: 'THEOLOGY', label: 'Theology' },
-                { key: 'SEMITIC', label: 'Semitic Languages' }
+                { key: 'GEEZ', label: 'Geez Language' }
               ].map((pill) => (
                 <button
                   key={pill.key}
@@ -248,10 +254,23 @@ export default function FacultyDirectoryPage() {
                   <div className="p-6 space-y-5">
                     {/* Header Info */}
                     <div className="flex items-center gap-4">
-                      {/* Circle Initials Avatar */}
-                      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center font-extrabold text-lg shadow-sm shrink-0 ${getAvatarGradient(index)}`}>
-                        {getInitials(member.name)}
-                      </div>
+                      {/* Circle Initials Avatar or Real Profile Photo */}
+                      {member.pictureUrl ? (
+                        <img
+                          src={member.pictureUrl}
+                          alt={member.name}
+                          className="w-14 h-14 rounded-2xl object-cover border border-slate-100 shadow-sm shrink-0"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : null}
+
+                      {!member.pictureUrl && (
+                        <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center font-extrabold text-lg shadow-sm shrink-0 ${getAvatarGradient(index)}`}>
+                          {getInitials(member.name)}
+                        </div>
+                      )}
                       
                       {/* Name & Title */}
                       <div className="space-y-0.5 min-w-0">

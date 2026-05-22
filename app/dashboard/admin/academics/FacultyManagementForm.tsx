@@ -9,6 +9,7 @@ interface FacultyFormData {
   departmentId: string;
   password: string;
   confirmPassword: string;
+  pictureUrl: string;
 }
 
 interface Department {
@@ -32,6 +33,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
     departmentId: departments[0]?.id || '',
     password: '',
     confirmPassword: '',
+    pictureUrl: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -71,6 +73,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
           email: formData.email,
           departmentId: formData.departmentId,
           password: formData.password,
+          pictureUrl: formData.pictureUrl || undefined,
         }),
       });
 
@@ -85,6 +88,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
           departmentId: departments[0]?.id || '',
           password: '',
           confirmPassword: '',
+          pictureUrl: '',
         });
         setTimeout(() => {
           setIsOpen(false);
@@ -209,6 +213,18 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                   placeholder="Confirm password"
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Picture URL (Optional)</label>
+                <input
+                  type="url"
+                  name="pictureUrl"
+                  value={formData.pictureUrl}
+                  onChange={handleChange}
+                  placeholder="Enter portrait image URL"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>

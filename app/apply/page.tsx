@@ -149,7 +149,7 @@ export default function ApplyPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
             Applications Open — 2026 Intake
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">Esdros Seminary</h1>
+          <h1 className="text-4xl font-bold text-white tracking-tight">Esdros Theological Seminary</h1>
           <p className="text-slate-400 text-lg">Admissions & SIS Application Portal</p>
         </div>
 

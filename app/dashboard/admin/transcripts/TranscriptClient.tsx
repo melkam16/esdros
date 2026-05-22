@@ -213,10 +213,10 @@ export default function TranscriptClient({ students }: { students: any[] }) {
             <div className="border-b-4 border-slate-900 pb-8 mb-8 text-center relative z-10 flex flex-col items-center justify-center">
               <img 
                 src="https://esderos.eotcmk.org/seminary/pluginfile.php/1/theme_klass/logo/1651894977/logo.png"
-                alt="Esdros Seminary Logo"
+                alt="Esdros Theological Seminary Logo"
                 className="h-20 w-20 object-contain mb-4 filter drop-shadow-sm"
               />
-              <h1 className="text-4xl font-black text-slate-900 uppercase tracking-widest mb-2">Esdros Seminary</h1>
+              <h1 className="text-4xl font-black text-slate-900 uppercase tracking-widest mb-2">Esdros Theological Seminary</h1>
               <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest">Official Academic Transcript</h2>
             </div>
             
@@ -278,7 +278,7 @@ export default function TranscriptClient({ students }: { students: any[] }) {
               </div>
               <div className="text-right">
                 <p className="text-xs text-slate-400 italic max-w-xs">
-                  This document is an official record of the academic achievements attained at Esdros Seminary.
+                  This document is an official record of the academic achievements attained at Esdros Theological Seminary.
                 </p>
               </div>
             </div>

@@ -51,7 +51,7 @@ const PROGRAM_TRACKS: Record<'THEOLOGY' | 'GEEZ', TrackData> = {
       {
         title: 'Associate Degree in Theology',
         credits: 60,
-        duration: '2 Years',
+        duration: '3 Years',
         description: 'A solid, foundational program covering basic biblical study, theology, and ethical principles designed for lay leaders and Sunday school teachers.',
         courses: [
           { name: 'Introduction to Orthodox Dogma', desc: 'A basic introduction to the mysteries (Misterat) and faith tenets.' },
@@ -101,7 +101,7 @@ const PROGRAM_TRACKS: Record<'THEOLOGY' | 'GEEZ', TrackData> = {
       {
         title: 'Associate Degree in Geez Language',
         credits: 60,
-        duration: '2 Years',
+        duration: '3 Years',
         description: 'Intermediate study focusing on verb morphological forms, vocabularies, and early liturgical translation.',
         courses: [
           { name: 'Geez Morphology & Verb Conjugations', desc: 'Detailed tracking of root verbs, active/passive forms, and tense modifiers.' },
@@ -322,7 +322,7 @@ export default function DegreeProgramsPage() {
                   </li>
                   <li className="flex gap-2">
                     <span className="text-sky-500 font-bold">✓</span> 
-                    <strong>Asynchronous Assets:</strong> Download readings and record lectures via Moodle integration.
+                    <strong>Asynchronous Assets:</strong> Download readings and view recorded lectures via the online SIS portal.
                   </li>
                 </ul>
               </div>
@@ -341,14 +341,12 @@ export default function DegreeProgramsPage() {
                   >
                     Start Admission Form →
                   </Link>
-                  <a
-                    href="https://esderos.eotcmk.org/seminary/"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    href="/login"
                     className="block w-full py-3 bg-white/10 text-white font-bold rounded-xl border border-white/20 hover:bg-white/20 transition text-xs"
                   >
-                    Explore Public Moodle
-                  </a>
+                    Access Student SIS Portal
+                  </Link>
                 </div>
               </div>
 

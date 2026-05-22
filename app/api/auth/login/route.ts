@@ -16,14 +16,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    // 1. Auto-seed: create default admin if DB is empty
+    // 1. Auto-seed & Align Departments dynamically
+    const oldDept = await prisma.department.findUnique({ where: { code: 'TLS' } });
+    if (oldDept) {
+      const theoDept = await prisma.department.findUnique({ where: { code: 'THEO' } });
+      if (!theoDept) {
+        await prisma.department.update({
+          where: { id: oldDept.id },
+          data: { name: 'Theology', code: 'THEO', description: 'Department of Theology' }
+        });
+      } else {
+        await prisma.class.updateMany({ where: { departmentId: oldDept.id }, data: { departmentId: theoDept.id } });
+        await prisma.faculty.updateMany({ where: { departmentId: oldDept.id }, data: { departmentId: theoDept.id } });
+        await prisma.department.delete({ where: { id: oldDept.id } });
+      }
+    }
+
+    const theologyDept = await prisma.department.upsert({
+      where: { code: 'THEO' },
+      update: { name: 'Theology' },
+      create: { name: 'Theology', code: 'THEO', description: 'Department of Theology' }
+    });
+
+    await prisma.department.upsert({
+      where: { code: 'GEEZ' },
+      update: { name: 'Geez Language' },
+      create: { name: 'Geez Language', code: 'GEEZ', description: 'Department of Geez Language' }
+    });
+
     const userCount = await prisma.user.count();
     if (userCount === 0) {
-      const defaultDept = await prisma.department.create({
-        data: { name: 'Department of Theology & Language Studies', code: 'TLS', description: 'Core seed department.' },
-      });
       await prisma.class.create({
-        data: { name: 'Theology Cohort Year 1', code: 'TH-Y1', departmentId: defaultDept.id },
+        data: { name: 'Theology Cohort Year 1', code: 'TH-Y1', departmentId: theologyDept.id },
       });
       await prisma.user.create({
         data: { email: 'admin@esdros.org', passwordHash: 'admin123', firstName: 'Melkamu', lastName: 'Admin', role: 'ADMIN', isSuperAdmin: true },

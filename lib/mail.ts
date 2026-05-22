@@ -29,7 +29,7 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, text, html }: SendEmailParams) {
   const transporter = getTransporter();
-  const from = process.env.SMTP_FROM || '"Esdros Seminary" <noreply@esdros.org>';
+  const from = process.env.SMTP_FROM || '"Esdros Theological Seminary" <noreply@esdros.org>';
 
   if (transporter) {
     try {

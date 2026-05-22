@@ -396,7 +396,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
         <div id="printable-transcript" className="hidden bg-white p-12 rounded-2xl shadow-xl border border-slate-200 max-w-4xl mx-auto">
           {/* Transcript Header */}
           <div className="border-b-4 border-slate-900 pb-8 mb-8 text-center">
-            <h1 className="text-4xl font-black text-slate-900 uppercase tracking-widest mb-2">Esdros Seminary</h1>
+            <h1 className="text-4xl font-black text-slate-900 uppercase tracking-widest mb-2">Esdros Theological Seminary</h1>
             <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest">Official Academic Transcript</h2>
           </div>
           
@@ -453,7 +453,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
             </div>
             <div className="text-right">
               <p className="text-xs text-slate-400 italic max-w-xs">
-                This document is an official record of the academic degree conferred by Esdros Seminary.
+                This document is an official record of the academic degree conferred by Esdros Theological Seminary.
               </p>
             </div>
           </div>

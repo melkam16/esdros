@@ -62,7 +62,7 @@ const ACADEMIC_YEAR_DATA: Record<'FALL' | 'SPRING' | 'SUMMER', TermData> = {
         title: 'Midterm Examination Period',
         category: 'EXAMS',
         categoryLabel: 'Assessments',
-        desc: 'Midterm exam sheets unlocked in Moodle. Live synchronous exam sessions administered.'
+        desc: 'Midterm exam sheets unlocked in the SIS Portal. Live synchronous exam sessions administered.'
       },
       {
         date: 'November 26, 2026 - November 29, 2026',
@@ -310,7 +310,7 @@ export default function AcademicCalendarPage() {
                   📆 Calendar Integration
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Keep Esdros Seminary deadlines in sync with your personal device schedule.
+                  Keep Esdros Theological Seminary deadlines in sync with your personal device schedule.
                 </p>
                 <div className="space-y-2 pt-2">
                   <button

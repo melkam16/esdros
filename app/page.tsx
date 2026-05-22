@@ -72,7 +72,7 @@ export default function HomePage() {
       <section id="about" className="py-14 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           <div className="space-y-6">
-            <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">About Esdros Seminary</span>
+            <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">About Esdros Theological Seminary</span>
             <h2 className="text-3xl font-extrabold text-slate-900 leading-tight">Esdros Theological Seminary</h2>
             <p className="text-slate-600 leading-relaxed">
               <strong>Esderos Theological Seminary</strong> is a degree-granting institution under Mahibere Kidusan USA Center, serving the Ethiopian Orthodox Tewahedo Church. The seminary is dedicated to teaching and preserving the apostolic faith, dogma, canon, liturgical tradition, and history of the Church.
@@ -158,9 +158,9 @@ export default function HomePage() {
             ))}
           </div>
           <div className="text-center">
-            <a href="https://esderos.eotcmk.org/seminary/course/" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 border border-[#009fe5] text-[#009fe5] rounded font-semibold hover:bg-[#009fe5] hover:text-white transition text-sm">
-              View Available Courses on Moodle →
-            </a>
+            <Link href="/academics/degree-programs" className="inline-block px-6 py-3 border border-[#009fe5] text-[#009fe5] rounded font-semibold hover:bg-[#009fe5] hover:text-white transition text-sm">
+              View All Degree Programs & Syllabi →
+            </Link>
           </div>
         </div>
       </section>
@@ -245,7 +245,7 @@ export default function HomePage() {
             <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">Alumni Association</span>
             <h2 className="text-3xl font-extrabold text-slate-900">Graduate Roster & Resources</h2>
             <p className="text-slate-500">
-              Esdros Seminary supports its alumni through robust professional, ministry-focused, and academic continuing education resources.
+              Esdros Theological Seminary supports its alumni through robust professional, ministry-focused, and academic continuing education resources.
             </p>
           </div>
 
