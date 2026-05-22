@@ -1,4 +1,5 @@
 // app/api/admin/finance/invoice/route.ts
+// Mirrored Billing Route: Invoices created locally here mirror the accounting records managed in the primary Aplos ledger.
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
