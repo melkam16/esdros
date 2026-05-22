@@ -82,6 +82,27 @@ export default function TranscriptClient({ students }: { students: any[] }) {
   return (
     <>
       <style jsx global>{`
+        #printable-transcript {
+          position: relative;
+          overflow: hidden;
+        }
+        .transcript-watermark {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 350px;
+          height: 350px;
+          opacity: 0.05;
+          background-image: url('https://esderos.eotcmk.org/seminary/pluginfile.php/1/theme_klass/logo/1651894977/logo.png');
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          pointer-events: none;
+          z-index: 0;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
         @media print {
           body * {
             visibility: hidden;
@@ -98,6 +119,12 @@ export default function TranscriptClient({ students }: { students: any[] }) {
             padding: 20px;
             box-shadow: none !important;
             border: none !important;
+          }
+          .transcript-watermark {
+            opacity: 0.06 !important;
+            display: block !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .no-print {
             display: none !important;
@@ -178,15 +205,23 @@ export default function TranscriptClient({ students }: { students: any[] }) {
             </div>
           </div>
 
-          <div id="printable-transcript" className="bg-white p-12 rounded-2xl shadow-xl border border-slate-200 max-w-4xl mx-auto">
+          <div id="printable-transcript" className="bg-white p-12 rounded-2xl shadow-xl border border-slate-200 max-w-4xl mx-auto relative overflow-hidden">
+            {/* Background Watermark Logo */}
+            <div className="transcript-watermark" aria-hidden="true"></div>
+
             {/* Transcript Header */}
-            <div className="border-b-4 border-slate-900 pb-8 mb-8 text-center">
+            <div className="border-b-4 border-slate-900 pb-8 mb-8 text-center relative z-10 flex flex-col items-center justify-center">
+              <img 
+                src="https://esderos.eotcmk.org/seminary/pluginfile.php/1/theme_klass/logo/1651894977/logo.png"
+                alt="Esdros Seminary Logo"
+                className="h-20 w-20 object-contain mb-4 filter drop-shadow-sm"
+              />
               <h1 className="text-4xl font-black text-slate-900 uppercase tracking-widest mb-2">Esdros Seminary</h1>
               <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest">Official Academic Transcript</h2>
             </div>
             
             {/* Student Info */}
-            <div className="grid grid-cols-2 gap-8 mb-12">
+            <div className="grid grid-cols-2 gap-8 mb-12 relative z-10">
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Student Candidate</p>
                 <p className="text-2xl font-black text-slate-800">{selectedStudent.user.firstName} {selectedStudent.user.lastName}</p>
@@ -201,7 +236,7 @@ export default function TranscriptClient({ students }: { students: any[] }) {
             </div>
 
             {/* Academic Record */}
-            <div className="mb-12">
+            <div className="mb-12 relative z-10">
               <h3 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-200 pb-2">Academic Record</h3>
               <table className="w-full text-left text-sm">
                 <thead>
@@ -236,7 +271,7 @@ export default function TranscriptClient({ students }: { students: any[] }) {
             </div>
 
             {/* GPA Summary */}
-            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex justify-between items-center">
+            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex justify-between items-center relative z-10">
               <div>
                 <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Cumulative GPA</p>
                 <p className="text-3xl font-black text-slate-900 mt-1">{getGPA(selectedStudent.enrollments)}</p>
@@ -249,7 +284,7 @@ export default function TranscriptClient({ students }: { students: any[] }) {
             </div>
             
             {/* Signature Area */}
-            <div className="mt-24 pt-8 border-t border-slate-200 flex justify-between items-end">
+            <div className="mt-24 pt-8 border-t border-slate-200 flex justify-between items-end relative z-10">
               <div>
                 <p className="text-sm text-slate-500">Date Issued: {new Date().toLocaleDateString()}</p>
               </div>

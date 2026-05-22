@@ -139,8 +139,9 @@ Esdros Theological Seminary
     const htmlContent = `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
   <div style="text-align: center; border-bottom: 4px solid #009fe5; padding-bottom: 15px; margin-bottom: 20px;">
-    <h1 style="color: #0e2a47; margin: 0; text-transform: uppercase; letter-spacing: 2px;">Esdros Seminary</h1>
-    <h2 style="color: #666; font-size: 16px; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Official Academic Transcript</h2>
+    <img src="https://esderos.eotcmk.org/seminary/pluginfile.php/1/theme_klass/logo/1651894977/logo.png" alt="Esdros Seminary Logo" style="height: 70px; width: 70px; object-fit: contain; margin-bottom: 10px;" />
+    <h1 style="color: #0e2a47; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-size: 24px;">Esdros Seminary</h1>
+    <h2 style="color: #666; font-size: 14px; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Official Academic Transcript</h2>
   </div>
 
   <p>Hello <b>${student.user.firstName} ${student.user.lastName}</b>,</p>
