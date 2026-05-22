@@ -5,24 +5,6 @@ import { jwtVerify } from 'jose';
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // 1. Cloudflare Security Layer Check
-  const cfConnectingIp = req.headers.get('cf-connecting-ip');
-  const isProd = process.env.NODE_ENV === 'production';
-
-  // Ensure requests route through Cloudflare in production
-  if (isProd && !cfConnectingIp) {
-    console.warn(`[Cloudflare Security Block] Direct request detected on path: ${pathname}`);
-    return new NextResponse(
-      JSON.stringify({ 
-        error: "Direct access forbidden. All requests must route through the Cloudflare security layer." 
-      }),
-      { 
-        status: 403, 
-        headers: { 'Content-Type': 'application/json' } 
-      }
-    );
-  }
-
   // Detect background Next.js internal prefetch links
   const isPrefetch = req.headers.get('next-router-prefetch') === '1' ||
     req.headers.get('purpose') === 'prefetch';
