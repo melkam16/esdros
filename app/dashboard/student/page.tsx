@@ -18,7 +18,8 @@ async function getAggregatedStudentDashboard() {
         user: true,
         class: true,
         enrollments: { include: { courseSection: { include: { course: true } } } },
-        invoices: { where: { status: 'UNPAID' } }
+        invoices: { where: { status: 'UNPAID' } },
+        attendances: true
       }
     });
   } catch {
@@ -42,7 +43,11 @@ export default async function StudentDashboardHome() {
 
   const activeEnrollmentsCount = data.enrollments.length;
   const pendingFeesTotal = data.invoices.reduce((sum, inv) => sum + inv.balanceDue, 0);
-  const mockAttendanceRate = 96.4; 
+  
+  // Calculate real attendance rate based on database records
+  const totalSessions = data.attendances.length;
+  const presentSessions = data.attendances.filter((a) => a.status !== 'ABSENT').length;
+  const attendanceRate = totalSessions > 0 ? Math.round((presentSessions / totalSessions) * 100) : 100; 
 
   return (
     <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-200">
@@ -79,15 +84,23 @@ export default async function StudentDashboardHome() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1 */}
           <div className="group relative bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+            <div className={`absolute top-0 right-0 w-32 h-32 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 ${
+              attendanceRate >= 80 ? 'bg-emerald-50' : 'bg-rose-50'
+            }`}></div>
             <div className="relative z-10">
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-xl mb-4 shadow-inner">📊</div>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 shadow-inner ${
+                attendanceRate >= 80 ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
+              }`}>📊</div>
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Attendance Rate</h3>
               <div className="flex items-end gap-2 mt-2">
-                <p className="text-4xl font-extrabold text-slate-900 tracking-tight">{mockAttendanceRate}%</p>
+                <p className="text-4xl font-extrabold text-slate-900 tracking-tight">{attendanceRate}%</p>
               </div>
-              <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-600 bg-emerald-50/50 py-1.5 px-3 rounded-lg w-fit">
-                ✓ Satisfies Requirement
+              <div className={`mt-4 flex items-center gap-2 text-sm font-semibold py-1.5 px-3 rounded-lg w-fit ${
+                attendanceRate >= 80 
+                  ? 'text-emerald-600 bg-emerald-50/50' 
+                  : 'text-rose-600 bg-rose-50/50 animate-pulse font-bold'
+              }`}>
+                {attendanceRate >= 80 ? '✓ Satisfies Requirement' : '⚠ Below 80% Requirement'}
               </div>
             </div>
           </div>
