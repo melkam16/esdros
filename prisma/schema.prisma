@@ -72,6 +72,7 @@ model User {
   lastName     String
   role         Role     @default(STUDENT)
   isSuperAdmin Boolean  @default(false)
+  isStandardAdmin Boolean @default(false)
   mfaEnabled   Boolean  @default(false)
   mfaSecret    String?
   createdAt    DateTime @default(now())

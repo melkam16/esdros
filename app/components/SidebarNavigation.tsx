@@ -15,6 +15,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isStandardAdmin, setIsStandardAdmin] = useState(false);
   const [activeRole, setActiveRole] = useState<'ADMIN' | 'FACULTY' | 'STUDENT'>(role);
   const [hasFacultyProfile, setHasFacultyProfile] = useState(false);
   const [dbRole, setDbRole] = useState<string | null>(null);
@@ -34,6 +35,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
         if (data.name) setUserName(data.name);
         if (data.id) setUserId(data.id.substring(0, 8).toUpperCase());
         if (data.isSuperAdmin) setIsSuperAdmin(true);
+        if (data.isStandardAdmin) setIsStandardAdmin(true);
         if (data.hasFacultyProfile) setHasFacultyProfile(true);
         if (data.role) setDbRole(data.role);
       })
@@ -154,7 +156,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
 
   const rawModules = modules[activeRole] || [];
   const activeModules = rawModules.map(module => {
-    if (activeRole === 'ADMIN' && !isSuperAdmin) {
+    if (activeRole === 'ADMIN' && !isSuperAdmin && !isStandardAdmin) {
       // Regular restricted admins do not see Finance, Settings, Reports, or Manage Admins
       const filtered = module.items.filter(item => {
         return !item.href.includes('/finance') &&

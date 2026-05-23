@@ -34,6 +34,7 @@ export async function GET() {
         firstName: true,
         lastName: true,
         isSuperAdmin: true,
+        isStandardAdmin: true,
         createdAt: true,
         facultyProfile: {
           select: {
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { firstName, lastName, email, password, isSuperAdmin } = await req.json();
+    const { firstName, lastName, email, password, isSuperAdmin, isStandardAdmin } = await req.json();
 
     if (!firstName || !lastName || !email || !password) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -81,7 +82,8 @@ export async function POST(req: Request) {
         lastName,
         passwordHash,
         role: 'ADMIN',
-        isSuperAdmin: !!isSuperAdmin
+        isSuperAdmin: !!isSuperAdmin,
+        isStandardAdmin: !isSuperAdmin && !!isStandardAdmin
       },
       select: {
         id: true,
@@ -89,16 +91,23 @@ export async function POST(req: Request) {
         firstName: true,
         lastName: true,
         isSuperAdmin: true,
+        isStandardAdmin: true,
         createdAt: true
       }
     });
+
+    const clearanceStr = isSuperAdmin 
+      ? 'Full Super Admin' 
+      : isStandardAdmin 
+        ? 'Standard Admin' 
+        : 'Restricted Admin';
 
     // Send email with credentials
     const { sendEmail } = await import('@/lib/mail');
     await sendEmail({
       to: email,
       subject: 'Welcome to Esdros Theological Seminary - Administrator Access Granted',
-      text: `Hello ${firstName} ${lastName},\n\nYou have been added as an Administrator on the Esdros Theological Seminary platform with ${isSuperAdmin ? 'Full Super Admin' : 'Restricted Admin'} clearance level.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsdros Theological Seminary`
+      text: `Hello ${firstName} ${lastName},\n\nYou have been added as an Administrator on the Esdros Theological Seminary platform with ${clearanceStr} clearance level.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsdros Theological Seminary`
     });
 
     return NextResponse.json({
@@ -151,7 +160,7 @@ export async function PATCH(req: Request) {
   }
 
   try {
-    const { action, userId, departmentId, makeAdmin, isSuperAdmin } = await req.json();
+    const { action, userId, departmentId, makeAdmin, isSuperAdmin, isStandardAdmin } = await req.json();
 
     if (!userId) {
       return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
@@ -178,7 +187,8 @@ export async function PATCH(req: Request) {
         where: { id: userId },
         data: {
           role: makeAdmin ? 'ADMIN' : 'FACULTY',
-          isSuperAdmin: makeAdmin ? !!isSuperAdmin : false
+          isSuperAdmin: makeAdmin ? !!isSuperAdmin : false,
+          isStandardAdmin: makeAdmin ? (!isSuperAdmin && !!isStandardAdmin) : false
         }
       });
 

@@ -81,7 +81,13 @@ export async function POST(req: Request) {
     }
 
     // 3. Issue JWT
-    const token = await new SignJWT({ id: user.id, email: user.email, role: user.role, isSuperAdmin: user.isSuperAdmin })
+    const token = await new SignJWT({ 
+      id: user.id, 
+      email: user.email, 
+      role: user.role, 
+      isSuperAdmin: user.isSuperAdmin,
+      isStandardAdmin: user.isStandardAdmin 
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('8h')
       .sign(SECRET);

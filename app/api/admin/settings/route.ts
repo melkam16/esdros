@@ -43,7 +43,8 @@ export async function GET(req: Request) {
       SEMESTER_END: settingsMap.SEMESTER_END || '2026-12-25',
       REGISTRATION_LOCKED: settingsMap.REGISTRATION_LOCKED || 'false',
       PUBLIC_REGISTRATION_LOCKED: settingsMap.PUBLIC_REGISTRATION_LOCKED || 'false',
-      IS_SUPER_ADMIN: dbUser.isSuperAdmin ? 'true' : 'false'
+      IS_SUPER_ADMIN: dbUser.isSuperAdmin ? 'true' : 'false',
+      IS_STANDARD_ADMIN: dbUser.isStandardAdmin ? 'true' : 'false'
     };
 
     return NextResponse.json({
@@ -75,12 +76,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Forbidden: Administrative access required' }, { status: 403 });
     }
 
-    // Verify Super Admin status for security modifications
-    if (!dbUser.isSuperAdmin) {
-      return NextResponse.json({ error: 'Forbidden: Only a registered Super Admin can modify institutional settings.' }, { status: 403 });
+    // Verify clearance status for settings card modifications
+    if (!dbUser.isSuperAdmin && !dbUser.isStandardAdmin) {
+      return NextResponse.json({ error: 'Forbidden: Access restricted to Super Admin or Standard Admin roles.' }, { status: 403 });
     }
 
     const body = await req.json();
+
+    // Standard Admins cannot modify SMTP or Aplos integrations
+    if (dbUser.isStandardAdmin && !dbUser.isSuperAdmin) {
+      const restrictedKeys = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM', 'APLOS_API_KEY', 'APLOS_PARTNER_ID'];
+      const attemptsToModifyRestricted = Object.keys(body).some(key => restrictedKeys.includes(key));
+      if (attemptsToModifyRestricted) {
+        return NextResponse.json({ 
+          error: 'Forbidden: Standard Admins are not permitted to configure SMTP Mail Gateway Integration or Aplos Financial Gateways.' 
+        }, { status: 403 });
+      }
+    }
 
     const updates = Object.keys(body)
       .filter(k => k !== 'IS_SUPER_ADMIN' && body[k] !== undefined && body[k] !== null)

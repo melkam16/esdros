@@ -17,7 +17,8 @@ export default function SettingsPage() {
     SEMESTER_END: '',
     REGISTRATION_LOCKED: 'false',
     PUBLIC_REGISTRATION_LOCKED: 'false',
-    IS_SUPER_ADMIN: 'false'
+    IS_SUPER_ADMIN: 'false',
+    IS_STANDARD_ADMIN: 'false'
   });
 
   // Notifications context
@@ -71,9 +72,18 @@ export default function SettingsPage() {
 
   const handleSaveCard = async (keys: string[], cardName: string) => {
     setMessage(null);
-    if (formData.IS_SUPER_ADMIN !== 'true') {
-      setMessage({ type: 'error', text: 'Forbidden: Only Super Administrators can alter institutional settings.' });
+    if (formData.IS_SUPER_ADMIN !== 'true' && formData.IS_STANDARD_ADMIN !== 'true') {
+      setMessage({ type: 'error', text: 'Forbidden: Only Super Administrators or Standard Administrators can alter institutional settings.' });
       return;
+    }
+
+    if (formData.IS_STANDARD_ADMIN === 'true' && formData.IS_SUPER_ADMIN !== 'true') {
+      const restrictedKeys = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM', 'APLOS_API_KEY', 'APLOS_PARTNER_ID'];
+      const hasRestricted = keys.some(k => restrictedKeys.includes(k));
+      if (hasRestricted) {
+        setMessage({ type: 'error', text: 'Forbidden: Standard Admins are not permitted to configure SMTP Mail Gateway Integration or Aplos Financial Gateways.' });
+        return;
+      }
     }
 
     setIsSaving(true);
@@ -183,12 +193,18 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="relative z-10 flex-shrink-0">
-            {isSuperAdmin ? (
+          <div className="relative z-10 flex-shrink-0 flex gap-2">
+            {isSuperAdmin && (
               <span className="px-4 py-2 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm animate-pulse">
                 👑 Super Admin Mode Active
               </span>
-            ) : (
+            )}
+            {formData.IS_STANDARD_ADMIN === 'true' && !isSuperAdmin && (
+              <span className="px-4 py-2 bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm animate-pulse">
+                🛡️ Standard Admin Active
+              </span>
+            )}
+            {!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true' && (
               <span className="px-4 py-2 bg-slate-100 text-slate-500 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-2">
                 🔒 Restricted Administrator Mode
               </span>
@@ -376,7 +392,7 @@ export default function SettingsPage() {
                         onChange={e => setFormData(prev => ({ ...prev, CURRENT_SEMESTER: e.target.value }))}
                         placeholder="Fall 2026"
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                        disabled={!isSuperAdmin}
+                        disabled={!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true'}
                       />
                     </div>
 
@@ -388,7 +404,7 @@ export default function SettingsPage() {
                           value={formData.SEMESTER_START}
                           onChange={e => setFormData(prev => ({ ...prev, SEMESTER_START: e.target.value }))}
                           className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                          disabled={!isSuperAdmin}
+                          disabled={!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true'}
                         />
                       </div>
                       <div className="space-y-2">
@@ -398,7 +414,7 @@ export default function SettingsPage() {
                           value={formData.SEMESTER_END}
                           onChange={e => setFormData(prev => ({ ...prev, SEMESTER_END: e.target.value }))}
                           className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                          disabled={!isSuperAdmin}
+                          disabled={!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true'}
                         />
                       </div>
                     </div>
@@ -408,7 +424,7 @@ export default function SettingsPage() {
                 <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
                   <button
                     onClick={() => handleSaveCard(['CURRENT_SEMESTER', 'SEMESTER_START', 'SEMESTER_END'], 'Academic Semester')}
-                    disabled={isSaving || !isSuperAdmin}
+                    disabled={isSaving || (!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true')}
                     className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-extrabold rounded-xl shadow-md transition-all disabled:bg-slate-350 text-xs uppercase tracking-wider"
                   >
                     {isSaving ? 'Saving...' : 'Update Term Schedule'}
@@ -440,7 +456,7 @@ export default function SettingsPage() {
                           value={formData.REGISTRATION_LOCKED}
                           onChange={e => setFormData(prev => ({ ...prev, REGISTRATION_LOCKED: e.target.value }))}
                           className="px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none transition-all disabled:opacity-50"
-                          disabled={!isSuperAdmin}
+                          disabled={!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true'}
                         >
                           <option value="false">🔓 OPEN / Active</option>
                           <option value="true">🔒 LOCKED / Closed</option>
@@ -461,7 +477,7 @@ export default function SettingsPage() {
                           value={formData.PUBLIC_REGISTRATION_LOCKED}
                           onChange={e => setFormData(prev => ({ ...prev, PUBLIC_REGISTRATION_LOCKED: e.target.value }))}
                           className="px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none transition-all disabled:opacity-50"
-                          disabled={!isSuperAdmin}
+                          disabled={!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true'}
                         >
                           <option value="false">🔓 OPEN / Active</option>
                           <option value="true">🔒 LOCKED / Closed</option>
@@ -474,7 +490,7 @@ export default function SettingsPage() {
                 <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
                   <button
                     onClick={() => handleSaveCard(['REGISTRATION_LOCKED', 'PUBLIC_REGISTRATION_LOCKED'], 'Safeguard Access')}
-                    disabled={isSaving || !isSuperAdmin}
+                    disabled={isSaving || (!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true')}
                     className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl shadow-md transition-all disabled:bg-slate-350 text-xs uppercase tracking-wider"
                   >
                     {isSaving ? 'Saving...' : 'Update Global Safeguards'}

@@ -21,6 +21,7 @@ export async function GET() {
         lastName: true, 
         role: true,
         isSuperAdmin: true,
+        isStandardAdmin: true,
         facultyProfile: { select: { id: true } },
         studentProfile: { select: { id: true } }
       }
@@ -33,6 +34,7 @@ export async function GET() {
       name: `${user.firstName} ${user.lastName}`,
       role: user.role,
       isSuperAdmin: user.isSuperAdmin,
+      isStandardAdmin: user.isStandardAdmin,
       hasFacultyProfile: !!user.facultyProfile,
       hasStudentProfile: !!user.studentProfile
     });

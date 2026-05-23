@@ -8,6 +8,7 @@ interface AdminUser {
   firstName: string;
   lastName: string;
   isSuperAdmin: boolean;
+  isStandardAdmin: boolean;
   createdAt: string;
   facultyProfile?: {
     id: string;
@@ -38,6 +39,7 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isStandardAdmin, setIsStandardAdmin] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -98,6 +100,7 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
       setEmail('');
       setPassword('');
       setIsSuperAdmin(false);
+      setIsStandardAdmin(false);
       fetchAdmins(); // Refresh lists
     } catch (err: any) {
       setFormError(err.message || 'Failed to create admin');
@@ -195,23 +198,31 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
           🛡️ Role & Access Matrix Information
         </h3>
         <p className="text-xs text-slate-600 leading-relaxed">
-          Super Admin and Restricted Admin roles let you delegate day-to-day administrative workloads while keeping key core operational capabilities locked down securely:
+          System authorization tiers let you delegate administrative duties precisely, matching exact user responsibilities while guarding secure outbound endpoints and payment APIs:
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 pt-2 border-t border-blue-100">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2 pt-2 border-t border-blue-100">
           <div>
             <span className="inline-block text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded uppercase tracking-wider mb-1">
-              Super Admin Access (Full)
+              Super Admin Access
             </span>
             <p className="text-[11px] text-slate-500">
-              Unrestricted operations including Finance, Tuition billing, Fee management, global settings, system analytics, and admin user administration.
+              Unrestricted access to absolute systems operations. Configures SMTP, Aplos keys, manages administrators, and runs system ledgers.
+            </p>
+          </div>
+          <div>
+            <span className="inline-block text-[10px] font-bold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded uppercase tracking-wider mb-1">
+              Standard Admin Access
+            </span>
+            <p className="text-[11px] text-slate-500">
+              Operations access including Finance and general settings (academic calendar, enrollment locks) but barred from modifying SMTP or Aplos configurations.
             </p>
           </div>
           <div>
             <span className="inline-block text-[10px] font-bold text-slate-800 bg-slate-200 px-2 py-0.5 rounded uppercase tracking-wider mb-1">
-              Restricted Admin Access (Staff)
+              Restricted Admin Access
             </span>
             <p className="text-[11px] text-slate-500">
-              Day-to-day work: admissions CRM, student logs, course schedules, grades audits, transcripts generation, and general student records.
+              Day-to-day operations: admissions CRM, transcripts generation, course section enrollments. Shielded from settings and finance.
             </p>
           </div>
         </div>
@@ -274,17 +285,29 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
               />
             </div>
 
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-              <div>
-                <label className="block text-xs font-bold text-slate-800">Grant Super Admin access?</label>
-                <span className="text-[10px] text-slate-500 leading-none">Unlocks financial ledger and global settings</span>
-              </div>
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
-                checked={isSuperAdmin}
-                onChange={(e) => setIsSuperAdmin(e.target.checked)}
-              />
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">Clearance Access Tier</label>
+              <select
+                value={isSuperAdmin ? 'SUPER' : isStandardAdmin ? 'STANDARD' : 'RESTRICTED'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === 'SUPER') {
+                    setIsSuperAdmin(true);
+                    setIsStandardAdmin(false);
+                  } else if (val === 'STANDARD') {
+                    setIsSuperAdmin(false);
+                    setIsStandardAdmin(true);
+                  } else {
+                    setIsSuperAdmin(false);
+                    setIsStandardAdmin(false);
+                  }
+                }}
+                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              >
+                <option value="RESTRICTED">🔒 Restricted Admin (Staff Operations)</option>
+                <option value="STANDARD">🛡️ Standard Admin (Finance & Settings)</option>
+                <option value="SUPER">👑 Super Admin (Full Global Unrestricted)</option>
+              </select>
             </div>
 
             {formSuccess && (
@@ -382,6 +405,11 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                             Super Admin
+                          </span>
+                        ) : admin.isStandardAdmin ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                            Standard Admin
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
