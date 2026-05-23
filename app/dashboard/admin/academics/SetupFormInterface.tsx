@@ -30,6 +30,103 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
   const [editClassId, setEditClassId] = useState<string | null>(null);
   const [editSubjectId, setEditSubjectId] = useState<string | null>(null);
 
+  // Dynamic Excel Template Generator (dynamic client-side XLSX generation)
+  const handleDownloadTemplate = async () => {
+    try {
+      const XLSX = await import('xlsx');
+      
+      const departmentsData = [
+        { "Code": "THEO", "Name": "Department of Theology", "Description": "Advanced Orthodox Theology and Seminary Studies" },
+        { "Code": "GEEZ", "Name": "Department of Geez Language", "Description": "Traditional Geez Grammar, Syntax, and Poetry Studies" }
+      ];
+      
+      const classesData = [
+        { "Code": "TH-Y1", "Name": "Theology Cohort Year 1", "DepartmentCode": "THEO" },
+        { "Code": "TH-Y2", "Name": "Theology Cohort Year 2", "DepartmentCode": "THEO" },
+        { "Code": "GZ-Y1", "Name": "Geez Language Year 1", "DepartmentCode": "GEEZ" }
+      ];
+      
+      const coursesData = [
+        { "Code": "TH-101", "Title": "Dogmatic Theology I", "Description": "Introduction to Orthodox dogmatic theological principles", "Credits": 3, "Track": "THEOLOGY", "ClassCode": "TH-Y1" },
+        { "Code": "TH-102", "Title": "Dogmatic Theology II", "Description": "Continuation of dogmatic theological studies", "Credits": 3, "Track": "THEOLOGY", "ClassCode": "TH-Y1" },
+        { "Code": "GZ-101", "Title": "Geez Grammar I", "Description": "Introduction to traditional Geez language grammar rules", "Credits": 3, "Track": "GEEZ_LANGUAGE", "ClassCode": "GZ-Y1" }
+      ];
+      
+      const workbook = XLSX.utils.book_new();
+      
+      const deptWorksheet = XLSX.utils.json_to_sheet(departmentsData);
+      XLSX.utils.book_append_sheet(workbook, deptWorksheet, "Departments");
+      
+      const classWorksheet = XLSX.utils.json_to_sheet(classesData);
+      XLSX.utils.book_append_sheet(workbook, classWorksheet, "Classes");
+      
+      const courseWorksheet = XLSX.utils.json_to_sheet(coursesData);
+      XLSX.utils.book_append_sheet(workbook, courseWorksheet, "Courses");
+      
+      XLSX.writeFile(workbook, "academic_structure_template.xlsx");
+    } catch (err: any) {
+      alert(`Failed to export template: ${err.message}`);
+    }
+  };
+
+  // Client-Side Excel Spreadsheet Parser & API poster
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setLoading(true);
+    try {
+      const XLSX = await import('xlsx');
+      const reader = new FileReader();
+      
+      reader.onload = async (evt) => {
+        try {
+          const binaryStr = evt.target?.result;
+          const workbook = XLSX.read(binaryStr, { type: 'binary' });
+          
+          const departmentsSheet = workbook.Sheets['Departments'];
+          const classesSheet = workbook.Sheets['Classes'];
+          const coursesSheet = workbook.Sheets['Courses'];
+          
+          if (!departmentsSheet && !classesSheet && !coursesSheet) {
+            alert("Invalid Template Format: Spreadsheet must contain tabs named 'Departments', 'Classes', or 'Courses'.");
+            setLoading(false);
+            return;
+          }
+          
+          const departments = departmentsSheet ? XLSX.utils.sheet_to_json(departmentsSheet) : [];
+          const classes = classesSheet ? XLSX.utils.sheet_to_json(classesSheet) : [];
+          const courses = coursesSheet ? XLSX.utils.sheet_to_json(coursesSheet) : [];
+          
+          const response = await fetch('/api/admin/academics/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ departments, classes, courses })
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            alert(`Excel Import Success!\n\nSuccessfully matched and imported:\n• ${result.departmentsCount} Departments\n• ${result.classesCount} Class Cohorts\n• ${result.coursesCount} Subjects / Courses.`);
+            router.refresh();
+          } else {
+            alert(`Import Failed: ${result.error}`);
+          }
+        } catch (error: any) {
+          alert(`Error parsing Excel workbook data: ${error.message}`);
+        } finally {
+          setLoading(false);
+          e.target.value = '';
+        }
+      };
+      
+      reader.readAsBinaryString(file);
+    } catch (err: any) {
+      alert(`Library initialization error: ${err.message}`);
+      setLoading(false);
+    }
+  };
+
   // Unified Action Processing Pipeline (POST)
   const executePost = async (action: string, payload: object) => {
     setLoading(true);
@@ -77,6 +174,50 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
 
   return (
     <div className="space-y-6">
+      {/* Excel Structural Bulk Importer Panel */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 p-6 rounded-xl border border-slate-700 shadow-md text-white space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <span className="text-xl">📊</span> Bulk Academic Structure Importer
+            </h3>
+            <p className="text-xs text-slate-300 mt-1">
+              Download the multi-sheet Excel template, fill out your departments, programmatic class cohorts, and subjects, and upload here.
+            </p>
+          </div>
+          <button 
+            type="button"
+            disabled={loading}
+            onClick={handleDownloadTemplate}
+            className="px-3.5 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold border border-white/20 transition flex items-center gap-1.5 w-fit cursor-pointer"
+          >
+            <span>📥</span> Download Excel Template
+          </button>
+        </div>
+
+        <div className="border-2 border-dashed border-white/20 hover:border-blue-400 bg-white/5 rounded-lg p-4 transition text-center relative flex flex-col items-center justify-center">
+          <input 
+            type="file" 
+            accept=".xlsx,.xls" 
+            disabled={loading}
+            onChange={handleImportExcel}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+          <div className="space-y-2">
+            <span className="text-3xl block">📤</span>
+            <p className="text-sm font-semibold text-white">Click or drag your completed academic structure Excel file here</p>
+            <p className="text-[10px] text-slate-400">Accepts Excel (.xlsx, .xls) worksheets containing 'Departments', 'Classes', and 'Courses' tabs</p>
+          </div>
+        </div>
+
+        {loading && (
+          <div className="flex items-center gap-3 text-xs text-blue-300 font-semibold bg-white/5 p-2 rounded-lg border border-blue-500/20 justify-center">
+            <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+            <span>Processing structural worksheets & applying ACID transaction...</span>
+          </div>
+        )}
+      </div>
+
       {/* Block 1: Departments */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <h3 className="text-md font-bold text-slate-900 border-b pb-2">Step 1: Department Generation Console</h3>
