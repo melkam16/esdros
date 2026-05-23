@@ -101,6 +101,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
         title: 'Core System',
         items: [
           { name: 'Dashboard Home', href: '/dashboard/faculty', icon: '🏠' },
+          { name: 'Notification Center', href: '/dashboard/faculty/notifications', icon: '🔔' },
         ],
       },
       {
