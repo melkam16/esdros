@@ -23,7 +23,15 @@ export async function GET(req: Request) {
         department: true,
         sections: {
           include: {
-            enrollments: true
+            enrollments: {
+              where: {
+                student: {
+                  status: {
+                    notIn: ['GRADUATED', 'DISMISSED', 'WITHDRAWN']
+                  }
+                }
+              }
+            }
           }
         }
       }

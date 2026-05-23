@@ -5,6 +5,13 @@ import EnrollmentsClient from './EnrollmentsClient';
 
 export default async function EnrollmentRequestsPage() {
   const enrollments = await prisma.enrollment.findMany({
+    where: {
+      student: {
+        status: {
+          notIn: ['GRADUATED', 'DISMISSED', 'WITHDRAWN']
+        }
+      }
+    },
     include: {
       student: { include: { user: true } },
       courseSection: {

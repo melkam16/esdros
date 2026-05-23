@@ -28,7 +28,14 @@ export async function GET(request: Request) {
           include: {
             course: true,
             enrollments: {
-              where: { enrollmentStatus: 'APPROVED' },
+              where: {
+                enrollmentStatus: 'APPROVED',
+                student: {
+                  status: {
+                    notIn: ['GRADUATED', 'DISMISSED', 'WITHDRAWN']
+                  }
+                }
+              },
               include: {
                 student: {
                   include: {

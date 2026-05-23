@@ -13,7 +13,14 @@ export async function GET(req: Request) {
       : {};
 
     const enrollments = await prisma.enrollment.findMany({
-      where,
+      where: {
+        ...where,
+        student: {
+          status: {
+            notIn: ['GRADUATED', 'DISMISSED', 'WITHDRAWN']
+          }
+        }
+      },
       include: {
         student: { include: { user: true } },
         courseSection: {

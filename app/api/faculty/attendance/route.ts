@@ -100,7 +100,14 @@ export async function GET(req: Request) {
     if (date) where.date = new Date(date);
 
     const records = await prisma.attendance.findMany({
-      where,
+      where: {
+        ...where,
+        student: {
+          status: {
+            notIn: ['GRADUATED', 'DISMISSED', 'WITHDRAWN']
+          }
+        }
+      },
       include: { student: { include: { user: true } } },
       orderBy: { date: 'desc' },
     });
