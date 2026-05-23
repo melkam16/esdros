@@ -55,6 +55,18 @@ export default async function StudentDashboardHome() {
       
       <main className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
+        {data.status === 'WITHDRAWN' && (
+          <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl shadow-sm text-amber-900 flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-350">
+            <span className="text-2xl mt-0.5">⚠️</span>
+            <div>
+              <h3 className="font-extrabold text-sm uppercase tracking-wider">Portal in Read-Only Mode (Withdrawn)</h3>
+              <p className="text-xs text-amber-800 font-medium mt-1 leading-relaxed">
+                Your student withdrawal has been formally approved by the administration. Your account is now in <b>Read-Only Mode</b>; no further course registrations, updates, or detail changes can be performed.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Welcome Hero / Glassmorphism Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white shadow-2xl shadow-blue-900/20 border border-blue-700/50">
           <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse"></div>

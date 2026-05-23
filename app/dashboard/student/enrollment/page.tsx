@@ -59,6 +59,7 @@ export default async function EnrollmentConsolePage() {
   }
 
   const { student, sections } = data;
+  const isWithdrawn = student.status === 'WITHDRAWN';
   const enrolledSectionIds = new Set(
     student.enrollments
       .filter((e) => e.enrollmentStatus !== 'DROPPED')
@@ -70,6 +71,18 @@ export default async function EnrollmentConsolePage() {
       <SidebarNavigation role="STUDENT" />
       <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
+        {isWithdrawn && (
+          <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl shadow-sm text-amber-900 flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-350">
+            <span className="text-2xl mt-0.5">⚠️</span>
+            <div>
+              <h3 className="font-extrabold text-sm uppercase tracking-wider">Enrollment Console Locked (Read-Only Mode)</h3>
+              <p className="text-xs text-amber-800 font-medium mt-1 leading-relaxed">
+                Your account is currently in <b>Read-Only Mode</b> because your student withdrawal has been formally approved. Course additions and section changes are locked.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Premium Header */}
         <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl -mr-20 -mt-20"></div>
@@ -148,6 +161,7 @@ export default async function EnrollmentConsolePage() {
 
         {/* Available Sections Client Interface */}
         <EnrollmentConsoleClient
+          isWithdrawn={isWithdrawn}
           sections={sections.map((s) => ({
             id: s.id,
             courseCode: s.course.code,

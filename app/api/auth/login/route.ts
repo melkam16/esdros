@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     );
 
     const body = await req.json();
-    const { email, password } = body;
+    const { email, password, mfaCode } = body;
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
@@ -68,14 +68,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email or password credentials' }, { status: 401 });
     }
 
-    // 2.5 Deactivation check for WITHDRAWN / DISMISSED students
+    // 2.3 Enforce MFA login check if enabled
+    if (user.mfaEnabled) {
+      if (!mfaCode) {
+        return NextResponse.json({ mfaRequired: true, email: user.email });
+      }
+      const { verifyTotp } = await import('@/lib/totp');
+      const isTotpValid = verifyTotp(mfaCode, user.mfaSecret || '');
+      if (!isTotpValid) {
+        return NextResponse.json({ error: 'Invalid 6-digit Authenticator verification code' }, { status: 401 });
+      }
+    }
+
+    // 2.5 Deactivation check for DISMISSED students
     if (user.role === 'STUDENT') {
       const student = await prisma.student.findUnique({
         where: { userId: user.id }
       });
-      if (student && (student.status === 'WITHDRAWN' || student.status === 'DISMISSED')) {
+      if (student && student.status === 'DISMISSED') {
         return NextResponse.json({ 
-          error: 'This account has been deactivated because you are registered as Withdrawn or Dismissed.' 
+          error: 'This account has been deactivated because you have been Dismissed.' 
         }, { status: 403 });
       }
     }

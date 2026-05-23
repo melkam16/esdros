@@ -24,6 +24,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized or student profile not found' }, { status: 401 });
     }
 
+    if (student.status === 'WITHDRAWN') {
+      return NextResponse.json({ error: 'Read-Only Mode: Course enrollment is disabled for withdrawn students.' }, { status: 403 });
+    }
+
     const { courseSectionId } = await req.json();
     if (!courseSectionId) {
       return NextResponse.json({ error: 'courseSectionId is required' }, { status: 400 });

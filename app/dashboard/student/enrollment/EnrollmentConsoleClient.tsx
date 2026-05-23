@@ -17,7 +17,7 @@ interface SectionRow {
   enrollmentStatus: string | null;
 }
 
-export default function EnrollmentConsoleClient({ sections }: { sections: SectionRow[] }) {
+export default function EnrollmentConsoleClient({ sections, isWithdrawn = false }: { sections: SectionRow[], isWithdrawn?: boolean }) {
   const [sectionStates, setSectionStates] = useState<Record<string, { loading: boolean; status: string | null }>>(
     Object.fromEntries(sections.map((s) => [s.id, { loading: false, status: s.enrollmentStatus }]))
   );
@@ -30,6 +30,10 @@ export default function EnrollmentConsoleClient({ sections }: { sections: Sectio
   };
 
   const requestEnrollment = async (sectionId: string) => {
+    if (isWithdrawn) {
+      showToast('Enrollment locked in Read-Only Mode.', 'error');
+      return;
+    }
     setSectionStates((prev) => ({ ...prev, [sectionId]: { ...prev[sectionId], loading: true } }));
     try {
       const res = await fetch('/api/student/enrollment/request', {
@@ -52,6 +56,10 @@ export default function EnrollmentConsoleClient({ sections }: { sections: Sectio
   };
 
   const dropEnrollment = async (sectionId: string, enrollmentId: string) => {
+    if (isWithdrawn) {
+      showToast('Enrollment locked in Read-Only Mode.', 'error');
+      return;
+    }
     setSectionStates((prev) => ({ ...prev, [sectionId]: { ...prev[sectionId], loading: true } }));
     try {
       const res = await fetch(`/api/student/enrollment/drop?enrollmentId=${enrollmentId}`, { method: 'DELETE' });
@@ -147,7 +155,7 @@ export default function EnrollmentConsoleClient({ sections }: { sections: Sectio
                     {(state.status === null || state.status === 'DROPPED') && !isFull && (
                       <button
                         id={`enroll-${s.id}`}
-                        disabled={state.loading}
+                        disabled={state.loading || isWithdrawn}
                         onClick={() => requestEnrollment(s.id)}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
