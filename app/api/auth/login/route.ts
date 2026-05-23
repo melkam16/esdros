@@ -68,6 +68,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email or password credentials' }, { status: 401 });
     }
 
+    // 2.5 Deactivation check for WITHDRAWN / DISMISSED students
+    if (user.role === 'STUDENT') {
+      const student = await prisma.student.findUnique({
+        where: { userId: user.id }
+      });
+      if (student && (student.status === 'WITHDRAWN' || student.status === 'DISMISSED')) {
+        return NextResponse.json({ 
+          error: 'This account has been deactivated because you are registered as Withdrawn or Dismissed.' 
+        }, { status: 403 });
+      }
+    }
+
     // 3. Issue JWT
     const token = await new SignJWT({ id: user.id, email: user.email, role: user.role, isSuperAdmin: user.isSuperAdmin })
       .setProtectedHeader({ alg: 'HS256' })

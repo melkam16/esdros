@@ -90,6 +90,26 @@ export default function SettingsPage() {
     }
   };
 
+  const handleWithdraw = async () => {
+    setMessage(null);
+    try {
+      const res = await fetch('/api/student/withdrawal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const result = await res.json();
+      if (result.success) {
+        alert("Your withdrawal has been successfully registered. Your institutional credentials are now deactivated.");
+        window.location.href = '/api/auth/logout';
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Failed to process withdrawal.' });
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: 'error', text: 'Error connecting to withdrawal gateway.' });
+    }
+  };
+
   return (
     <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-200">
       <SidebarNavigation role="STUDENT" />
@@ -128,7 +148,8 @@ export default function SettingsPage() {
             Loading settings context...
           </div>
         ) : (
-          <form onSubmit={handleSave} className="space-y-8">
+          <>
+            <form onSubmit={handleSave} className="space-y-8">
             
             {/* Section 1: Profile Customization */}
             <div className="bg-white rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/30 overflow-hidden">
@@ -262,6 +283,44 @@ export default function SettingsPage() {
             </div>
 
           </form>
+
+          {/* Danger Zone: Withdrawal & Account Deactivation */}
+          <div className="bg-white rounded-3xl border border-rose-100 shadow-lg shadow-rose-100/30 overflow-hidden">
+            <div className="p-8 border-b border-rose-100 bg-rose-50/20">
+              <h2 className="text-xl font-extrabold text-rose-800 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center text-sm">⚠️</span>
+                Danger Zone: Account Withdrawal
+              </h2>
+            </div>
+            
+            <div className="p-8 space-y-6">
+              <div>
+                <h4 className="font-bold text-slate-800 text-sm">Formally Request Student Withdrawal</h4>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Initiating a withdrawal request will change your student status to <b>WITHDRAWN</b>, cancel active course registrations, and immediately deactivate your login credentials. This process is irreversible.
+                </p>
+              </div>
+
+              <div className="flex justify-start">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const confirm1 = window.confirm("Are you absolutely sure you want to request formal student withdrawal? This will deactivate your institutional account immediately.");
+                    if (confirm1) {
+                      const confirm2 = window.confirm("Final Warning: You will be logged out, and your access will be permanently revoked. Do you wish to proceed?");
+                      if (confirm2) {
+                        handleWithdraw();
+                      }
+                    }
+                  }}
+                  className="px-6 py-3.5 bg-rose-50 text-rose-600 hover:bg-rose-100 font-extrabold rounded-xl border border-rose-200 transition-all flex items-center gap-2"
+                >
+                  🚫 Request Withdrawal & Deactivation
+                </button>
+              </div>
+            </div>
+          </div>
+          </>
         )}
 
       </main>

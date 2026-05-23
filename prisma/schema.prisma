@@ -24,6 +24,8 @@ enum StudentStatus {
   INACTIVE
   ON_LEAVE
   GRADUATED
+  WITHDRAWN
+  DISMISSED
 }
 
 enum ProgramTrack {

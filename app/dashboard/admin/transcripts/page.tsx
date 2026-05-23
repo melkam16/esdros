@@ -4,7 +4,6 @@ import TranscriptClient from './TranscriptClient';
 
 export default async function TranscriptsPage() {
   const students = await prisma.student.findMany({
-    where: { status: 'ACTIVE' },
     include: {
       user: true,
       class: {

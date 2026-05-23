@@ -6,11 +6,24 @@ export default function TranscriptClient({ students }: { students: any[] }) {
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [yearFilter, setYearFilter] = useState('ALL');
 
-  const filteredStudents = students.filter(s => 
-    `${s.user.firstName} ${s.user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Extract unique enrollment years dynamically
+  const uniqueYears = Array.from(
+    new Set(students.map(s => new Date(s.enrollDate).getFullYear()))
+  ).sort((a, b) => b - a);
+
+  const filteredStudents = students.filter(s => {
+    const matchesSearch = `${s.user.firstName} ${s.user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.id.toLowerCase().includes(searchTerm.toLowerCase());
+      
+    const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
+    
+    const matchesYear = yearFilter === 'ALL' || new Date(s.enrollDate).getFullYear().toString() === yearFilter;
+    
+    return matchesSearch && matchesStatus && matchesYear;
+  });
 
   const handlePrint = () => {
     window.print();
@@ -134,14 +147,43 @@ export default function TranscriptClient({ students }: { students: any[] }) {
 
       {!selectedStudent ? (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden print:hidden">
-          <div className="p-6 border-b border-slate-200 space-y-4">
-            <input
-              type="text"
-              placeholder="Search student by name or ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search student by name or ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-sm text-slate-800 focus:outline-none"
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+              >
+                <option value="ALL">🎓 All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="GRADUATED">Graduated (Alumni)</option>
+                <option value="WITHDRAWN">Withdrawn</option>
+                <option value="DISMISSED">Dismissed</option>
+                <option value="ON_LEAVE">On Leave</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+
+              <select
+                value={yearFilter}
+                onChange={(e) => setYearFilter(e.target.value)}
+                className="px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+              >
+                <option value="ALL">📅 All Years</option>
+                {uniqueYears.map(year => (
+                  <option key={year} value={year.toString()}>{year}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
@@ -149,6 +191,7 @@ export default function TranscriptClient({ students }: { students: any[] }) {
                 <th className="px-6 py-3">Student Name</th>
                 <th className="px-6 py-3">Student ID</th>
                 <th className="px-6 py-3">Program Track</th>
+                <th className="px-6 py-3">Status</th>
                 <th className="px-6 py-3 text-right">Action</th>
               </tr>
             </thead>
@@ -160,6 +203,17 @@ export default function TranscriptClient({ students }: { students: any[] }) {
                   </td>
                   <td className="px-6 py-4 text-slate-500 font-mono text-xs">{student.id}</td>
                   <td className="px-6 py-4 text-slate-600">{student.track}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold tracking-wider ${
+                      student.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                      student.status === 'GRADUATED' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                      student.status === 'WITHDRAWN' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                      student.status === 'DISMISSED' ? 'bg-rose-50 text-rose-700 border border-rose-100' :
+                      'bg-slate-50 text-slate-600 border border-slate-100'
+                    }`}>
+                      {student.status}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <button 
                       onClick={() => setSelectedStudent(student)}
