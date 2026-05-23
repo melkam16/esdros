@@ -42,6 +42,7 @@ export async function GET(req: Request) {
       SEMESTER_START: settingsMap.SEMESTER_START || '2026-09-01',
       SEMESTER_END: settingsMap.SEMESTER_END || '2026-12-25',
       REGISTRATION_LOCKED: settingsMap.REGISTRATION_LOCKED || 'false',
+      PUBLIC_REGISTRATION_LOCKED: settingsMap.PUBLIC_REGISTRATION_LOCKED || 'false',
       IS_SUPER_ADMIN: dbUser.isSuperAdmin ? 'true' : 'false'
     };
 
@@ -79,52 +80,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Forbidden: Only a registered Super Admin can modify institutional settings.' }, { status: 403 });
     }
 
-    const {
-      SMTP_HOST,
-      SMTP_PORT,
-      SMTP_USER,
-      SMTP_PASSWORD,
-      SMTP_FROM,
-      APLOS_API_KEY,
-      APLOS_PARTNER_ID,
-      CURRENT_SEMESTER,
-      SEMESTER_START,
-      SEMESTER_END,
-      REGISTRATION_LOCKED
-    } = await req.json();
+    const body = await req.json();
 
-    const updates = [
-      { key: 'SMTP_HOST', value: SMTP_HOST },
-      { key: 'SMTP_PORT', value: SMTP_PORT },
-      { key: 'SMTP_USER', value: SMTP_USER },
-      { key: 'SMTP_FROM', value: SMTP_FROM },
-      { key: 'APLOS_API_KEY', value: APLOS_API_KEY },
-      { key: 'APLOS_PARTNER_ID', value: APLOS_PARTNER_ID },
-      { key: 'CURRENT_SEMESTER', value: CURRENT_SEMESTER },
-      { key: 'SEMESTER_START', value: SEMESTER_START },
-      { key: 'SEMESTER_END', value: SEMESTER_END },
-      { key: 'REGISTRATION_LOCKED', value: REGISTRATION_LOCKED }
-    ];
+    const updates = Object.keys(body)
+      .filter(k => k !== 'IS_SUPER_ADMIN' && body[k] !== undefined && body[k] !== null)
+      .map(k => ({ key: k, value: String(body[k]) }));
 
-    // If SMTP password was updated, also update it
-    if (SMTP_PASSWORD && SMTP_PASSWORD.trim() !== '') {
-      updates.push({ key: 'SMTP_PASSWORD', value: SMTP_PASSWORD });
+    if (updates.length > 0) {
+      // Save inside transaction
+      await prisma.$transaction(
+        updates.map(u => 
+          prisma.systemSetting.upsert({
+            where: { key: u.key },
+            update: { value: u.value },
+            create: { key: u.key, value: u.value }
+          })
+        )
+      );
     }
-
-    // Save inside transaction
-    await prisma.$transaction(
-      updates.map(u => 
-        prisma.systemSetting.upsert({
-          where: { key: u.key },
-          update: { value: String(u.value) },
-          create: { key: u.key, value: String(u.value) }
-        })
-      )
-    );
 
     return NextResponse.json({
       success: true,
-      message: 'Global parameters updated successfully without code execution.'
+      message: 'Configuration card updated successfully without code execution.'
     });
 
   } catch (error: any) {

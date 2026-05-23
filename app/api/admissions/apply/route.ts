@@ -5,6 +5,16 @@ import { hash } from 'crypto';
 
 export async function POST(req: Request) {
   try {
+    // Check if new student registration is locked on the public website
+    const regLockSetting = await prisma.systemSetting.findUnique({
+      where: { key: 'PUBLIC_REGISTRATION_LOCKED' }
+    });
+    if (regLockSetting && regLockSetting.value === 'true') {
+      return NextResponse.json({ 
+        error: 'Public new student registration and admissions are currently locked by the seminary administration.' 
+      }, { status: 403 });
+    }
+
     const { firstName, lastName, email, password, targetTrack, phone, address, statement } =
       await req.json();
 

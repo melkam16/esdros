@@ -1,6 +1,44 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import SidebarNavigation from '../../../components/SidebarNavigation';
 
 export default function NotificationsPage() {
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch('/api/student/notifications');
+        const result = await res.json();
+        if (result.success) {
+          setNotifications(result.data);
+        }
+      } catch (err) {
+        console.error('Failed to load student notifications:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchNotifications();
+  }, []);
+
+  const getTargetBadge = (type: string) => {
+    switch (type) {
+      case 'ALL_STUDENTS':
+        return '📢 Broadcast';
+      case 'BATCH':
+        return '🎓 Cohort';
+      case 'DEPARTMENT':
+        return '🏛️ Department';
+      case 'INDIVIDUAL':
+        return '✉️ Direct Message';
+      default:
+        return '🔔 System';
+    }
+  };
+
   return (
     <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-200">
       <SidebarNavigation role="STUDENT" />
@@ -23,40 +61,51 @@ export default function NotificationsPage() {
         </div>
 
         {/* Notifications Feed */}
-        <div className="space-y-4">
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-lg shadow-slate-200/30 flex gap-6 hover:-translate-y-1 transition-transform relative overflow-hidden group">
-            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
-              📢
-            </div>
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="font-extrabold text-slate-900 text-lg">System Broadcast: Student Portal Live</h3>
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider rounded-md">New</span>
-              </div>
-              <p className="text-slate-600 text-sm font-medium leading-relaxed">
-                Your initialized test student credentials are now live. You can explore your academic metrics, financial ledgers, and institutional data using the navigation modules.
-              </p>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-3">Today at 9:00 AM</p>
-            </div>
+        {isLoading ? (
+          <div className="bg-white rounded-3xl p-12 border border-slate-100 shadow-md text-center text-slate-500 font-medium">
+            <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            Loading announcements feed...
           </div>
-          
-          <div className="bg-white/50 rounded-3xl p-6 border border-slate-100 shadow-sm flex gap-6">
-            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-slate-300 rounded-l-3xl hidden"></div>
-            <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
-              ✅
+        ) : notifications.length === 0 ? (
+          <div className="bg-white rounded-3xl p-16 border border-slate-100 shadow-md text-center">
+            <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+              📭
             </div>
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="font-extrabold text-slate-700 text-lg">Account Provisioned</h3>
-              </div>
-              <p className="text-slate-500 text-sm font-medium leading-relaxed">
-                Your institutional account and identity access management profile have been successfully provisioned. Welcome to the Seminary Platform!
-              </p>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-3">2 Days Ago</p>
-            </div>
+            <h3 className="font-extrabold text-slate-800 text-lg">Announcements Feed is Clear</h3>
+            <p className="text-slate-500 text-sm mt-1">There are currently no active announcements matching your student context.</p>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-4">
+            {notifications.map((n, i) => (
+              <div 
+                key={n.id} 
+                className="bg-white rounded-3xl p-6 border border-slate-100 shadow-lg shadow-slate-200/30 flex gap-6 hover:-translate-y-1 transition-transform relative overflow-hidden group"
+              >
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
+                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                  📢
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="font-extrabold text-slate-900 text-lg">{n.title}</h3>
+                    <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-extrabold uppercase tracking-widest rounded-lg border border-blue-100">
+                      {getTargetBadge(n.targetType)}
+                    </span>
+                    {i === 0 && (
+                      <span className="px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md">New</span>
+                    )}
+                  </div>
+                  <p className="text-slate-600 text-sm font-medium leading-relaxed whitespace-pre-line mt-2">
+                    {n.message}
+                  </p>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-4">
+                    Published {new Date(n.createdAt).toLocaleDateString()} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
       </main>
     </div>

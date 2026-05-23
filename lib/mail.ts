@@ -2,12 +2,21 @@ import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
 
+import { prisma } from './prisma';
+
 // Get transporter
-const getTransporter = () => {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '587');
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+const getTransporter = async () => {
+  // Try loading dynamic settings from db
+  const dbSettings = await prisma.systemSetting.findMany().catch(() => []);
+  const settingsMap = dbSettings.reduce((acc: any, s) => {
+    acc[s.key] = s.value;
+    return acc;
+  }, {});
+
+  const host = settingsMap.SMTP_HOST || process.env.SMTP_HOST;
+  const port = parseInt(settingsMap.SMTP_PORT || process.env.SMTP_PORT || '587');
+  const user = settingsMap.SMTP_USER || process.env.SMTP_USER;
+  const pass = settingsMap.SMTP_PASSWORD || process.env.SMTP_PASS;
 
   if (host && user && pass) {
     return nodemailer.createTransport({
@@ -28,8 +37,15 @@ interface SendEmailParams {
 }
 
 export async function sendEmail({ to, subject, text, html }: SendEmailParams) {
-  const transporter = getTransporter();
-  const from = process.env.SMTP_FROM || '"Esdros Theological Seminary" <noreply@esdros.org>';
+  const transporter = await getTransporter();
+  
+  // Try loading dynamic SMTP_FROM from db
+  const dbSettings = await prisma.systemSetting.findMany().catch(() => []);
+  const settingsMap = dbSettings.reduce((acc: any, s) => {
+    acc[s.key] = s.value;
+    return acc;
+  }, {});
+  const from = settingsMap.SMTP_FROM || process.env.SMTP_FROM || '"Esdros Theological Seminary" <noreply@esdros.org>';
 
   if (transporter) {
     try {

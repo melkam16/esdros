@@ -304,3 +304,12 @@ model SystemSetting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Notification {
+  id          String   @id @default(uuid())
+  title       String
+  message     String
+  targetType  String   // "ALL_STUDENTS", "ALL_FACULTY", "BATCH", "DEPARTMENT", "INDIVIDUAL"
+  targetValue String?  // e.g. classId, departmentId, or individual userEmail
+  createdAt   DateTime @default(now())
+}
