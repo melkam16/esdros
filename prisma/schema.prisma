@@ -124,6 +124,10 @@ model Student {
   class      Class         @relation(fields: [classId], references: [id])
   enrollDate DateTime      @default(now())
 
+  phone      String?       // Optional student contact phone
+  bio        String?       // Optional brief bio details
+  pictureUrl String?       // Optional profile picture URL
+
   enrollments  Enrollment[]
   invoices     Invoice[]
   attendances  Attendance[]
