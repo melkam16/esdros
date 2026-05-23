@@ -228,6 +228,49 @@ export async function PATCH(req: Request) {
       });
     }
 
+    if (action === 'updateAdminTier') {
+      const user = await prisma.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      if (user.role !== 'ADMIN') {
+        return NextResponse.json({ error: 'User is not an administrator' }, { status: 400 });
+      }
+
+      // Prevent updating own admin tier (cannot demote self)
+      const cookieStore = await cookies();
+      const token = cookieStore.get('token')?.value;
+      const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || '4f7c9c0b1c3e9a8d5f1a7b2c6d9e4f8a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6');
+      const { payload } = await jwtVerify(token!, JWT_SECRET);
+      if (payload.id === userId) {
+        return NextResponse.json({ error: 'Cannot modify your own administrator clearance level' }, { status: 400 });
+      }
+
+      const updated = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          isSuperAdmin: !!isSuperAdmin,
+          isStandardAdmin: !isSuperAdmin && !!isStandardAdmin
+        }
+      });
+
+      const tierStr = isSuperAdmin 
+        ? 'Super Admin' 
+        : isStandardAdmin 
+          ? 'Standard Admin' 
+          : 'Restricted Admin';
+
+      return NextResponse.json({
+        success: true,
+        message: `Clearance successfully updated to ${tierStr}`,
+        data: updated
+      });
+    }
+
     return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });
   } catch (error: any) {
     console.error('Error modifying user roles:', error);

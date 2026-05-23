@@ -159,6 +159,30 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
     }
   };
 
+  const handleUpdateAdminTier = async (userId: string, tier: string) => {
+    try {
+      const isSuperAdmin = tier === 'SUPER';
+      const isStandardAdmin = tier === 'STANDARD';
+
+      const res = await fetch('/api/admin/manage-admins', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'updateAdminTier',
+          userId,
+          isSuperAdmin,
+          isStandardAdmin
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update admin tier');
+      alert(data.message || 'Admin tier updated successfully!');
+      fetchAdmins();
+    } catch (err: any) {
+      alert(err.message || 'Error updating admin tier');
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (id === currentUserId) {
       alert('You cannot delete your own logged-in admin account.');
@@ -401,21 +425,33 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
                       </td>
                       <td className="py-3.5 px-6 font-mono text-xs">{admin.email}</td>
                       <td className="py-3.5 px-6">
-                        {admin.isSuperAdmin ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            Super Admin
-                          </span>
-                        ) : admin.isStandardAdmin ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                            Standard Admin
-                          </span>
+                        {admin.id === currentUserId ? (
+                          admin.isSuperAdmin ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              Super Admin
+                            </span>
+                          ) : admin.isStandardAdmin ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                              Standard Admin
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                              Restricted Admin
+                            </span>
+                          )
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                            Restricted Admin
-                          </span>
+                          <select
+                            value={admin.isSuperAdmin ? 'SUPER' : admin.isStandardAdmin ? 'STANDARD' : 'RESTRICTED'}
+                            onChange={(e) => handleUpdateAdminTier(admin.id, e.target.value)}
+                            className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer"
+                          >
+                            <option value="RESTRICTED">🔒 Restricted Admin</option>
+                            <option value="STANDARD">🛡️ Standard Admin</option>
+                            <option value="SUPER">👑 Super Admin</option>
+                          </select>
                         )}
                       </td>
                       <td className="py-3.5 px-6 text-slate-500 text-xs">
