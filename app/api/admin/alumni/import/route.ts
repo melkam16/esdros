@@ -94,7 +94,7 @@ export async function POST(req: Request) {
 
         if (Array.isArray(courses) && courses.length > 0) {
           for (const c of courses) {
-            const { code, title, credits, grade } = c;
+            const { code, title, credits, grade, letterGrade } = c;
 
             // Find or dynamically auto-create Course
             let dbCourse = await tx.course.findFirst({
@@ -141,6 +141,7 @@ export async function POST(req: Request) {
                 courseSectionId: dbSection.id,
                 enrollmentStatus: 'APPROVED',
                 grade: grade !== null ? parseFloat(grade) : null,
+                letterGrade: letterGrade || null,
                 isLocked: true,
                 gradedAt: new Date(),
                 lockedAt: new Date()

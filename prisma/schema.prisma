@@ -210,6 +210,7 @@ model Enrollment {
   decidedAt        DateTime?
 
   grade            Float?           // Final term score
+  letterGrade      String?          // Custom legacy grade (e.g. A+, Pass, Distinction)
   isLocked         Boolean          @default(false)
   gradedAt         DateTime?
   lockedAt         DateTime?

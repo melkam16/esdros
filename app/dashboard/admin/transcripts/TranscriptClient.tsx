@@ -256,7 +256,7 @@ export default function TranscriptClient({ students }: { students: any[] }) {
                         <td className="py-3 font-mono font-bold text-slate-700">{e.courseSection.course.code}</td>
                         <td className="py-3 text-slate-800">{e.courseSection.course.title}</td>
                         <td className="py-3 text-center text-slate-600">{credits}</td>
-                        <td className="py-3 text-center font-bold text-slate-900">{getLetter(e.grade)}</td>
+                        <td className="py-3 text-center font-bold text-slate-900">{e.letterGrade || getLetter(e.grade)}</td>
                         <td className="py-3 text-right text-slate-600">{e.grade !== null ? e.grade.toFixed(1) : '-'}</td>
                       </tr>
                     );

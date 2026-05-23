@@ -91,7 +91,7 @@ export async function POST(req: Request) {
 
     student.enrollments.forEach(e => {
       const credits = e.courseSection.course.credits || 3;
-      const gradeLetter = getLetter(e.grade);
+      const gradeLetter = e.letterGrade || getLetter(e.grade);
       const points = e.grade !== null ? e.grade.toFixed(1) : '-';
 
       courseTableText += `Code: ${e.courseSection.course.code} | Title: ${e.courseSection.course.title} | Credits: ${credits} | Grade: ${gradeLetter} | Score: ${points}\n`;

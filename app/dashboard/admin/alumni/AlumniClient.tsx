@@ -34,7 +34,8 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
           "Course Code": "THEO101",
           "Course Title": "Introduction to Systematic Theology",
           "Credits": "3",
-          "Grade": "95"
+          "Grade": "95",
+          "Letter Grade": "A+"
         },
         {
           "First Name": "John",
@@ -45,7 +46,8 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
           "Course Code": "THEO202",
           "Course Title": "Patristic Theology Studies",
           "Credits": "3",
-          "Grade": "88"
+          "Grade": "88",
+          "Letter Grade": "A"
         },
         {
           "First Name": "Abebe",
@@ -56,7 +58,8 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
           "Course Code": "GEEZ101",
           "Course Title": "Introduction to Geez Grammar",
           "Credits": "3",
-          "Grade": "92"
+          "Grade": "92",
+          "Letter Grade": "A"
         }
       ];
 
@@ -64,7 +67,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Alumni Transcripts Template");
       
-      const maxLens = [12, 12, 16, 15, 25, 12, 35, 8, 8];
+      const maxLens = [12, 12, 16, 15, 25, 12, 35, 8, 8, 12];
       worksheet["!cols"] = maxLens.map(w => ({ wch: w }));
 
       XLSX.writeFile(workbook, "alumni_transcript_import_template.xlsx");
@@ -111,6 +114,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
           const courseTitle = getVal(['course title', 'coursetitle', 'title']);
           const rawCredits = getVal(['credits', 'credit']);
           const rawGrade = getVal(['grade', 'score', 'mark']);
+          const letterGrade = getVal(['letter grade', 'lettergrade', 'grade (letter)', 'grade(letter)']) || '';
 
           if (!firstName || !lastName) {
             return;
@@ -144,9 +148,9 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
 
           if (courseCode) {
             const credits = parseInt(rawCredits) || 3;
-            const grade = parseFloat(rawGrade);
+            const grade = rawGrade ? parseFloat(rawGrade) : null;
             
-            if (isNaN(grade) || grade < 0 || grade > 100) {
+            if (rawGrade && (grade === null || isNaN(grade) || grade < 0 || grade > 100)) {
               student.isValid = false;
               student.validationErrors.push(`Row ${index + 2}: Invalid grade score "${rawGrade}" for ${courseCode} (must be 0-100)`);
             }
@@ -155,7 +159,8 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
               code: courseCode,
               title: courseTitle || `${courseCode} Course`,
               credits,
-              grade: isNaN(grade) ? null : grade
+              grade: grade === null || isNaN(grade) ? null : grade,
+              letterGrade: letterGrade || null
             });
           }
         });
@@ -810,7 +815,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
                       <td className="py-3 font-mono font-bold text-slate-700">{e.courseSection.course.code}</td>
                       <td className="py-3 text-slate-800">{e.courseSection.course.title}</td>
                       <td className="py-3 text-center text-slate-600">{credits}</td>
-                      <td className="py-3 text-center font-bold text-slate-900">{getLetter(e.grade)}</td>
+                      <td className="py-3 text-center font-bold text-slate-900">{e.letterGrade || getLetter(e.grade)}</td>
                       <td className="py-3 text-right text-slate-600">{e.grade !== null ? e.grade.toFixed(1) : '-'}</td>
                     </tr>
                   );
