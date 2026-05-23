@@ -294,3 +294,11 @@ model Payment {
   referenceNo String?  // Receipt tracking reference
   paidAt      DateTime @default(now())
 }
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
