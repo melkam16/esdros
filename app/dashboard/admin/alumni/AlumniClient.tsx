@@ -539,7 +539,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
                 <div className="md:col-span-2">
                   <h4 className="font-bold text-slate-800 text-sm">How to Format Your Spreadsheet:</h4>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Download our official template. You can list multiple rows for the same student (one row per completed course grade). The system will automatically bundle them into a unified transcript dossier!
+                    Download our official template. You can list multiple rows for the same student (one row per completed course grade). The system automatically bundles them. For older legacy alumni, you can supply custom <b>Letter Grades</b> directly, and the numerical <b>Grade</b> score becomes optional!
                   </p>
                 </div>
                 <div className="text-right">
