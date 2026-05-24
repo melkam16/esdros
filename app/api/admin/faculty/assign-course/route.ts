@@ -117,7 +117,15 @@ export async function GET(req: Request) {
     }
 
     const sections = await prisma.courseSection.findMany({
-      where: facultyId ? { facultyId } : undefined,
+      where: {
+        facultyId: facultyId ? facultyId : undefined,
+        NOT: {
+          semester: {
+            contains: 'Legacy',
+            mode: 'insensitive'
+          }
+        }
+      },
       include: {
         course: {
           include: {

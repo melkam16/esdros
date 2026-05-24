@@ -25,6 +25,14 @@ export async function GET(request: Request) {
         user: true,
         department: true,
         sections: {
+          where: {
+            NOT: {
+              semester: {
+                contains: 'Legacy',
+                mode: 'insensitive'
+              }
+            }
+          },
           include: {
             course: true,
             enrollments: {

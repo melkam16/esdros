@@ -234,144 +234,148 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               
               {/* Card 1: SMTP Outbound Gateway Settings */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
-                <div>
-                  <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm">📬</span>
-                      SMTP Mail Gateway Integration
-                    </h2>
-                  </div>
-                  
-                  <div className="p-8 space-y-5">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="col-span-2 space-y-2">
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">SMTP Outbound Host</label>
-                        <input 
-                          type="text" 
-                          value={formData.SMTP_HOST}
-                          onChange={e => setFormData(prev => ({ ...prev, SMTP_HOST: e.target.value }))}
-                          placeholder="smtp.gmail.com"
-                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                          disabled={!isSuperAdmin}
-                        />
+              {isSuperAdmin && (
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
+                  <div>
+                    <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                      <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm">📬</span>
+                        SMTP Mail Gateway Integration
+                      </h2>
+                    </div>
+                    
+                    <div className="p-8 space-y-5">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="col-span-2 space-y-2">
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">SMTP Outbound Host</label>
+                          <input 
+                            type="text" 
+                            value={formData.SMTP_HOST}
+                            onChange={e => setFormData(prev => ({ ...prev, SMTP_HOST: e.target.value }))}
+                            placeholder="smtp.gmail.com"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
+                            disabled={!isSuperAdmin}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">SMTP Port</label>
+                          <input 
+                            type="text" 
+                            value={formData.SMTP_PORT}
+                            onChange={e => setFormData(prev => ({ ...prev, SMTP_PORT: e.target.value }))}
+                            placeholder="587"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
+                            disabled={!isSuperAdmin}
+                          />
+                        </div>
                       </div>
+
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">SMTP Port</label>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">SMTP Username</label>
                         <input 
                           type="text" 
-                          value={formData.SMTP_PORT}
-                          onChange={e => setFormData(prev => ({ ...prev, SMTP_PORT: e.target.value }))}
-                          placeholder="587"
+                          value={formData.SMTP_USER}
+                          onChange={e => setFormData(prev => ({ ...prev, SMTP_USER: e.target.value }))}
+                          placeholder="no-reply@esderos.org"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
+                          disabled={!isSuperAdmin}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">SMTP Secure Password</label>
+                        <input 
+                          type="password" 
+                          value={formData.SMTP_PASSWORD}
+                          onChange={e => setFormData(prev => ({ ...prev, SMTP_PASSWORD: e.target.value }))}
+                          placeholder="••••••••••••"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
+                          disabled={!isSuperAdmin}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Sender Address & Name ("From")</label>
+                        <input 
+                          type="text" 
+                          value={formData.SMTP_FROM}
+                          onChange={e => setFormData(prev => ({ ...prev, SMTP_FROM: e.target.value }))}
+                          placeholder="Esderos Seminary <no-reply@esderos.org>"
                           className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
                           disabled={!isSuperAdmin}
                         />
                       </div>
                     </div>
+                  </div>
 
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">SMTP Username</label>
-                      <input 
-                        type="text" 
-                        value={formData.SMTP_USER}
-                        onChange={e => setFormData(prev => ({ ...prev, SMTP_USER: e.target.value }))}
-                        placeholder="no-reply@esderos.org"
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                        disabled={!isSuperAdmin}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">SMTP Secure Password</label>
-                      <input 
-                        type="password" 
-                        value={formData.SMTP_PASSWORD}
-                        onChange={e => setFormData(prev => ({ ...prev, SMTP_PASSWORD: e.target.value }))}
-                        placeholder="••••••••••••"
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                        disabled={!isSuperAdmin}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Sender Address & Name ("From")</label>
-                      <input 
-                        type="text" 
-                        value={formData.SMTP_FROM}
-                        onChange={e => setFormData(prev => ({ ...prev, SMTP_FROM: e.target.value }))}
-                        placeholder="Esderos Seminary <no-reply@esderos.org>"
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                        disabled={!isSuperAdmin}
-                      />
-                    </div>
+                  <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
+                    <button
+                      onClick={() => handleSaveCard(['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM'], 'SMTP Gateway')}
+                      disabled={isSaving || !isSuperAdmin}
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-md transition-all disabled:bg-slate-350 text-xs uppercase tracking-wider"
+                    >
+                      {isSaving ? 'Saving...' : 'Update SMTP Outbound'}
+                    </button>
                   </div>
                 </div>
-
-                <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
-                  <button
-                    onClick={() => handleSaveCard(['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM'], 'SMTP Gateway')}
-                    disabled={isSaving || !isSuperAdmin}
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-md transition-all disabled:bg-slate-350 text-xs uppercase tracking-wider"
-                  >
-                    {isSaving ? 'Saving...' : 'Update SMTP Outbound'}
-                  </button>
-                </div>
-              </div>
+              )}
 
               {/* Card 2: Aplos Accounting Integrations */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
-                <div>
-                  <div className="p-8 border-b border-slate-100 bg-slate-50/50">
-                    <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">🔑</span>
-                      Accounting APIs & External Integration
-                    </h2>
+              {isSuperAdmin && (
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
+                  <div>
+                    <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                      <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">🔑</span>
+                        Accounting APIs & External Integration
+                      </h2>
+                    </div>
+                    
+                    <div className="p-8 space-y-6">
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Aplos Financial API Key</label>
+                        <input 
+                          type="text" 
+                          value={formData.APLOS_API_KEY}
+                          onChange={e => setFormData(prev => ({ ...prev, APLOS_API_KEY: e.target.value }))}
+                          placeholder="aplos_pk_live_..."
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
+                          disabled={!isSuperAdmin}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Aplos Organisation / Org ID</label>
+                        <input 
+                          type="text" 
+                          value={formData.APLOS_PARTNER_ID}
+                          onChange={e => setFormData(prev => ({ ...prev, APLOS_PARTNER_ID: e.target.value }))}
+                          placeholder="aplos_org_38402..."
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
+                          disabled={!isSuperAdmin}
+                        />
+                      </div>
+
+                      <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                        <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-widest">🔒 Direct Aplos Sync</h4>
+                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                          Database integrations sync invoices, tuition receipts, and scholarship records immediately to the secure ledger without manual accounting updates.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="p-8 space-y-6">
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Aplos Financial API Key</label>
-                      <input 
-                        type="text" 
-                        value={formData.APLOS_API_KEY}
-                        onChange={e => setFormData(prev => ({ ...prev, APLOS_API_KEY: e.target.value }))}
-                        placeholder="aplos_pk_live_..."
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                        disabled={!isSuperAdmin}
-                      />
-                    </div>
 
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Aplos Organisation / Org ID</label>
-                      <input 
-                        type="text" 
-                        value={formData.APLOS_PARTNER_ID}
-                        onChange={e => setFormData(prev => ({ ...prev, APLOS_PARTNER_ID: e.target.value }))}
-                        placeholder="aplos_org_38402..."
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                        disabled={!isSuperAdmin}
-                      />
-                    </div>
-
-                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                      <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-widest">🔒 Direct Aplos Sync</h4>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        Database integrations sync invoices, tuition receipts, and scholarship records immediately to the secure ledger without manual accounting updates.
-                      </p>
-                    </div>
+                  <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
+                    <button
+                      onClick={() => handleSaveCard(['APLOS_API_KEY', 'APLOS_PARTNER_ID'], 'Aplos Financials')}
+                      disabled={isSaving || !isSuperAdmin}
+                      className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl shadow-md transition-all disabled:bg-slate-350 text-xs uppercase tracking-wider"
+                    >
+                      {isSaving ? 'Saving...' : 'Update Aplos Credentials'}
+                    </button>
                   </div>
                 </div>
-
-                <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
-                  <button
-                    onClick={() => handleSaveCard(['APLOS_API_KEY', 'APLOS_PARTNER_ID'], 'Aplos Financials')}
-                    disabled={isSaving || !isSuperAdmin}
-                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl shadow-md transition-all disabled:bg-slate-350 text-xs uppercase tracking-wider"
-                  >
-                    {isSaving ? 'Saving...' : 'Update Aplos Credentials'}
-                  </button>
-                </div>
-              </div>
+              )}
 
               {/* Card 3: Semester Calendar & Date Ranges */}
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
