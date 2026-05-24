@@ -310,7 +310,7 @@ export default function AcademicCalendarPage() {
                   📆 Calendar Integration
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Keep Esdros Theological Seminary deadlines in sync with your personal device schedule.
+                  Keep Esderos EOTC Theological Seminary deadlines in sync with your personal device schedule.
                 </p>
                 <div className="space-y-2 pt-2">
                   <button
@@ -338,7 +338,7 @@ export default function AcademicCalendarPage() {
       {/* FOOTER */}
       <footer className="bg-slate-950 text-slate-400 py-8 border-t border-slate-800 mt-20 text-center text-xs">
         <div className="max-w-7xl mx-auto px-6 space-y-2">
-          <p>© {new Date().getFullYear()} Esdros Theological Seminary. Under Mahibere Kidusan North America Coordinating Center.</p>
+          <p>© {new Date().getFullYear()} Esderos EOTC Theological Seminary. Under Mahibere Kidusan North America Coordinating Center.</p>
           <p className="text-slate-600">The seminary reserves the right to adjust academic schedules depending on parish calendar alterations.</p>
         </div>
       </footer>

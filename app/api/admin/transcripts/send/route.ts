@@ -115,7 +115,7 @@ export async function POST(req: Request) {
     const textContent = `
 Hello ${student.user.firstName} ${student.user.lastName},
 
-Here is your Official Academic Transcript from Esdros Theological Seminary.
+Here is your Official Academic Transcript from Esderos EOTC Theological Seminary.
 
 ACADEMIC DOSSIER SUMMARY:
 ----------------------------------------
@@ -129,18 +129,18 @@ ACADEMIC RECORD DETAILS:
 ${courseTableText}
 ----------------------------------------
 
-This document is a certified copy of the records maintained by the Registrar Office at Esdros Theological Seminary.
+This document is a certified copy of the records maintained by the Registrar Office at Esderos EOTC Theological Seminary.
 
 Best regards,
 Office of the Registrar
-Esdros Theological Seminary
+Esderos EOTC Theological Seminary
 `;
 
     const htmlContent = `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
   <div style="text-align: center; border-bottom: 4px solid #009fe5; padding-bottom: 15px; margin-bottom: 20px;">
-    <img src="https://esderos.eotcmk.org/seminary/pluginfile.php/1/theme_klass/logo/1651894977/logo.png" alt="Esdros Theological Seminary Logo" style="height: 70px; width: 70px; object-fit: contain; margin-bottom: 10px;" />
-    <h1 style="color: #0e2a47; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-size: 24px;">Esdros Theological Seminary</h1>
+    <img src="https://esderos.eotcmk.org/seminary/pluginfile.php/1/theme_klass/logo/1651894977/logo.png" alt="Esderos EOTC Theological Seminary Logo" style="height: 70px; width: 70px; object-fit: contain; margin-bottom: 10px;" />
+    <h1 style="color: #0e2a47; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-size: 24px;">Esderos EOTC Theological Seminary</h1>
     <h2 style="color: #666; font-size: 14px; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Official Academic Transcript</h2>
   </div>
 
@@ -182,8 +182,8 @@ Esdros Theological Seminary
   </table>
 
   <div style="font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #eee; padding-top: 15px; margin-top: 30px;">
-    <p>This document is a certified copy of the records maintained by the Registrar Office at Esdros Theological Seminary.</p>
-    <p>© ${new Date().getFullYear()} Esdros Theological Seminary. All rights reserved.</p>
+    <p>This document is a certified copy of the records maintained by the Registrar Office at Esderos EOTC Theological Seminary.</p>
+    <p>© ${new Date().getFullYear()} Esderos EOTC Theological Seminary. All rights reserved.</p>
   </div>
 </div>
 `;

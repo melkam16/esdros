@@ -275,7 +275,7 @@ export default function SettingsPage() {
                         type="text" 
                         value={formData.SMTP_USER}
                         onChange={e => setFormData(prev => ({ ...prev, SMTP_USER: e.target.value }))}
-                        placeholder="no-reply@esdros.org"
+                        placeholder="no-reply@esderos.org"
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
                         disabled={!isSuperAdmin}
                       />
@@ -299,7 +299,7 @@ export default function SettingsPage() {
                         type="text" 
                         value={formData.SMTP_FROM}
                         onChange={e => setFormData(prev => ({ ...prev, SMTP_FROM: e.target.value }))}
-                        placeholder="Esdros Seminary <no-reply@esdros.org>"
+                        placeholder="Esderos Seminary <no-reply@esderos.org>"
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
                         disabled={!isSuperAdmin}
                       />
@@ -572,7 +572,7 @@ export default function SettingsPage() {
                         type="email"
                         value={notifTargetValue}
                         onChange={(e) => setNotifTargetValue(e.target.value)}
-                        placeholder="student@esdros.org"
+                        placeholder="student@esderos.org"
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
                         required
                       />

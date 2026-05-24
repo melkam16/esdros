@@ -2,9 +2,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Apply to Esdros Theological Seminary — Application Portal',
+  title: 'Apply to Esderos EOTC Theological Seminary — Application Portal',
   description:
-    'Submit your application to the Esdros Theological Seminary Studies or Geez Language program. Applications are open for the 2026 academic year.',
+    'Submit your application to the Esderos EOTC Theological Seminary Studies or Geez Language program. Applications are open for the 2026 academic year.',
 };
 
 export default function ApplyLayout({ children }: { children: React.ReactNode }) {

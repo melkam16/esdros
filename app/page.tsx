@@ -5,9 +5,9 @@ import Header from './components/Header';
 import GoToTop from './components/GoToTop';
 
 export const metadata: Metadata = {
-  title: 'Esdros EOTC Theological Seminary — Mahibere Kidusan North America',
+  title: 'Esderos EOTC Theological Seminary — Mahibere Kidusan North America',
   description:
-    'Esdros EOTC Theological Seminary, a Seminary under Mahibere Kidusan North America Coordinating Center. Offering theological education and Geez language studies rooted in the Ethiopian Orthodox Tewahedo tradition.',
+    'Esderos EOTC Theological Seminary, a Seminary under Mahibere Kidusan North America Coordinating Center. Offering theological education and Geez language studies rooted in the Ethiopian Orthodox Tewahedo tradition.',
 };
 
 const NAV_LINKS = [
@@ -43,7 +43,7 @@ export default function HomePage() {
       <Header />
 
       {/* ─── HERO ─── */}
-      <section className="relative overflow-hidden" style={{ backgroundImage: "url('https://us.eotcmk.org/sites/default/files/styles/original/public/2025-12/esdros%20seminary_Desktop.jpg?itok=OXrr_BPc')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <section className="relative overflow-hidden" style={{ backgroundImage: "url('https://us.eotcmk.org/sites/default/files/styles/original/public/2025-12/esderos%20seminary_Desktop.jpg?itok=OXrr_BPc')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#009fe5]/80 to-[#1e508d]/60 mix-blend-multiply" />
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20 text-center space-y-5">
           <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-white/20 border border-white/30 rounded-full text-white text-xs font-semibold uppercase tracking-wide backdrop-blur-sm shadow-sm">
@@ -52,7 +52,7 @@ export default function HomePage() {
             <span className="sm:hidden">Applications Open</span>
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white leading-tight tracking-tight drop-shadow-md">
-            Esdros EOTC<br />Theological Seminary
+            Esderos EOTC<br />Theological Seminary
           </h1>
           <p className="max-w-xl mx-auto text-blue-50 text-base sm:text-lg leading-relaxed drop-shadow-sm font-medium">
             Training faithful scholars to teach and defend the ancient Orthodox faith in North America and beyond.
@@ -72,8 +72,8 @@ export default function HomePage() {
       <section id="about" className="py-14 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           <div className="space-y-6">
-            <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">About Esdros Theological Seminary</span>
-            <h2 className="text-3xl font-extrabold text-slate-900 leading-tight">Esdros Theological Seminary</h2>
+            <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">About Esderos EOTC Theological Seminary</span>
+            <h2 className="text-3xl font-extrabold text-slate-900 leading-tight">Esderos EOTC Theological Seminary</h2>
             <p className="text-slate-600 leading-relaxed">
               <strong>Esderos Theological Seminary</strong> is a degree-granting institution under Mahibere Kidusan USA Center, serving the Ethiopian Orthodox Tewahedo Church. The seminary is dedicated to teaching and preserving the apostolic faith, dogma, canon, liturgical tradition, and history of the Church.
             </p>
@@ -208,7 +208,7 @@ export default function HomePage() {
             </ul>
             <div className="border-t border-slate-200 pt-5 space-y-3">
               <a
-                href="https://www.aplos.com/aws/give/MahibereKidusanCoordinatingCenterInNorthAmerica/EsdrosEOTCSeminary"
+                href="https://www.aplos.com/aws/give/MahibereKidusanCoordinatingCenterInNorthAmerica/EsderosEOTCSeminary"
                 target="_blank" rel="noopener noreferrer"
                 className="block text-center py-2.5 bg-[#009fe5] text-white rounded font-semibold hover:bg-[#007bb5] transition text-sm"
               >
@@ -245,7 +245,7 @@ export default function HomePage() {
             <span className="text-[#c02424] text-sm font-bold uppercase tracking-widest">Alumni Association</span>
             <h2 className="text-3xl font-extrabold text-slate-900">Graduate Roster & Resources</h2>
             <p className="text-slate-500">
-              Esdros Theological Seminary supports its alumni through robust professional, ministry-focused, and academic continuing education resources.
+              Esderos EOTC Theological Seminary supports its alumni through robust professional, ministry-focused, and academic continuing education resources.
             </p>
           </div>
 
@@ -326,7 +326,7 @@ export default function HomePage() {
                 alt="Mahibere Kidusan"
                 className="h-10 w-10 object-contain bg-white rounded-full p-1"
               />
-              <span className="font-bold text-sm">Esdros Theological Seminary</span>
+              <span className="font-bold text-sm">Esderos EOTC Theological Seminary</span>
             </div>
             <p className="text-blue-100 text-xs leading-relaxed">A Seminary under Mahibere Kidusan North America Coordinating Center, serving the Ethiopian Orthodox Tewahedo Church.</p>
             <a href="https://www.aplos.com/aws/give/MahibereKidusanCoordinatingCenterInNorthAmerica/for2025GSEMployeermatch" target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2 bg-white text-[#1e508d] text-xs font-bold rounded hover:bg-blue-50 transition">

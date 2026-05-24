@@ -326,3 +326,15 @@ model WithdrawalRequest {
 
   student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
+
+model AlumniRequest {
+  id        String   @id @default(uuid())
+  type      String   // "TRANSCRIPT" or "CONTINUOUS_EDUCATION"
+  name      String
+  email     String
+  phone     String?
+  details   String?  // Comments, course info, or graduation year
+  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

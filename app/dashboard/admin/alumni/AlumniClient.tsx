@@ -30,7 +30,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
           "Last Name": "Doe",
           "Graduation Year": "2024",
           "Program Track": "THEOLOGY",
-          "Email": "john.doe.legacy@esdros.org",
+          "Email": "john.doe.legacy@esderos.org",
           "Course Code": "THEO101",
           "Course Title": "Introduction to Systematic Theology",
           "Credits": "3",
@@ -42,7 +42,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
           "Last Name": "Doe",
           "Graduation Year": "2024",
           "Program Track": "THEOLOGY",
-          "Email": "john.doe.legacy@esdros.org",
+          "Email": "john.doe.legacy@esderos.org",
           "Course Code": "THEO202",
           "Course Title": "Patristic Theology Studies",
           "Credits": "3",
@@ -54,7 +54,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
           "Last Name": "Kebede",
           "Graduation Year": "2023",
           "Program Track": "GEEZ_LANGUAGE",
-          "Email": "abebe.kebede.legacy@esdros.org",
+          "Email": "abebe.kebede.legacy@esderos.org",
           "Course Code": "GEEZ101",
           "Course Title": "Introduction to Geez Grammar",
           "Credits": "3",
@@ -772,10 +772,10 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
           <div className="border-b-4 border-slate-900 pb-8 mb-8 text-center relative z-10 flex flex-col items-center justify-center">
             <img 
               src="https://esderos.eotcmk.org/seminary/pluginfile.php/1/theme_klass/logo/1651894977/logo.png"
-              alt="Esdros Theological Seminary Logo"
+              alt="Esderos EOTC Theological Seminary Logo"
               className="h-20 w-20 object-contain mb-4 filter drop-shadow-sm"
             />
-            <h1 className="text-4xl font-black text-slate-900 uppercase tracking-widest mb-2">Esdros Theological Seminary</h1>
+            <h1 className="text-4xl font-black text-slate-900 uppercase tracking-widest mb-2">Esderos EOTC Theological Seminary</h1>
             <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest">Official Academic Transcript</h2>
           </div>
           
@@ -832,7 +832,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
             </div>
             <div className="text-right">
               <p className="text-xs text-slate-400 italic max-w-xs">
-                This document is an official record of the academic degree conferred by Esdros Theological Seminary.
+                This document is an official record of the academic degree conferred by Esderos EOTC Theological Seminary.
               </p>
             </div>
           </div>

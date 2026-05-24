@@ -34,8 +34,8 @@ export async function GET(req: Request) {
     const defaults = {
       SMTP_HOST: settingsMap.SMTP_HOST || 'smtp.gmail.com',
       SMTP_PORT: settingsMap.SMTP_PORT || '587',
-      SMTP_USER: settingsMap.SMTP_USER || 'no-reply@esdros.org',
-      SMTP_FROM: settingsMap.SMTP_FROM || 'Esdros Seminary <no-reply@esdros.org>',
+      SMTP_USER: settingsMap.SMTP_USER || 'no-reply@esderos.org',
+      SMTP_FROM: settingsMap.SMTP_FROM || 'Esderos Seminary <no-reply@esderos.org>',
       APLOS_API_KEY: settingsMap.APLOS_API_KEY || '',
       APLOS_PARTNER_ID: settingsMap.APLOS_PARTNER_ID || '',
       CURRENT_SEMESTER: settingsMap.CURRENT_SEMESTER || 'Fall 2026',

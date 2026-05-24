@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
         {/* Header Ribbon Section */}
         <div className="flex justify-between items-center bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Esdros Theological Seminary Admin Control Panel</h1>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Esderos EOTC Theological Seminary Admin Control Panel</h1>
             <p className="text-sm text-slate-500 mt-1">Institutional management overview and core telemetry.</p>
           </div>
           <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full border border-emerald-200">

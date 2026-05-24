@@ -50,7 +50,7 @@ export async function POST(req: Request) {
         // Resolve clean, unique email address
         let email = rawEmail ? rawEmail.trim() : '';
         if (!email) {
-          const baseEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${graduationYear || 'legacy'}@esdros.org`.replace(/\s+/g, '');
+          const baseEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${graduationYear || 'legacy'}@esderos.org`.replace(/\s+/g, '');
           email = baseEmail;
           let counter = 1;
           while (await tx.user.findUnique({ where: { email } })) {

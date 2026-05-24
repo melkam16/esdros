@@ -32,7 +32,7 @@ export default function Header() {
             className="h-10 w-10 object-contain drop-shadow transition-transform duration-300 group-hover:scale-105"
           />
           <div className="leading-tight">
-            <p className="text-white font-bold text-sm leading-none tracking-tight">Esdros Theological Seminary</p>
+            <p className="text-white font-bold text-sm leading-none tracking-tight">Esderos EOTC Theological Seminary</p>
             <p className="text-blue-100 text-xs leading-none mt-0.5 font-medium hidden sm:block">Mahibere Kidusan North America</p>
           </div>
         </Link>

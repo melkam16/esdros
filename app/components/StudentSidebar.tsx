@@ -20,7 +20,7 @@ export default function StudentSidebar() {
   return (
     <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col h-screen fixed left-0 top-0 border-r border-slate-800">
       <div className="p-6 border-b border-slate-800 bg-slate-950">
-        <h2 className="text-xl font-bold tracking-tight text-white">Esdros Student</h2>
+        <h2 className="text-xl font-bold tracking-tight text-white">Esderos Student</h2>
         <p className="text-xs text-slate-400 mt-1">Self-Service Portal</p>
       </div>
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

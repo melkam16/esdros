@@ -25,13 +25,15 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       success: true,
-      firstName: student.user.firstName,
-      lastName: student.user.lastName,
-      email: student.user.email,
-      phone: student.phone || '',
-      bio: student.bio || '',
-      pictureUrl: student.pictureUrl || '',
-      status: student.status
+      data: {
+        firstName: student.user.firstName,
+        lastName: student.user.lastName,
+        email: student.user.email,
+        phone: student.phone || '',
+        bio: student.bio || '',
+        pictureUrl: student.pictureUrl || '',
+        status: student.status
+      }
     });
 
   } catch (error: any) {

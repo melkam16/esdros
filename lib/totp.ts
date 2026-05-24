@@ -36,8 +36,8 @@ export function generateSecret(email: string, length = 16): { secret: string; ot
     secret += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   
-  const label = encodeURIComponent(`Esdros Seminary:${email}`);
-  const otpauthUrl = `otpauth://totp/${label}?secret=${secret}&issuer=Esdros%20Theological%20Seminary`;
+  const label = encodeURIComponent(`Esderos Seminary:${email}`);
+  const otpauthUrl = `otpauth://totp/${label}?secret=${secret}&issuer=Esderos%20Theological%20Seminary`;
   
   // High-fidelity QR code API to fetch a scannable totp barcode
   const qrCodeDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(otpauthUrl)}`;

@@ -291,7 +291,7 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
                 type="email"
                 required
                 className="w-full px-3.5 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                placeholder="e.g. email@esdros.org"
+                placeholder="e.g. email@esderos.org"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />

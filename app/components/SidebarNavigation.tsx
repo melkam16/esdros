@@ -82,6 +82,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
           { name: 'Degree Audit', href: '/dashboard/admin/degrees', icon: '🎓' },
           { name: 'Official Transcripts', href: '/dashboard/admin/transcripts', icon: '📜' },
           { name: 'Alumni Records', href: '/dashboard/admin/alumni', icon: '🏛️' },
+          { name: 'Alumni Requests', href: '/dashboard/admin/requests', icon: '📥' },
         ],
       },
       {
@@ -156,13 +157,24 @@ export default function SidebarNavigation({ role }: SidebarProps) {
 
   const rawModules = modules[activeRole] || [];
   const activeModules = rawModules.map(module => {
-    if (activeRole === 'ADMIN' && !isSuperAdmin && !isStandardAdmin) {
-      // Regular restricted admins do not see Finance, Settings, Reports, or Manage Admins
+    if (activeRole === 'ADMIN') {
       const filtered = module.items.filter(item => {
-        return !item.href.includes('/finance') &&
-               !item.href.includes('/settings') &&
-               !item.href.includes('/reports') &&
-               !item.href.includes('/manage-admins');
+        // Only Super Admins can access manage-admins
+        if (item.href.includes('/manage-admins') && !isSuperAdmin) {
+          return false;
+        }
+        // Only Super Admins and Standard Admins can access settings, finance, reports, and requests
+        if (!isSuperAdmin && !isStandardAdmin) {
+          if (
+            item.href.includes('/settings') ||
+            item.href.includes('/finance') ||
+            item.href.includes('/reports') ||
+            item.href.includes('/requests')
+          ) {
+            return false;
+          }
+        }
+        return true;
       });
       return { ...module, items: filtered };
     }
@@ -174,7 +186,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
       {/* Header */}
       <div className="p-5 border-b border-slate-800 bg-slate-950 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-base font-bold tracking-tight text-white leading-tight">Esdros Theological Seminary</h2>
+          <h2 className="text-base font-bold tracking-tight text-white leading-tight">Esderos EOTC Theological Seminary</h2>
           <p className="text-xs text-[#009fe5] font-semibold mt-0.5 uppercase tracking-wider truncate">
             {userName && userId ? `${userName} (${userId})` : 'Class365 SMS'}
           </p>
@@ -281,7 +293,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span className="text-sm font-bold text-white">Esdros Theological Seminary</span>
+        <span className="text-sm font-bold text-white">Esderos EOTC Theological Seminary</span>
         <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-400 uppercase tracking-wider">
           {activeRole}
         </span>

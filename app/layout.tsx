@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Esdros Theological Seminary",
-  description: "Esdros Theological Seminary SMS System",
+  title: "Esderos EOTC Theological Seminary",
+  description: "Esderos EOTC Theological Seminary SMS System",
 };
 
 export default function RootLayout({

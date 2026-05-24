@@ -132,7 +132,7 @@ export async function POST(req: Request) {
         sendEmail({
           to: email,
           subject: `📢 [Seminary Announcement] ${title}`,
-          text: `Hello,\n\nA new announcement has been published to your Esdros Seminary Portal:\n\n---\n${title}\n---\n\n${message}\n\nTo view all announcements and updates, please login to your Student/Faculty dashboard.\n\nBest regards,\nEsdros Theological Seminary`
+          text: `Hello,\n\nA new announcement has been published to your Esderos Seminary Portal:\n\n---\n${title}\n---\n\n${message}\n\nTo view all announcements and updates, please login to your Student/Faculty dashboard.\n\nBest regards,\nEsderos EOTC Theological Seminary`
         })
       )
     ).catch(err => console.error('Error broadcasting announcement emails:', err));

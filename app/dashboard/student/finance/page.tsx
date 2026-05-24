@@ -31,7 +31,7 @@ export default async function FinancePage() {
   const totalPaid = statements?.filter(s => s.status === 'PAID').reduce((acc, s) => acc + s.amount, 0) || 0;
 
   // Primary Aplos checkout URL (can be customized via environment variables)
-  const aplosGatewayUrl = process.env.NEXT_PUBLIC_APLOS_PORTAL_URL || "https://www.aplos.com/aws/giving/esdrostheologicalseminary";
+  const aplosGatewayUrl = process.env.NEXT_PUBLIC_APLOS_PORTAL_URL || "https://www.aplos.com/aws/giving/esderostheologicalseminary";
 
   return (
     <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-200">
@@ -82,7 +82,7 @@ export default async function FinancePage() {
               </div>
               <h2 className="text-2xl font-black tracking-tight">Tuition & Payments Managed by Aplos</h2>
               <p className="text-sm text-slate-400 max-w-2xl leading-relaxed">
-                Esdros Theological Seminary partner with **Aplos Software** to handle student ledger audits, fee collection, tax-receipt compliance, and secure digital card remittances. Click the secure gateway button to remit payment directly.
+                Esderos EOTC Theological Seminary partner with **Aplos Software** to handle student ledger audits, fee collection, tax-receipt compliance, and secure digital card remittances. Click the secure gateway button to remit payment directly.
               </p>
             </div>
             <div className="flex-shrink-0">

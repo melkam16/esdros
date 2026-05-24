@@ -33,13 +33,13 @@ export default function GradebookPage() {
   // Load saved columns and grades on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedCols = localStorage.getItem('esdros_gradebook_columns_map');
+      const savedCols = localStorage.getItem('esderos_gradebook_columns_map');
       if (savedCols) {
         try { setAllCourseColumns(JSON.parse(savedCols)); } catch (e) { console.error("Failed to parse saved columns", e); }
       }
       setIsInitialized(true);
 
-      const savedGrades = localStorage.getItem('esdros_gradebook_values');
+      const savedGrades = localStorage.getItem('esderos_gradebook_values');
       if (savedGrades) {
         try { setGrades(JSON.parse(savedGrades)); } catch(e) { console.error("Failed to parse saved grades", e); }
       }
@@ -50,14 +50,14 @@ export default function GradebookPage() {
   // Save columns to local storage whenever they change AFTER initialization
   useEffect(() => {
     if (isInitialized && typeof window !== 'undefined') {
-      localStorage.setItem('esdros_gradebook_columns_map', JSON.stringify(allCourseColumns));
+      localStorage.setItem('esderos_gradebook_columns_map', JSON.stringify(allCourseColumns));
     }
   }, [allCourseColumns, isInitialized]);
 
   // Save grades to local storage
   useEffect(() => {
     if (isGradesInitialized && typeof window !== 'undefined') {
-      localStorage.setItem('esdros_gradebook_values', JSON.stringify(grades));
+      localStorage.setItem('esderos_gradebook_values', JSON.stringify(grades));
     }
   }, [grades, isGradesInitialized]);
 

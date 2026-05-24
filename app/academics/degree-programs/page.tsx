@@ -360,7 +360,7 @@ export default function DegreeProgramsPage() {
       {/* FOOTER */}
       <footer className="bg-slate-950 text-slate-400 py-8 border-t border-slate-800 mt-20 text-center text-xs">
         <div className="max-w-7xl mx-auto px-6 space-y-2">
-          <p>© {new Date().getFullYear()} Esdros Theological Seminary. Under Mahibere Kidusan North America Coordinating Center.</p>
+          <p>© {new Date().getFullYear()} Esderos EOTC Theological Seminary. Under Mahibere Kidusan North America Coordinating Center.</p>
           <p className="text-slate-600">All program credits and titles are regulated according to the seminary’s academic standards.</p>
         </div>
       </footer>

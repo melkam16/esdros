@@ -57,8 +57,8 @@ export async function POST(req: Request) {
     const { sendEmail } = await import('@/lib/mail');
     await sendEmail({
       to: email,
-      subject: 'Welcome to Esdros Theological Seminary - Faculty Credentials',
-      text: `Hello ${firstName} ${lastName},\n\nYou have been added as a Faculty Member on the Esdros Theological Seminary platform inside ${department.name}.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsdros Theological Seminary`
+      subject: 'Welcome to Esderos EOTC Theological Seminary - Faculty Credentials',
+      text: `Hello ${firstName} ${lastName},\n\nYou have been added as a Faculty Member on the Esderos EOTC Theological Seminary platform inside ${department.name}.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsderos EOTC Theological Seminary`
     });
 
     return NextResponse.json(

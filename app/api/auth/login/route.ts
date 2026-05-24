@@ -50,13 +50,13 @@ export async function POST(req: Request) {
         data: { name: 'Theology Cohort Year 1', code: 'TH-Y1', departmentId: theologyDept.id },
       });
       await prisma.user.create({
-        data: { email: 'admin@esdros.org', passwordHash: 'admin123', firstName: 'Melkamu', lastName: 'Admin', role: 'ADMIN', isSuperAdmin: true },
+        data: { email: 'admin@esderos.org', passwordHash: 'admin123', firstName: 'Melkamu', lastName: 'Admin', role: 'ADMIN', isSuperAdmin: true },
       });
     }
 
     // 2. Authenticate
     let user = await prisma.user.findUnique({ where: { email } });
-    if (user && user.email === 'admin@esdros.org' && !user.isSuperAdmin) {
+    if (user && user.email === 'admin@esderos.org' && !user.isSuperAdmin) {
       user = await prisma.user.update({
         where: { email },
         data: { isSuperAdmin: true }

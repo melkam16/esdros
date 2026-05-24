@@ -2,8 +2,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Theology Program | Esdros Theological Seminary',
-  description: 'Explore the BA, Associate, and Certificate Theology programs offered at Esdros Theological Seminary.',
+  title: 'Theology Program | Esderos EOTC Theological Seminary',
+  description: 'Explore the BA, Associate, and Certificate Theology programs offered at Esderos EOTC Theological Seminary.',
 };
 
 export default function TheologyProgramPage() {
@@ -19,7 +19,7 @@ export default function TheologyProgramPage() {
               className="h-12 w-12 object-contain drop-shadow"
             />
             <div className="leading-tight">
-              <p className="text-white font-bold text-sm leading-none">Esdros Theological Seminary</p>
+              <p className="text-white font-bold text-sm leading-none">Esderos EOTC Theological Seminary</p>
               <p className="text-blue-100 text-xs leading-none mt-0.5">Mahibere Kidusan North America</p>
             </div>
           </Link>

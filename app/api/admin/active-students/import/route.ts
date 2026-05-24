@@ -64,11 +64,11 @@ export async function POST(req: Request) {
         // Resolve clean, unique email address
         let email = rawEmail ? rawEmail.trim() : '';
         if (!email) {
-          const baseEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@esdros.org`.replace(/\s+/g, '');
+          const baseEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@esderos.org`.replace(/\s+/g, '');
           email = baseEmail;
           let counter = 1;
           while (await tx.user.findUnique({ where: { email } })) {
-            email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${counter}@esdros.org`.replace(/\s+/g, '');
+            email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${counter}@esderos.org`.replace(/\s+/g, '');
             counter++;
           }
         } else {
@@ -175,8 +175,8 @@ export async function POST(req: Request) {
 
         await sendEmail({
           to: email,
-          subject: 'Complete Your Esdros Theological Seminary Account Setup',
-          text: `Hello ${firstName} ${lastName},\n\nWelcome to Esdros Theological Seminary! Your active student record and academic enrollments have been securely loaded into our portal system by the Registrar's Office.\n\nTo sign up, set your password, and activate your student portal to see your imported transcript and class schedule details, please click the link below:\n\n${signupUrl}\n\nUsername/Institutional Email: ${email}\n\nWe look forward to supporting your theological journey.\n\nBest regards,\nRegistrar's Office\nEsdros Theological Seminary`
+          subject: 'Complete Your Esderos EOTC Theological Seminary Account Setup',
+          text: `Hello ${firstName} ${lastName},\n\nWelcome to Esderos EOTC Theological Seminary! Your active student record and academic enrollments have been securely loaded into our portal system by the Registrar's Office.\n\nTo sign up, set your password, and activate your student portal to see your imported transcript and class schedule details, please click the link below:\n\n${signupUrl}\n\nUsername/Institutional Email: ${email}\n\nWe look forward to supporting your theological journey.\n\nBest regards,\nRegistrar's Office\nEsderos EOTC Theological Seminary`
         }).catch((err) => {
           console.error(`Failed to send invite email to ${email}:`, err);
         });

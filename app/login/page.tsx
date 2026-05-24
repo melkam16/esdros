@@ -84,7 +84,7 @@ export default function LoginPage() {
       {/* Top bar */}
       <div className="bg-[#0e2a47]/60 px-6 py-2 flex items-center justify-between text-xs text-blue-200">
         <Link href="/" className="flex items-center gap-1.5 hover:text-white transition">
-          ← Back to Esdros Theological Seminary
+          ← Back to Esderos EOTC Theological Seminary
         </Link>
         <span>Mahibere Kidusan North America</span>
       </div>
@@ -98,7 +98,7 @@ export default function LoginPage() {
               alt="Mahibere Kidusan"
               className="mx-auto w-16 h-16 object-contain drop-shadow-lg mb-1"
             />
-            <h1 className="text-2xl font-extrabold text-white">Esdros Theological Seminary</h1>
+            <h1 className="text-2xl font-extrabold text-white">Esderos EOTC Theological Seminary</h1>
             <p className="text-blue-100 text-sm">Student & Faculty SIS Portal</p>
           </div>
 
@@ -284,7 +284,7 @@ export default function LoginPage() {
                     required
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
-                    placeholder="you@esdros.org"
+                    placeholder="you@esderos.org"
                     className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009fe5] focus:border-transparent text-sm"
                   />
                 </div>

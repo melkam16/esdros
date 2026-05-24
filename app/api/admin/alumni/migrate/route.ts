@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     }
 
     // Generate a unique dummy email for the legacy record
-    const baseEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${graduationYear || 'legacy'}@esdros.org`.replace(/\s+/g, '');
+    const baseEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${graduationYear || 'legacy'}@esderos.org`.replace(/\s+/g, '');
     let email = baseEmail;
     let counter = 1;
     while (await prisma.user.findUnique({ where: { email } })) {

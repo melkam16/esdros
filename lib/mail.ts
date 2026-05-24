@@ -45,7 +45,7 @@ export async function sendEmail({ to, subject, text, html }: SendEmailParams) {
     acc[s.key] = s.value;
     return acc;
   }, {});
-  const from = settingsMap.SMTP_FROM || process.env.SMTP_FROM || '"Esdros Theological Seminary" <noreply@esdros.org>';
+  const from = settingsMap.SMTP_FROM || process.env.SMTP_FROM || '"Esderos EOTC Theological Seminary" <noreply@esderos.org>';
 
   if (transporter) {
     try {
