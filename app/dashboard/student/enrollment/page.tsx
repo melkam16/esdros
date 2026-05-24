@@ -26,8 +26,16 @@ async function getData() {
 
     if (!student) return null;
 
+    const currentSemesterSetting = await prisma.systemSetting.findUnique({
+      where: { key: 'CURRENT_SEMESTER' }
+    });
+    const currentSemester = currentSemesterSetting?.value || 'Fall 2026';
+
     const sections = await prisma.courseSection.findMany({
-      where: { course: { track: student.track } },
+      where: { 
+        course: { track: student.track },
+        semester: currentSemester
+      },
       include: {
         course: true,
         faculty: { include: { user: true } },
@@ -36,7 +44,7 @@ async function getData() {
       orderBy: { semester: 'asc' },
     });
 
-    return { student, sections };
+    return { student, sections, currentSemester };
   } catch {
     return null;
   }
@@ -58,12 +66,30 @@ export default async function EnrollmentConsolePage() {
     );
   }
 
-  const { student, sections } = data;
+  const { student, sections, currentSemester } = data;
   const isWithdrawn = student.status === 'WITHDRAWN';
+
+  // Enrolled section IDs that are not dropped
   const enrolledSectionIds = new Set(
     student.enrollments
       .filter((e) => e.enrollmentStatus !== 'DROPPED')
       .map((e) => e.courseSectionId)
+  );
+
+  // Grouping Student Enrollments:
+  // 1. Active Enrollments (Current or In-Progress Term where grade is null)
+  const activeEnrollments = student.enrollments.filter(
+    (e) => e.enrollmentStatus !== 'DROPPED' && e.grade === null
+  );
+
+  // 2. Completed Enrollments (Any term where grade is not null and grade >= 60)
+  const completedEnrollments = student.enrollments.filter(
+    (e) => e.enrollmentStatus !== 'DROPPED' && e.grade !== null && e.grade >= 60
+  );
+
+  // 3. Available sections (only from current semester that the student has not enrolled in yet)
+  const availableSectionsForEnrollment = sections.filter(
+    (s) => !enrolledSectionIds.has(s.id)
   );
 
   return (
@@ -72,7 +98,7 @@ export default async function EnrollmentConsolePage() {
       <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
         {isWithdrawn && (
-          <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl shadow-sm text-amber-900 flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-350">
+          <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl shadow-sm text-amber-950 flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-350">
             <span className="text-2xl mt-0.5">⚠️</span>
             <div>
               <h3 className="font-extrabold text-sm uppercase tracking-wider">Enrollment Console Locked (Read-Only Mode)</h3>
@@ -85,19 +111,19 @@ export default async function EnrollmentConsolePage() {
 
         {/* Premium Header */}
         <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl -mr-20 -mt-20"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50/50 rounded-full blur-3xl -mr-20 -mt-20"></div>
           
           <div className="relative z-10 flex gap-6 items-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center text-4xl shadow-lg shadow-amber-500/30 text-white">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg shadow-blue-500/30 text-white">
               📝
             </div>
             <div>
               <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Enrollment Console</h1>
               <p className="text-sm font-medium text-slate-500 mt-1 max-w-md">
-                Browse available course offerings and manage your active term registration requests.
+                Browse available course offerings for the current term and manage your academic registration.
               </p>
               <div className="inline-flex items-center gap-2 px-3 py-1 mt-3 bg-slate-100 rounded-lg text-xs font-bold text-slate-600">
-                <span>{student.class.name}</span>
+                <span>{student.class?.name || 'Seminary Candidate'}</span>
                 <span className="w-1 h-1 bg-slate-400 rounded-full"></span>
                 <span className="text-blue-600">{student.track === 'THEOLOGY' ? 'Theology Track' : 'Geez Language Track'}</span>
               </div>
@@ -107,36 +133,70 @@ export default async function EnrollmentConsolePage() {
           <div className="relative z-10 flex flex-col items-center bg-blue-50 px-8 py-5 rounded-2xl border border-blue-100 shadow-sm">
             <p className="text-xs text-blue-600 uppercase font-bold tracking-widest mb-1">Active Enrollments</p>
             <span className="text-4xl font-black tracking-tight text-blue-600">
-              {student.enrollments.filter((e) => e.enrollmentStatus === 'APPROVED').length}
+              {student.enrollments.filter((e) => e.enrollmentStatus === 'APPROVED' && e.grade === null).length}
             </span>
           </div>
         </div>
 
-        {/* My Enrollments Summary */}
-        {student.enrollments.filter(e => e.enrollmentStatus !== 'DROPPED').length > 0 && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
-            <div className="px-8 py-5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full"></span> My Current Enrollments
-              </h2>
-            </div>
-            <div className="divide-y divide-slate-50">
-              {student.enrollments
-                .filter(e => e.enrollmentStatus !== 'DROPPED')
-                .map((e) => (
-                  <div key={e.id} className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-slate-50 transition-colors group">
-                    <div className="flex items-center gap-5">
-                      <div className="w-12 h-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center font-bold text-slate-500 shadow-sm group-hover:scale-110 transition-transform">
-                        {e.courseSection.course.code.substring(0, 2)}
-                      </div>
-                      <div>
-                        <p className="text-base font-extrabold text-slate-900">{e.courseSection.course.title}</p>
-                        <p className="text-xs font-medium text-slate-500 mt-1 flex items-center gap-2">
-                          <span className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{e.courseSection.course.code}</span>
-                          {e.courseSection.semester} · {e.courseSection.faculty.user.firstName} {e.courseSection.faculty.user.lastName}
-                        </p>
-                      </div>
+        {/* 1. TOP SECTION: Available Course Offerings for Enrollment */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+              <span className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-pulse"></span>
+              Available Courses for Enrollment ({currentSemester})
+            </h2>
+            <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+              Current Term Offerings Only
+            </span>
+          </div>
+
+          <EnrollmentConsoleClient
+            isWithdrawn={isWithdrawn}
+            sections={availableSectionsForEnrollment.map((s) => ({
+              id: s.id,
+              courseCode: s.course?.code || 'CRS',
+              courseTitle: s.course?.title || 'Course Offering',
+              credits: s.course?.credits || 3,
+              faculty: s.faculty ? `${s.faculty.user.firstName} ${s.faculty.user.lastName}` : 'Seminary Faculty',
+              semester: s.semester,
+              room: s.room,
+              capacity: s.capacity,
+              enrolled: s._count.enrollments,
+              alreadyEnrolled: false,
+              enrollmentStatus: null,
+            }))}
+          />
+        </div>
+
+        {/* 2. MIDDLE SECTION: Current Enrolled / Active Term Courses */}
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
+          <div className="px-8 py-5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 bg-amber-500 rounded-full"></span> My Current Enrollments & Requests
+            </h2>
+            <span className="text-xs font-bold text-slate-500 bg-slate-150 px-2 py-0.5 rounded-lg border border-slate-200">
+              Term: {currentSemester}
+            </span>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {activeEnrollments.length === 0 ? (
+              <div className="p-10 text-center text-slate-400 font-medium italic">You have no active or pending enrollments for this term.</div>
+            ) : (
+              activeEnrollments.map((e) => (
+                <div key={e.id} className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-slate-50 transition-colors group">
+                  <div className="flex items-center gap-5">
+                    <div className="w-12 h-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center font-bold text-slate-500 shadow-sm group-hover:scale-110 transition-transform">
+                      {e.courseSection?.course?.code?.substring(0, 2) || 'CR'}
                     </div>
+                    <div>
+                      <p className="text-base font-extrabold text-slate-900">{e.courseSection?.course?.title || 'Unknown'}</p>
+                      <p className="text-xs font-medium text-slate-500 mt-1 flex items-center gap-2">
+                        <span className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{e.courseSection?.course?.code || 'Legacy'}</span>
+                        {e.courseSection?.semester || 'Term'} · {e.courseSection?.faculty ? `${e.courseSection.faculty.user.firstName} ${e.courseSection.faculty.user.lastName}` : 'Faculty'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
                     <span className={`px-4 py-1.5 rounded-xl text-xs font-bold border shadow-sm flex items-center gap-1.5 ${
                       e.enrollmentStatus === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                       e.enrollmentStatus === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' :
@@ -149,33 +209,51 @@ export default async function EnrollmentConsolePage() {
                       {e.enrollmentStatus === 'APPROVED' ? 'Enrolled' : e.enrollmentStatus === 'PENDING' ? 'Pending Approval' : 'Rejected'}
                     </span>
                   </div>
-                ))}
-            </div>
+                </div>
+              ))
+            )}
           </div>
-        )}
-
-        {/* Available Sections Header */}
-        <div className="pt-4">
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Available Course Offerings</h2>
         </div>
 
-        {/* Available Sections Client Interface */}
-        <EnrollmentConsoleClient
-          isWithdrawn={isWithdrawn}
-          sections={sections.map((s) => ({
-            id: s.id,
-            courseCode: s.course.code,
-            courseTitle: s.course.title,
-            credits: s.course.credits,
-            faculty: `${s.faculty.user.firstName} ${s.faculty.user.lastName}`,
-            semester: s.semester,
-            room: s.room,
-            capacity: s.capacity,
-            enrolled: s._count.enrollments,
-            alreadyEnrolled: enrolledSectionIds.has(s.id),
-            enrollmentStatus: student.enrollments.find(e => e.courseSectionId === s.id)?.enrollmentStatus ?? null,
-          }))}
-        />
+        {/* 3. BOTTOM SECTION: Completed Courses */}
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
+          <div className="px-8 py-5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> Completed Courses (Academic History)
+            </h2>
+            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+              Completed Records
+            </span>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {completedEnrollments.length === 0 ? (
+              <div className="p-10 text-center text-slate-400 font-medium italic">No completed course records found on file.</div>
+            ) : (
+              completedEnrollments.map((e) => (
+                <div key={e.id} className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-slate-50 transition-colors group">
+                  <div className="flex items-center gap-5">
+                    <div className="w-12 h-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center font-bold text-slate-500 shadow-sm group-hover:scale-110 transition-transform">
+                      {e.courseSection?.course?.code?.substring(0, 2) || 'CR'}
+                    </div>
+                    <div>
+                      <p className="text-base font-extrabold text-slate-900">{e.courseSection?.course?.title || 'Unknown'}</p>
+                      <p className="text-xs font-medium text-slate-500 mt-1 flex items-center gap-2">
+                        <span className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{e.courseSection?.course?.code || 'Legacy'}</span>
+                        {e.courseSection?.semester || 'Term'} · {e.courseSection?.faculty ? `${e.courseSection.faculty.user.firstName} ${e.courseSection.faculty.user.lastName}` : 'Faculty'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center gap-1">
+                      🎓 Grade: {e.grade}%
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
       </main>
     </div>
   );
