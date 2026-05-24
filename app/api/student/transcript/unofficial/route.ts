@@ -26,6 +26,7 @@ const getGPA = (enrollments: any[]) => {
   let totalPoints = 0;
   let totalCredits = 0;
   enrollments.forEach(e => {
+    if (!e.courseSection || !e.courseSection.course) return;
     const credits = e.courseSection.course.credits || 3;
     const score = e.grade;
     if (score !== null) {
@@ -80,7 +81,11 @@ export async function GET() {
     }
 
     const gpa = getGPA(student.enrollments);
-    const creditsEarned = student.enrollments.reduce((acc, e) => acc + (e.grade && e.grade >= 60 ? e.courseSection.course.credits : 0), 0);
+    const creditsEarned = student.enrollments.reduce((acc, e) => {
+      if (!e.courseSection || !e.courseSection.course) return acc;
+      const credits = e.courseSection.course.credits || 3;
+      return acc + (e.grade !== null && e.grade >= 60 ? credits : 0);
+    }, 0);
 
     // Create a new PDF document in memory
     const doc = new PDFDocument({ size: 'LETTER', margin: 50 });
