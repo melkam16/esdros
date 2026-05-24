@@ -3,18 +3,48 @@ const path = require("path");
 const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun } = require("docx");
 const PDFDocument = require("pdfkit");
 
-// Image paths from browser subagent output
-const images = {
-  dashboard: path.resolve(`C:/Users/melka/.gemini/antigravity/brain/627114a8-4e05-44c4-823b-30aedd3aea02/admin_dashboard_1779562619258.png`),
-  manageAdmins: path.resolve(`C:/Users/melka/.gemini/antigravity/brain/627114a8-4e05-44c4-823b-30aedd3aea02/manage_admins_1779562707104.png`),
-  settings: path.resolve(`C:/Users/melka/.gemini/antigravity/brain/627114a8-4e05-44c4-823b-30aedd3aea02/admin_settings_1779562802128.png`),
-  transcripts: path.resolve(`C:/Users/melka/.gemini/antigravity/brain/627114a8-4e05-44c4-823b-30aedd3aea02/admin_transcripts_1779562853320.png`),
+// Human-readable screenshot maps in public/screenshots/
+const screenshots = {
+  publicLanding: path.resolve("public/screenshots/public_landing.png"),
+  publicTheology: path.resolve("public/screenshots/public_theology.png"),
+  loginPage: path.resolve("public/screenshots/login_page.png"),
+  
+  studentDashboard: path.resolve("public/screenshots/student_dashboard.png"),
+  studentEnrollment: path.resolve("public/screenshots/student_enrollment.png"),
+  studentAcademics: path.resolve("public/screenshots/student_academics.png"),
+  studentAttendance: path.resolve("public/screenshots/student_attendance.png"),
+  studentFinance: path.resolve("public/screenshots/student_finance.png"),
+  studentSettings: path.resolve("public/screenshots/student_settings.png"),
+  
+  facultyDashboard: path.resolve("public/screenshots/faculty_dashboard.png"),
+  facultyAttendance: path.resolve("public/screenshots/faculty_attendance.png"),
+  facultyGradebook: path.resolve("public/screenshots/faculty_gradebook.png"),
+  facultyProfile: path.resolve("public/screenshots/faculty_profile.png"),
+  
+  adminDashboard: path.resolve("public/screenshots/admin_dashboard.png"),
+  manageAdmins: path.resolve("public/screenshots/manage_admins.png"),
+  adminSettings: path.resolve("public/screenshots/admin_settings.png"),
+  adminTranscripts: path.resolve("public/screenshots/admin_transcripts.png"),
 };
 
 // Target directory
 const publicDir = path.join(process.cwd(), "public");
 if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
+}
+
+// ----------------------------------------------------
+// Helper to Safe Read Image Dimensions or Return Null
+// ----------------------------------------------------
+function getImageData(imagePath) {
+  if (fs.existsSync(imagePath)) {
+    try {
+      return fs.readFileSync(imagePath);
+    } catch (e) {
+      console.error(`Failed to read image at ${imagePath}:`, e);
+    }
+  }
+  return null;
 }
 
 // ----------------------------------------------------
@@ -56,7 +86,7 @@ function generateDocx() {
       spacing: { before: 100, after: 1200 },
       children: [
         new TextRun({
-          text: "COMPREHENSIVE MULTI-PORTAL USER MANUAL & SYSTEM GUIDE",
+          text: "COMPREHENSIVE MULTI-PORTAL USER MANUAL & WORKFLOW GUIDE",
           color: "475569",
           bold: true,
           size: 16,
@@ -69,7 +99,7 @@ function generateDocx() {
       spacing: { before: 1500, after: 100 },
       children: [
         new TextRun({
-          text: "Version 1.0 • Published May 2026",
+          text: "Version 1.1 • Published May 2026",
           color: "64748b",
           italic: true,
           size: 14,
@@ -90,104 +120,40 @@ function generateDocx() {
       ],
     }),
 
-    // SECTION 1: INTRODUCTION
+    // SECTION 1: PLATFORM OVERVIEW
     new Paragraph({
       heading: HeadingLevel.HEADING_1,
       spacing: { before: 400, after: 200 },
       children: [
-        new TextRun({ text: "1. Platform Overview & Portals", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
+        new TextRun({ text: "1. Platform Overview & Unified Architecture", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
       ],
     }),
     new Paragraph({
       spacing: { before: 100, after: 120 },
       children: [
         new TextRun({
-          text: "Esdros Theological Seminary features a unified Student Information System (SIS) and Learning Management System (LMS) designed to automate registration, student profiles, attendance logs, numerical grade submission, official transcript delivery, and secure multi-tenant settings configuration. The platform organizes access rights across distinct dashboards based on secure system roles.",
+          text: "Esdros Theological Seminary features a highly premium, unified Student Information System (SIS) and Learning Management System (LMS) that coordinates enrollment lifecycle, CRM admissions scoring, class scheduling, attendance tracking, numerical grading, and official PDF transcript distribution. All operations are strictly divided across three secure portals—Student, Faculty, and Admin—integrated dynamically under centralized ACID database transaction rules.",
           font: "Arial",
           size: 22,
         }),
       ],
     }),
 
-    // SECTION 2: PUBLIC MARKETING PORTAL & CRM APPLY FORM
+    // SECTION 2: PUBLIC WEBSITE
     new Paragraph({
       heading: HeadingLevel.HEADING_1,
       spacing: { before: 400, after: 200 },
       children: [
-        new TextRun({ text: "2. Public Portal & Admissions Form", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
+        new TextRun({ text: "2. Public Marketing Website & Portal Navigations", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
       ],
     }),
     new Paragraph({
       spacing: { before: 100, after: 120 },
       children: [
         new TextRun({
-          text: "• Marketing Page (/): Provides structural details of Theology and Geez language tracks, degree programs, and administrative contacts.\n" +
-                "• Online Apply Form (/apply): Prospective applicants fill out personal credentials, track details, and faith statements. Submitted records immediately spawn PENDING applications inside the Admin CRM pipelines.\n" +
-                "• Enrollment Control: Administrators can toggle settings to open or lock public applicant registrations at any time.",
-          font: "Arial",
-          size: 22,
-        }),
-      ],
-    }),
-
-    // SECTION 3: STUDENT DASHBOARD
-    new Paragraph({
-      heading: HeadingLevel.HEADING_1,
-      spacing: { before: 400, after: 200 },
-      children: [
-        new TextRun({ text: "3. Student Portal operations (/dashboard/student)", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
-      ],
-    }),
-    new Paragraph({
-      spacing: { before: 100, after: 120 },
-      children: [
-        new TextRun({
-          text: "• Course Registration: Enables students to enroll in course sections active inside the current term term.\n" +
-                "• Financial Invoices: View detailed ledger balances, tuition fees, scholarship records, and secure invoice lists.\n" +
-                "• Two-Factor MFA Security: Logins enforce strong passwords (length > 7, uppercase, lowercase, numbers, and symbols) and scan a secure time-based TOTP QR code at setup to enforce secure logins.\n" +
-                "• Request Withdrawal: Students can submit a withdrawal request outlining reasons. Once approved by the registrar, their user account transitions into secure read-only mode.\n" +
-                "• Unofficial Transcripts: Generate and view instant cumulative GPA audits with letter conversions.",
-          font: "Arial",
-          size: 22,
-        }),
-      ],
-    }),
-
-    // SECTION 4: FACULTY PORTAL
-    new Paragraph({
-      heading: HeadingLevel.HEADING_1,
-      spacing: { before: 400, after: 200 },
-      children: [
-        new TextRun({ text: "4. Faculty Portal operations (/dashboard/faculty)", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
-      ],
-    }),
-    new Paragraph({
-      spacing: { before: 100, after: 120 },
-      children: [
-        new TextRun({
-          text: "• Cohort Schedules: Faculty can view their assigned sections, classrooms, time schedules, and matriculation limits.\n" +
-                "• Roster & Attendance Matrix: Log daily classroom attendance. Graduated, dismissed, or withdrawn students are automatically omitted from these rosters.\n" +
-                "• Grade Submission Console: Instructors record student grade evaluations out of 100, which are automatically translated into GPA scale letters (A, B, C) in database tables.\n" +
-                "• Faculty Announcement Center: Faculty receive direct alerts from the administration board to coordinate grading calendars.",
-          font: "Arial",
-          size: 22,
-        }),
-      ],
-    }),
-
-    // SECTION 5: ADMINISTRATOR CONSOLE
-    new Paragraph({
-      heading: HeadingLevel.HEADING_1,
-      spacing: { before: 400, after: 200 },
-      children: [
-        new TextRun({ text: "5. Administrator Console operations (/dashboard/admin)", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
-      ],
-    }),
-    new Paragraph({
-      spacing: { before: 100, after: 120 },
-      children: [
-        new TextRun({
-          text: "The Administrative console acts as the primary telemetry center of Esdros Theological Seminary. The home dashboard provides real-time enrollment footprints, cohort distribution, and CRM pipelines.",
+          text: "The institutional front page offers direct links to seminary portals, contact details, curriculum calendars, and academic tracks. Sub-pages detail structured programs:\n" +
+                "• Theology Track (/programs/theology): Covers Orthodox dogmatic theological curriculums.\n" +
+                "• Geez Language Track (/programs/geez): Details classical Geez language grammar and syntactic studies.",
           font: "Arial",
           size: 22,
         }),
@@ -195,15 +161,16 @@ function generateDocx() {
     }),
   ];
 
-  // Embed Dashboard Image if exists
-  if (fs.existsSync(images.dashboard)) {
+  // Embed Public Landing Image
+  const landingData = getImageData(screenshots.publicLanding);
+  if (landingData) {
     docxChildren.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { before: 200, after: 200 },
+        spacing: { before: 200, after: 100 },
         children: [
           new ImageRun({
-            data: fs.readFileSync(images.dashboard),
+            data: landingData,
             transformation: { width: 500, height: 281 },
           }),
         ],
@@ -212,26 +179,52 @@ function generateDocx() {
         alignment: AlignmentType.CENTER,
         spacing: { before: 50, after: 300 },
         children: [
-          new TextRun({ text: "Figure 5.1: Esdros Seminary Admin Telemetry Overview Console", italic: true, size: 10, font: "Arial" }),
+          new TextRun({ text: "Figure 2.1: Esdros Seminary Public Landing Website", italic: true, size: 10, font: "Arial" }),
         ],
       })
     );
   }
 
-  // Access Control Section
+  // Embed Public Theology Image
+  const theologyData = getImageData(screenshots.publicTheology);
+  if (theologyData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: theologyData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 2.2: Orthodox Theology Program Curriculum Page", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // SECTION 3: AUTHENTICATION
   docxChildren.push(
     new Paragraph({
-      heading: HeadingLevel.HEADING_2,
-      spacing: { before: 300, after: 150 },
+      heading: HeadingLevel.HEADING_1,
+      spacing: { before: 400, after: 200 },
       children: [
-        new TextRun({ text: "5.1 Manage Admins & clearance Tiers", color: "009fe5", bold: true, size: 24, font: "Arial" }),
+        new TextRun({ text: "3. Gateway Authentication & Security Control", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
       ],
     }),
     new Paragraph({
       spacing: { before: 100, after: 120 },
       children: [
         new TextRun({
-          text: "The Access Control system segregates operations across three tiers. Super Admins can promote or demote standard and restricted administrators directly from the directory list:",
+          text: "The portal entry (/login) maintains strict user security rules:\n" +
+                "1. Enforce Password Policy: Passwords must be greater than seven characters and must contain an uppercase letter, lowercase letter, number, and special character.\n" +
+                "2. Two-Factor Authentication (MFA): Implements secure time-based authenticator apps (Google Authenticator, Microsoft Authenticator) using TOTP protocols. During signup, users scan a QR code and must enter their 6-digit verification pin to register. Subsequent logins automatically require their username, password, and active 6-digit TOTP pin.",
           font: "Arial",
           size: 22,
         }),
@@ -239,15 +232,16 @@ function generateDocx() {
     })
   );
 
-  // Embed Manage Admins Image if exists
-  if (fs.existsSync(images.manageAdmins)) {
+  // Embed Login Page Image
+  const loginData = getImageData(screenshots.loginPage);
+  if (loginData) {
     docxChildren.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { before: 200, after: 200 },
+        spacing: { before: 200, after: 100 },
         children: [
           new ImageRun({
-            data: fs.readFileSync(images.manageAdmins),
+            data: loginData,
             transformation: { width: 500, height: 281 },
           }),
         ],
@@ -256,26 +250,26 @@ function generateDocx() {
         alignment: AlignmentType.CENTER,
         spacing: { before: 50, after: 300 },
         children: [
-          new TextRun({ text: "Figure 5.2: Directory Interface for Dynamic Clearance Promotion & Demotion", italic: true, size: 10, font: "Arial" }),
+          new TextRun({ text: "Figure 3.1: SIS-LMS Secure Multi-Factor Gateway Login Console", italic: true, size: 10, font: "Arial" }),
         ],
       })
     );
   }
 
-  // Settings Section
+  // SECTION 4: STUDENT PORTAL
   docxChildren.push(
     new Paragraph({
-      heading: HeadingLevel.HEADING_2,
-      spacing: { before: 300, after: 150 },
+      heading: HeadingLevel.HEADING_1,
+      spacing: { before: 400, after: 200 },
       children: [
-        new TextRun({ text: "5.2 System Settings & External Integrations", color: "009fe5", bold: true, size: 24, font: "Arial" }),
+        new TextRun({ text: "4. Student Dashboard & Portal Operations", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
       ],
     }),
     new Paragraph({
       spacing: { before: 100, after: 120 },
       children: [
         new TextRun({
-          text: "Super Administrators configure core outbound SMTP email relays and Aplos sync setups locally without executing code. Sub-cards isolate sections, letting you update parameters independently:",
+          text: "Enrolled students access tools to register in cohort groups, review semester progress reports, make payments, and manage profile security settings.",
           font: "Arial",
           size: 22,
         }),
@@ -283,15 +277,16 @@ function generateDocx() {
     })
   );
 
-  // Embed Settings Image if exists
-  if (fs.existsSync(images.settings)) {
+  // Embed Student Dashboard Image
+  const studDashData = getImageData(screenshots.studentDashboard);
+  if (studDashData) {
     docxChildren.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { before: 200, after: 200 },
+        spacing: { before: 200, after: 100 },
         children: [
           new ImageRun({
-            data: fs.readFileSync(images.settings),
+            data: studDashData,
             transformation: { width: 500, height: 281 },
           }),
         ],
@@ -300,26 +295,27 @@ function generateDocx() {
         alignment: AlignmentType.CENTER,
         spacing: { before: 50, after: 300 },
         children: [
-          new TextRun({ text: "Figure 5.3: SMTP Outbound Mail & Accounting API Integrations Settings Portal", italic: true, size: 10, font: "Arial" }),
+          new TextRun({ text: "Figure 4.1: Student Portal Overview Console Home", italic: true, size: 10, font: "Arial" }),
         ],
       })
     );
   }
 
-  // Transcripts Section
+  // Subpage details
   docxChildren.push(
     new Paragraph({
       heading: HeadingLevel.HEADING_2,
       spacing: { before: 300, after: 150 },
       children: [
-        new TextRun({ text: "5.3 Student Records, Transcripts & Withdrawals", color: "009fe5", bold: true, size: 24, font: "Arial" }),
+        new TextRun({ text: "4.1 Course Registration & Academics subpages", color: "009fe5", bold: true, size: 24, font: "Arial" }),
       ],
     }),
     new Paragraph({
       spacing: { before: 100, after: 120 },
       children: [
         new TextRun({
-          text: "The Registrar processes withdrawal requests, reviews academic files, deactivates profiles of dismissed students, and schedules dynamic transcript distribution catalogs:",
+          text: "• Course Registration (/dashboard/student/enrollment): Displays sections active during the semester term. Students select subjects, view remaining spots, and request enrollments.\n" +
+                "• Academics Progress (/dashboard/student/academics): Provides an unofficial transcript view listing completed classes, active credits, and overall cumulative GPA score matrices.",
           font: "Arial",
           size: 22,
         }),
@@ -327,15 +323,16 @@ function generateDocx() {
     })
   );
 
-  // Embed Transcripts Image if exists
-  if (fs.existsSync(images.transcripts)) {
+  // Embed Student Enrollment Image
+  const studEnrollData = getImageData(screenshots.studentEnrollment);
+  if (studEnrollData) {
     docxChildren.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { before: 200, after: 200 },
+        spacing: { before: 200, after: 100 },
         children: [
           new ImageRun({
-            data: fs.readFileSync(images.transcripts),
+            data: studEnrollData,
             transformation: { width: 500, height: 281 },
           }),
         ],
@@ -344,16 +341,439 @@ function generateDocx() {
         alignment: AlignmentType.CENTER,
         spacing: { before: 50, after: 300 },
         children: [
-          new TextRun({ text: "Figure 5.4: Official Transcripts Management & Withdrawal Request processing", italic: true, size: 10, font: "Arial" }),
+          new TextRun({ text: "Figure 4.2: Course Section Registration Panel", italic: true, size: 10, font: "Arial" }),
         ],
       })
     );
   }
+
+  // Embed Student Academics Image
+  const studAcadData = getImageData(screenshots.studentAcademics);
+  if (studAcadData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: studAcadData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 4.3: Unofficial Transcript and Cumulative GPA Display", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Student Attendance, Finance, and Settings Subpages
+  docxChildren.push(
+    new Paragraph({
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 300, after: 150 },
+      children: [
+        new TextRun({ text: "4.2 Attendance, Ledger Financials, and Security Settings", color: "009fe5", bold: true, size: 24, font: "Arial" }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 100, after: 120 },
+      children: [
+        new TextRun({
+          text: "• Attendance Monitor (/dashboard/student/attendance): Real-time attendance logs showing present/absent classes and attendance percentages.\n" +
+                "• Ledger Finance (/dashboard/student/finance): Direct look at tuition fee balances, active scholarship grants, and structural seminary invoice registries.\n" +
+                "• Security / Profile Settings (/dashboard/student/settings): Reset passwords matching complexity parameters, toggle two-factor auth (MFA), and request programmatic student withdrawals (which puts the account in a read-only state upon registrar confirmation).",
+          font: "Arial",
+          size: 22,
+        }),
+      ],
+    })
+  );
+
+  // Embed Student Attendance Image
+  const studAttendData = getImageData(screenshots.studentAttendance);
+  if (studAttendData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: studAttendData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 4.4: Real-Time Classroom Attendance Tracker Dashboard", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Embed Student Finance Image
+  const studFinData = getImageData(screenshots.studentFinance);
+  if (studFinData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: studFinData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 4.5: Student Tuition Balance Ledgers & Invoice Center", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Embed Student Settings Image
+  const studSettingsData = getImageData(screenshots.studentSettings);
+  if (studSettingsData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: studSettingsData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 4.6: Security settings, password resets, and withdrawal portal page", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // SECTION 5: FACULTY PORTAL
+  docxChildren.push(
+    new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      spacing: { before: 400, after: 200 },
+      children: [
+        new TextRun({ text: "5. Faculty Portal Operations & Academic Tools", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 100, after: 120 },
+      children: [
+        new TextRun({
+          text: "Instructors coordinate student section attendance, register grades out of 100, and coordinate schedule calendars directly with seminary chairs.",
+          font: "Arial",
+          size: 22,
+        }),
+      ],
+    })
+  );
+
+  // Embed Faculty Dashboard Image
+  const facDashData = getImageData(screenshots.facultyDashboard);
+  if (facDashData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: facDashData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 5.1: Faculty Portal Home & Active Classroom Telemetry Overview", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Subpages
+  docxChildren.push(
+    new Paragraph({
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 300, after: 150 },
+      children: [
+        new TextRun({ text: "5.1 Attendance rosters & Grade submissions", color: "009fe5", bold: true, size: 24, font: "Arial" }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 100, after: 120 },
+      children: [
+        new TextRun({
+          text: "• Classroom Attendance (/dashboard/faculty/attendance): Allows logging student attendance logs. Important: Students who are graduated, dismissed, or withdrawn are automatically excluded from the roster list.\n" +
+                "• Gradebook Submissions (/dashboard/faculty/gradebook): Instructors enter numerical score values out of 100. The system automatically converts numbers into letter grades (A, B, C) in the backend tables, preventing arbitrary grade entry errors.",
+          font: "Arial",
+          size: 22,
+        }),
+      ],
+    })
+  );
+
+  // Embed Faculty Attendance Image
+  const facAttendData = getImageData(screenshots.facultyAttendance);
+  if (facAttendData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: facAttendData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 5.2: Faculty Student Classroom Daily Attendance Log", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Embed Faculty Gradebook Image
+  const facGradebookData = getImageData(screenshots.facultyGradebook);
+  if (facGradebookData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: facGradebookData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 5.3: Faculty Student Grade Entry Dashboard Console", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Embed Faculty Profile Image
+  const facProfileData = getImageData(screenshots.facultyProfile);
+  if (facProfileData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: facProfileData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 5.4: Faculty Profile Configuration Dashboard Panel", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // SECTION 6: ADMINISTRATOR PORTAL
+  docxChildren.push(
+    new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      spacing: { before: 400, after: 200 },
+      children: [
+        new TextRun({ text: "6. Administrator Portal & Telemetry Console", color: "0e2a47", bold: true, size: 28, font: "Arial" }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 100, after: 120 },
+      children: [
+        new TextRun({
+          text: "The administrator panel coordinates system settings, admissions CRM review pipelines, dynamic official transcripts delivery, and structural academic bulk Excel imports.",
+          font: "Arial",
+          size: 22,
+        }),
+      ],
+    })
+  );
+
+  // Embed Admin Dashboard Image
+  const adminDashData = getImageData(screenshots.adminDashboard);
+  if (adminDashData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: adminDashData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 6.1: Administrative Main Console Overview", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Subpages
+  docxChildren.push(
+    new Paragraph({
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 300, after: 150 },
+      children: [
+        new TextRun({ text: "6.1 Access Control, Settings, and Official Transcripts subpages", color: "009fe5", bold: true, size: 24, font: "Arial" }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 100, after: 120 },
+      children: [
+        new TextRun({
+          text: "• Access Control Tiers (/dashboard/admin/manage-admins): Super Admins promote/demote Standard and Restricted Admins dynamically without code edits.\n" +
+                "• Integrations Settings (/dashboard/admin/settings): Define SMTP outbound mail gateways and synchronizations for external accountants like Aplos. Note: Restricted admins cannot access or edit this page.\n" +
+                "• Records & Transcripts (/dashboard/admin/transcripts): Review student withdrawal requests and process official, printable academic transcripts directly to dynamic distribution lists.",
+          font: "Arial",
+          size: 22,
+        }),
+      ],
+    })
+  );
+
+  // Embed Manage Admins Image
+  const manageAdData = getImageData(screenshots.manageAdmins);
+  if (manageAdData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: manageAdData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 6.2: Access Tiers Directory Console for Clearance Promotion & Demotion", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Embed Admin Settings Image
+  const adminSetData = getImageData(screenshots.adminSettings);
+  if (adminSetData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: adminSetData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 6.3: Integrations outbound SMTP & accounting system configurations console", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Embed Admin Transcripts Image
+  const adminTrData = getImageData(screenshots.adminTranscripts);
+  if (adminTrData) {
+    docxChildren.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 100 },
+        children: [
+          new ImageRun({
+            data: adminTrData,
+            transformation: { width: 500, height: 281 },
+          }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 50, after: 300 },
+        children: [
+          new TextRun({ text: "Figure 6.4: Official Transcripts Management and Withdrawal process console", italic: true, size: 10, font: "Arial" }),
+        ],
+      })
+    );
+  }
+
+  // Step-by-Step for Excel Importer Page
+  docxChildren.push(
+    new Paragraph({
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 300, after: 150 },
+      children: [
+        new TextRun({ text: "6.2 Bulk Academic Structure Excel Import System", color: "009fe5", bold: true, size: 24, font: "Arial" }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { before: 100, after: 120 },
+      children: [
+        new TextRun({
+          text: "Located at the top of Setup Academics page (/dashboard/admin/academics), this system enables bulk creation of Departments, Class Cohorts, and Courses via standardized Excel uploads.\n" +
+                "Step-by-step instructions to use:\n" +
+                "1. Download Template: Click \"Download Excel Template\" to generate a compiled workbook containing three structured sheets (Departments, Classes, and Courses) pre-populated with examples.\n" +
+                "2. Populate Excel: Enter your institutional structures. Keep exact values for 'DepartmentCode' in the Classes sheet and 'ClassCode' in the Courses sheet to match links properly.\n" +
+                "3. Upload Spreadsheet: Click or drag your completed academic structure Excel file into the Dashed Upload Zone. The system processes rows using transactional ACID integrity, rolling back all changes if any single record fails validation.",
+          font: "Arial",
+          size: 22,
+        }),
+      ],
+    })
+  );
 
   const doc = new Document({
-    creator: "Esdros IT Division",
+    creator: "Esdros Seminary Information Systems Division",
     title: "Esdros Theological Seminary - Comprehensive User Manual & Portal Guide",
-    description: "Detailed user manual and workflow guides for student, faculty, and administrator portals.",
+    description: "Detailed step-by-step manuals, visual tour guides, and operational guidelines for students, faculty, and administrators.",
     sections: [{
       properties: {},
       children: docxChildren,
@@ -361,7 +781,7 @@ function generateDocx() {
   });
 
   Packer.toBuffer(doc).then((buffer) => {
-    const destPath = path.join(publicDir, "Esdros_Seminary_User_Guide.docx");
+    const destPath = path.join(publicDir, "Esdros_Theological_Seminary_User_Manual.docx");
     fs.writeFileSync(destPath, buffer);
     console.log(`Word User Guide generated successfully at: ${destPath}`);
   }).catch((err) => {
@@ -374,7 +794,7 @@ function generateDocx() {
 // ----------------------------------------------------
 function generatePdf() {
   console.log("Generating PDF user guide...");
-  const destPath = path.join(publicDir, "Esdros_Seminary_User_Guide.pdf");
+  const destPath = path.join(publicDir, "Esdros_Theological_Seminary_User_Manual.pdf");
   
   const doc = new PDFDocument({ margin: 50 });
   const writeStream = fs.createWriteStream(destPath);
@@ -387,124 +807,266 @@ function generatePdf() {
   doc.moveDown(0.5);
   doc.fontSize(12).fillColor("#475569").text("COMPREHENSIVE MULTI-PORTAL USER MANUAL & SYSTEM GUIDE", { align: "center" });
   doc.moveDown(6);
-  doc.fontSize(11).fillColor("#64748b").text("Version 1.0 • Published May 2026", { align: "center" });
+  doc.fontSize(11).fillColor("#64748b").text("Version 1.1 • Published May 2026", { align: "center" });
   doc.text("Prepared for: Administrators, Registrar, Faculty Instructors, and Enrolled Students", { align: "center" });
   doc.addPage();
 
   // Section 1: Platform Overview
-  doc.fontSize(18).fillColor("#0e2a47").text("1. Platform Overview & Portals");
+  doc.fontSize(18).fillColor("#0e2a47").text("1. Platform Overview & Unified Architecture");
   doc.moveDown(0.4);
   doc.fontSize(11).fillColor("#1e293b").text(
-    "Esdros Theological Seminary features a unified Student Information System (SIS) and Learning Management System (LMS) designed to automate registration, student profiles, attendance logs, numerical grade submission, official transcript delivery, and secure multi-tenant settings configuration. The platform organizes access rights across distinct dashboards based on secure system roles.",
+    "Esdros Theological Seminary features a highly premium, unified Student Information System (SIS) and Learning Management System (LMS) that coordinates enrollment lifecycle, CRM admissions scoring, class scheduling, attendance tracking, numerical grading, and official PDF transcript distribution. All operations are strictly divided across three secure portals—Student, Faculty, and Admin—integrated dynamically under centralized ACID database transaction rules.",
     { lineGap: 4 }
   );
   doc.moveDown(1.5);
 
-  // Section 2: Public Portal & Admissions Form
-  doc.fontSize(18).fillColor("#0e2a47").text("2. Public Portal & Admissions Form");
+  // Section 2: Public Website
+  doc.fontSize(18).fillColor("#0e2a47").text("2. Public Marketing Website & Portal Navigations");
   doc.moveDown(0.4);
   doc.fontSize(11).fillColor("#1e293b").text(
-    "• Marketing Page (/): Provides structural details of Theology and Geez language tracks, degree programs, and administrative contacts.\n" +
-    "• Online Apply Form (/apply): Prospective applicants fill out personal credentials, track details, and faith statements. Submitted records immediately spawn PENDING applications inside the Admin CRM pipelines.\n" +
-    "• Enrollment Control: Administrators can toggle settings to open or lock public applicant registrations at any time.",
+    "The institutional front page offers direct links to seminary portals, contact details, curriculum calendars, and academic tracks. Sub-pages detail structured programs:\n" +
+    "• Theology Track (/programs/theology): Covers Orthodox dogmatic theological curriculums.\n" +
+    "• Geez Language Track (/programs/geez): Details classical Geez language grammar and syntactic studies.",
     { lineGap: 4 }
   );
   doc.moveDown(1.5);
 
-  // Section 3: Student Dashboard
-  doc.fontSize(18).fillColor("#0e2a47").text("3. Student Portal operations (/dashboard/student)");
-  doc.moveDown(0.4);
-  doc.fontSize(11).fillColor("#1e293b").text(
-    "• Course Registration: Enables students to enroll in course sections active inside the current term.\n" +
-    "• Financial Invoices: View detailed ledger balances, tuition fees, scholarship records, and secure invoice lists.\n" +
-    "• Two-Factor MFA Security: Logins enforce strong passwords (length > 7, uppercase, lowercase, numbers, and symbols) and scan a secure time-based TOTP QR code at setup to enforce secure logins.\n" +
-    "• Request Withdrawal: Students can submit a withdrawal request outlining reasons. Once approved by the registrar, their user account transitions into secure read-only mode.\n" +
-    "• Unofficial Transcripts: Generate and view instant cumulative GPA audits with letter conversions.",
-    { lineGap: 4 }
-  );
-  doc.addPage();
-
-  // Section 4: Faculty Dashboard
-  doc.fontSize(18).fillColor("#0e2a47").text("4. Faculty Portal operations (/dashboard/faculty)");
-  doc.moveDown(0.4);
-  doc.fontSize(11).fillColor("#1e293b").text(
-    "• Cohort Schedules: Faculty can view their assigned sections, classrooms, time schedules, and matriculation limits.\n" +
-    "• Roster & Attendance Matrix: Log daily classroom attendance. Graduated, dismissed, or withdrawn students are automatically omitted from these rosters.\n" +
-    "• Grade Submission Console: Instructors record student grade evaluations out of 100, which are automatically translated into GPA scale letters (A, B, C) in database tables.\n" +
-    "• Faculty Announcement Center: Faculty receive direct alerts from the administration board to coordinate grading calendars.",
-    { lineGap: 4 }
-  );
-  doc.moveDown(1.5);
-
-  // Section 5: Administrator Console
-  doc.fontSize(18).fillColor("#0e2a47").text("5. Administrator Console operations (/dashboard/admin)");
-  doc.moveDown(0.4);
-  doc.fontSize(11).fillColor("#1e293b").text(
-    "The Administrative console acts as the primary telemetry center of Esdros Theological Seminary. The home dashboard provides real-time enrollment footprints, cohort distribution, and CRM pipelines.",
-    { lineGap: 4 }
-  );
-  doc.moveDown(1.5);
-
-  // Embed Dashboard Image
-  if (fs.existsSync(images.dashboard)) {
-    doc.image(images.dashboard, { width: 500 });
+  // Embed Public Landing Image
+  if (fs.existsSync(screenshots.publicLanding)) {
+    doc.image(screenshots.publicLanding, { width: 500 });
     doc.moveDown(0.3);
-    doc.fontSize(9).fillColor("#64748b").text("Figure 5.1: Esdros Seminary Admin Telemetry Overview Console", { align: "center" });
+    doc.fontSize(9).fillColor("#64748b").text("Figure 2.1: Esdros Seminary Public Landing Website", { align: "center" });
     doc.moveDown(1.5);
   }
   doc.addPage();
 
-  // Subsection 5.1: Manage Admins
-  doc.fontSize(14).fillColor("#009fe5").text("5.1 Manage Admins & clearance Tiers");
+  // Embed Public Theology Image
+  if (fs.existsSync(screenshots.publicTheology)) {
+    doc.image(screenshots.publicTheology, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 2.2: Orthodox Theology Program Curriculum Page", { align: "center" });
+    doc.moveDown(1.5);
+  }
+
+  // Section 3: Authentication Gateways
+  doc.fontSize(18).fillColor("#0e2a47").text("3. Gateway Authentication & Security Control");
   doc.moveDown(0.4);
   doc.fontSize(11).fillColor("#1e293b").text(
-    "The Access Control system segregates operations across three tiers. Super Admins can promote or demote standard and restricted administrators directly from the directory list:",
+    "The portal entry (/login) maintains strict user security rules:\n" +
+    "1. Enforce Password Policy: Passwords must be greater than seven characters and must contain an uppercase letter, lowercase letter, number, and special character.\n" +
+    "2. Two-Factor Authentication (MFA): Implements secure time-based authenticator apps (Google Authenticator, Microsoft Authenticator) using TOTP protocols. During signup, users scan a QR code and must enter their 6-digit verification pin to register. Subsequent logins automatically require their username, password, and active 6-digit TOTP pin.",
+    { lineGap: 4 }
+  );
+  doc.moveDown(1.5);
+
+  // Embed Login Page Image
+  if (fs.existsSync(screenshots.loginPage)) {
+    doc.image(screenshots.loginPage, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 3.1: SIS-LMS Secure Multi-Factor Gateway Login Console", { align: "center" });
+  }
+  doc.addPage();
+
+  // Section 4: Student Portal
+  doc.fontSize(18).fillColor("#0e2a47").text("4. Student Dashboard & Portal Operations");
+  doc.moveDown(0.4);
+  doc.fontSize(11).fillColor("#1e293b").text(
+    "Enrolled students access tools to register in cohort groups, review semester progress reports, make payments, and manage profile security settings.",
+    { lineGap: 4 }
+  );
+  doc.moveDown(1.5);
+
+  // Embed Student Dashboard Image
+  if (fs.existsSync(screenshots.studentDashboard)) {
+    doc.image(screenshots.studentDashboard, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 4.1: Student Portal Overview Console Home", { align: "center" });
+    doc.moveDown(1.5);
+  }
+  doc.addPage();
+
+  // Subsection 4.1: Course registration
+  doc.fontSize(14).fillColor("#009fe5").text("4.1 Course Registration & Academics subpages");
+  doc.moveDown(0.4);
+  doc.fontSize(11).fillColor("#1e293b").text(
+    "• Course Registration (/dashboard/student/enrollment): Displays sections active during the semester term. Students select subjects, view remaining spots, and request enrollments.\n" +
+    "• Academics Progress (/dashboard/student/academics): Provides an unofficial transcript view listing completed classes, active credits, and overall cumulative GPA score matrices.",
+    { lineGap: 4 }
+  );
+  doc.moveDown(1.5);
+
+  // Embed Student Enrollment Image
+  if (fs.existsSync(screenshots.studentEnrollment)) {
+    doc.image(screenshots.studentEnrollment, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 4.2: Course Section Registration Panel", { align: "center" });
+    doc.moveDown(1.5);
+  }
+  doc.addPage();
+
+  // Embed Student Academics Image
+  if (fs.existsSync(screenshots.studentAcademics)) {
+    doc.image(screenshots.studentAcademics, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 4.3: Unofficial Transcript and Cumulative GPA Display", { align: "center" });
+  }
+  doc.addPage();
+
+  // Subsection 4.2: Attendance, Ledgers, Settings
+  doc.fontSize(14).fillColor("#009fe5").text("4.2 Attendance, Ledger Financials, and Security Settings");
+  doc.moveDown(0.4);
+  doc.fontSize(11).fillColor("#1e293b").text(
+    "• Attendance Monitor (/dashboard/student/attendance): Real-time attendance logs showing present/absent classes and attendance percentages.\n" +
+    "• Ledger Finance (/dashboard/student/finance): Direct look at tuition fee balances, active scholarship grants, and structural seminary invoice registries.\n" +
+    "• Security / Profile Settings (/dashboard/student/settings): Reset passwords matching complexity parameters, toggle two-factor auth (MFA), and request programmatic student withdrawals (which puts the account in a read-only state upon registrar confirmation).",
+    { lineGap: 4 }
+  );
+  doc.moveDown(1.5);
+
+  // Embed Student Attendance Image
+  if (fs.existsSync(screenshots.studentAttendance)) {
+    doc.image(screenshots.studentAttendance, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 4.4: Real-Time Classroom Attendance Tracker Dashboard", { align: "center" });
+    doc.moveDown(1.5);
+  }
+  doc.addPage();
+
+  // Embed Student Finance Image
+  if (fs.existsSync(screenshots.studentFinance)) {
+    doc.image(screenshots.studentFinance, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 4.5: Student Tuition Balance Ledgers & Invoice Center", { align: "center" });
+    doc.moveDown(1.5);
+  }
+  doc.addPage();
+
+  // Embed Student Settings Image
+  if (fs.existsSync(screenshots.studentSettings)) {
+    doc.image(screenshots.studentSettings, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 4.6: Security settings, password resets, and withdrawal portal page", { align: "center" });
+  }
+  doc.addPage();
+
+  // Section 5: Faculty Portal
+  doc.fontSize(18).fillColor("#0e2a47").text("5. Faculty Portal Operations & Academic Tools");
+  doc.moveDown(0.4);
+  doc.fontSize(11).fillColor("#1e293b").text(
+    "Instructors coordinate student section attendance, register grades out of 100, and coordinate schedule calendars directly with seminary chairs.",
+    { lineGap: 4 }
+  );
+  doc.moveDown(1.5);
+
+  // Embed Faculty Dashboard Image
+  if (fs.existsSync(screenshots.facultyDashboard)) {
+    doc.image(screenshots.facultyDashboard, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 5.1: Faculty Portal Home & Active Classroom Telemetry Overview", { align: "center" });
+  }
+  doc.addPage();
+
+  // Subsection 5.1
+  doc.fontSize(14).fillColor("#009fe5").text("5.1 Attendance rosters & Grade submissions");
+  doc.moveDown(0.4);
+  doc.fontSize(11).fillColor("#1e293b").text(
+    "• Classroom Attendance (/dashboard/faculty/attendance): Allows logging student attendance logs. Important: Students who are graduated, dismissed, or withdrawn are automatically excluded from the roster list.\n" +
+    "• Gradebook Submissions (/dashboard/faculty/gradebook): Instructors enter numerical score values out of 100. The system automatically converts numbers into letter grades (A, B, C) in the backend tables, preventing arbitrary grade entry errors.",
+    { lineGap: 4 }
+  );
+  doc.moveDown(1.5);
+
+  // Embed Faculty Attendance Image
+  if (fs.existsSync(screenshots.facultyAttendance)) {
+    doc.image(screenshots.facultyAttendance, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 5.2: Faculty Student Classroom Daily Attendance Log", { align: "center" });
+    doc.moveDown(1.5);
+  }
+  doc.addPage();
+
+  // Embed Faculty Gradebook Image
+  if (fs.existsSync(screenshots.facultyGradebook)) {
+    doc.image(screenshots.facultyGradebook, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 5.3: Faculty Student Grade Entry Dashboard Console", { align: "center" });
+    doc.moveDown(1.5);
+  }
+  doc.addPage();
+
+  // Embed Faculty Profile Image
+  if (fs.existsSync(screenshots.facultyProfile)) {
+    doc.image(screenshots.facultyProfile, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 5.4: Faculty Profile Configuration Dashboard Panel", { align: "center" });
+  }
+  doc.addPage();
+
+  // Section 6: Admin Portal
+  doc.fontSize(18).fillColor("#0e2a47").text("6. Administrator Portal & Telemetry Console");
+  doc.moveDown(0.4);
+  doc.fontSize(11).fillColor("#1e293b").text(
+    "The administrator panel coordinates system settings, admissions CRM review pipelines, dynamic official transcripts delivery, and structural academic bulk Excel imports.",
+    { lineGap: 4 }
+  );
+  doc.moveDown(1.5);
+
+  // Embed Admin Dashboard Image
+  if (fs.existsSync(screenshots.adminDashboard)) {
+    doc.image(screenshots.adminDashboard, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 6.1: Administrative Main Console Overview", { align: "center" });
+  }
+  doc.addPage();
+
+  // Subsection 6.1
+  doc.fontSize(14).fillColor("#009fe5").text("6.1 Access Control, Settings, and Official Transcripts subpages");
+  doc.moveDown(0.4);
+  doc.fontSize(11).fillColor("#1e293b").text(
+    "• Access Control Tiers (/dashboard/admin/manage-admins): Super Admins promote/demote Standard and Restricted Admins dynamically without code edits.\n" +
+    "• Integrations Settings (/dashboard/admin/settings): Define SMTP outbound mail gateways and synchronizations for external accountants like Aplos. Note: Restricted admins cannot access or edit this page.\n" +
+    "• Records & Transcripts (/dashboard/admin/transcripts): Review student withdrawal requests and process official, printable academic transcripts directly to dynamic distribution lists.",
     { lineGap: 4 }
   );
   doc.moveDown(1.5);
 
   // Embed Manage Admins Image
-  if (fs.existsSync(images.manageAdmins)) {
-    doc.image(images.manageAdmins, { width: 500 });
+  if (fs.existsSync(screenshots.manageAdmins)) {
+    doc.image(screenshots.manageAdmins, { width: 500 });
     doc.moveDown(0.3);
-    doc.fontSize(9).fillColor("#64748b").text("Figure 5.2: Directory Interface for Dynamic Clearance Promotion & Demotion", { align: "center" });
+    doc.fontSize(9).fillColor("#64748b").text("Figure 6.2: Access Tiers Directory Console for Clearance Promotion & Demotion", { align: "center" });
     doc.moveDown(1.5);
   }
   doc.addPage();
 
-  // Subsection 5.2: Settings
-  doc.fontSize(14).fillColor("#009fe5").text("5.2 System Settings & External Integrations");
-  doc.moveDown(0.4);
-  doc.fontSize(11).fillColor("#1e293b").text(
-    "Super Administrators configure core outbound SMTP email relays and Aplos sync setups locally without executing code. Sub-cards isolate sections, letting you update parameters independently:",
-    { lineGap: 4 }
-  );
-  doc.moveDown(1.5);
-
-  // Embed Settings Image
-  if (fs.existsSync(images.settings)) {
-    doc.image(images.settings, { width: 500 });
+  // Embed Admin Settings Image
+  if (fs.existsSync(screenshots.adminSettings)) {
+    doc.image(screenshots.adminSettings, { width: 500 });
     doc.moveDown(0.3);
-    doc.fontSize(9).fillColor("#64748b").text("Figure 5.3: SMTP Outbound Mail & Accounting API Integrations Settings Portal", { align: "center" });
+    doc.fontSize(9).fillColor("#64748b").text("Figure 6.3: Integrations outbound SMTP & accounting system configurations console", { align: "center" });
     doc.moveDown(1.5);
   }
   doc.addPage();
 
-  // Subsection 5.3: Transcripts & Records
-  doc.fontSize(14).fillColor("#009fe5").text("5.3 Student Records, Transcripts & Withdrawals");
+  // Embed Admin Transcripts Image
+  if (fs.existsSync(screenshots.adminTranscripts)) {
+    doc.image(screenshots.adminTranscripts, { width: 500 });
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor("#64748b").text("Figure 6.4: Official Transcripts Management and Withdrawal process console", { align: "center" });
+  }
+  doc.addPage();
+
+  // Subsection 6.2: Excel Importer
+  doc.fontSize(14).fillColor("#009fe5").text("6.2 Bulk Academic Structure Excel Import System");
   doc.moveDown(0.4);
   doc.fontSize(11).fillColor("#1e293b").text(
-    "The Registrar processes withdrawal requests, reviews academic files, deactivates profiles of dismissed students, and schedules dynamic transcript distribution catalogs:",
+    "Located at the top of Setup Academics page (/dashboard/admin/academics), this system enables bulk creation of Departments, Class Cohorts, and Courses via standardized Excel uploads.\n" +
+    "Step-by-step instructions to use:\n" +
+    "1. Download Template: Click \"Download Excel Template\" to generate a compiled workbook containing three structured sheets (Departments, Classes, and Courses) pre-populated with examples.\n" +
+    "2. Populate Excel: Enter your institutional structures. Keep exact values for 'DepartmentCode' in the Classes sheet and 'ClassCode' in the Courses sheet to match links properly.\n" +
+    "3. Upload Spreadsheet: Click or drag your completed academic structure Excel file into the Dashed Upload Zone. The system processes rows using transactional ACID integrity, rolling back all changes if any single record fails validation.",
     { lineGap: 4 }
   );
-  doc.moveDown(1.5);
-
-  // Embed Transcripts Image
-  if (fs.existsSync(images.transcripts)) {
-    doc.image(images.transcripts, { width: 500 });
-    doc.moveDown(0.3);
-    doc.fontSize(9).fillColor("#64748b").text("Figure 5.4: Official Transcripts Management & Withdrawal Request processing", { align: "center" });
-  }
 
   doc.end();
   writeStream.on("finish", () => {
