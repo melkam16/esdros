@@ -43,18 +43,29 @@ export default async function AcademicStructureConsole() {
                         <span className="text-xs bg-slate-200 font-mono text-slate-600 px-1.5 py-0.5 rounded">{dept.code}</span>
                       </div>
                       
-                      {/* Nested Sub-branches for Class parameters */}
-                      <div className="mt-2 pl-4 border-l-2 border-slate-300 space-y-2">
+                      {/* Nested Sub-branches for Class parameters with elegant accordions */}
+                      <div className="mt-2 pl-4 border-l-2 border-slate-200 space-y-2">
                         {dept.classes.map((cls) => (
-                          <div key={cls.id} className="text-xs text-slate-600">
-                            <p className="font-semibold text-slate-700">• Class: {cls.name} ({cls.code})</p>
-                            {/* Nested Sub-branches for Subjects */}
-                            <div className="pl-3 mt-0.5 text-slate-500 space-y-0.5">
+                          <details key={cls.id} className="group border border-slate-200 rounded-lg bg-white overflow-hidden shadow-sm text-xs">
+                            <summary className="flex justify-between items-center p-2.5 bg-slate-50 hover:bg-slate-100/80 cursor-pointer font-bold text-slate-700 list-none select-none">
+                              <span className="flex items-center gap-1.5">
+                                <span>🏫</span>
+                                <span>Class: {cls.name} ({cls.code})</span>
+                              </span>
+                              <span className="text-slate-400 group-open:rotate-90 transition-transform duration-200">▶</span>
+                            </summary>
+                            <div className="p-3 pl-6 border-t border-slate-100 bg-white space-y-1.5 text-slate-500">
                               {classes.find(c => c.id === cls.id)?.subjects.map((sub) => (
-                                <p key={sub.id}>↳ Subject: {sub.title} ({sub.code})</p>
+                                <p key={sub.id} className="flex items-center gap-1.5 hover:text-blue-600 transition">
+                                  <span>📚</span>
+                                  <span>Subject: {sub.title} ({sub.code})</span>
+                                </p>
                               ))}
+                              {(!classes.find(c => c.id === cls.id)?.subjects || classes.find(c => c.id === cls.id)?.subjects.length === 0) && (
+                                <p className="text-slate-400 italic">No subjects assigned yet.</p>
+                              )}
                             </div>
-                          </div>
+                          </details>
                         ))}
                       </div>
                     </div>
