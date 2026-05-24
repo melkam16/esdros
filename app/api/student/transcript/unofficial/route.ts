@@ -5,6 +5,8 @@ import { cookies } from 'next/headers';
 // @ts-ignore
 import PDFDocument from 'pdfkit';
 
+export const dynamic = 'force-dynamic';
+
 // Helper to calculate grade letters
 const getLetter = (score: number | null) => {
   if (score === null || isNaN(score)) return 'N/A';
@@ -87,6 +89,20 @@ export async function GET() {
       return acc + (e.grade !== null && e.grade >= 60 ? credits : 0);
     }, 0);
 
+    // Fetch premium fonts dynamically from highly cached Cloudflare CDN
+    // This resolves Vercel serverless bundling dropping standard Helvetica .afm files
+    const [regRes, boldRes] = await Promise.all([
+      fetch('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf'),
+      fetch('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf')
+    ]);
+
+    if (!regRes.ok || !boldRes.ok) {
+      throw new Error(`Failed to load pdf fonts: reg=${regRes.status}, bold=${boldRes.status}`);
+    }
+
+    const regBuffer = Buffer.from(await regRes.arrayBuffer());
+    const boldBuffer = Buffer.from(await boldRes.arrayBuffer());
+
     // Create a new PDF document in memory
     const doc = new PDFDocument({ size: 'LETTER', margin: 50 });
     const chunks: any[] = [];
@@ -98,6 +114,11 @@ export async function GET() {
       doc.on('error', reject);
     });
 
+    // Register custom fonts loaded from in-memory buffers
+    doc.registerFont('Roboto-Regular', regBuffer);
+    doc.registerFont('Roboto-Bold', boldBuffer);
+    doc.font('Roboto-Regular');
+
     // --- PDF DRAWING ---
 
     // 1. Semi-transparent rotated red background watermark
@@ -106,6 +127,7 @@ export async function GET() {
        .fontSize(48)
        .fillColor('#EF4444')
        .rotate(-30, { origin: [300, 380] })
+       .font('Roboto-Bold')
        .text('UNOFFICIAL COPY', 100, 360, { align: 'center', width: 400 })
        .text('UNOFFICIAL COPY', 100, 430, { align: 'center', width: 400 })
        .restore();
@@ -116,17 +138,20 @@ export async function GET() {
     // 3. Institution Header Details
     doc.fillColor('#0E2A47')
        .fontSize(18)
-       .text('ESDEROS EOTC THEOLOGICAL SEMINARY', 50, 40, { align: 'center', bold: true })
+       .font('Roboto-Bold')
+       .text('ESDEROS EOTC THEOLOGICAL SEMINARY', 50, 40, { align: 'center' })
        .moveDown(0.2);
 
     doc.fillColor('#475569')
        .fontSize(10)
+       .font('Roboto-Regular')
        .text('OFFICE OF THE REGISTRAR', { align: 'center' })
        .moveDown(0.3);
 
     doc.fillColor('#EF4444')
        .fontSize(11)
-       .text('UNOFFICIAL ACADEMIC AUDIT & TRANSCRIPT', { align: 'center', bold: true, letterSpacing: 0.5 })
+       .font('Roboto-Bold')
+       .text('UNOFFICIAL ACADEMIC AUDIT & TRANSCRIPT', { align: 'center', letterSpacing: 0.5 })
        .moveDown(1.5);
 
     // 4. Student Metadata Card
@@ -141,7 +166,9 @@ export async function GET() {
 
     doc.fillColor('#0F172A')
        .fontSize(10)
-       .text(`Student Candidate: ${student.user.firstName} ${student.user.lastName}`, 70, 130, { bold: true })
+       .font('Roboto-Bold')
+       .text(`Student Candidate: ${student.user.firstName} ${student.user.lastName}`, 70, 130)
+       .font('Roboto-Regular')
        .text(`Student ID: ${student.id.substring(0, 8).toUpperCase()}`, 70, 150)
        .text(`Program Track: ${student.track || 'Theological Studies'}`, 70, 170);
 
@@ -152,11 +179,12 @@ export async function GET() {
     // 5. Grid Table Headers
     doc.fillColor('#0F172A')
        .fontSize(10)
-       .text('Course Code', 70, 235, { bold: true })
-       .text('Course Title', 180, 235, { bold: true })
-       .text('Credits', 380, 235, { width: 50, align: 'center', bold: true })
-       .text('Grade', 440, 235, { width: 50, align: 'center', bold: true })
-       .text('Score', 500, 235, { width: 50, align: 'right', bold: true });
+       .font('Roboto-Bold')
+       .text('Course Code', 70, 235)
+       .text('Course Title', 180, 235)
+       .text('Credits', 380, 235, { width: 50, align: 'center' })
+       .text('Grade', 440, 235, { width: 50, align: 'center' })
+       .text('Score', 500, 235, { width: 50, align: 'right' });
 
     // Table Divider Line
     doc.strokeColor('#94A3B8')
@@ -169,6 +197,7 @@ export async function GET() {
     
     if (student.enrollments.length === 0) {
       doc.fillColor('#64748B')
+         .font('Roboto-Regular')
          .text('No academic enrollment history or transcripts logged for this account.', 70, y, { italic: true });
     } else {
       student.enrollments.forEach(e => {
@@ -184,6 +213,7 @@ export async function GET() {
              .fontSize(48)
              .fillColor('#EF4444')
              .rotate(-30, { origin: [300, 380] })
+             .font('Roboto-Bold')
              .text('UNOFFICIAL COPY', 100, 360, { align: 'center', width: 400 })
              .restore();
              
@@ -195,6 +225,7 @@ export async function GET() {
         const points = e.grade !== null ? `${e.grade.toFixed(1)}%` : 'In Progress';
 
         doc.fillColor('#334155')
+           .font('Roboto-Regular')
            .text(e.courseSection.course.code, 70, y)
            .text(e.courseSection.course.title, 180, y, { width: 190, ellipsis: true })
            .text(String(credits), 380, y, { width: 50, align: 'center' })
@@ -214,7 +245,8 @@ export async function GET() {
 
     doc.fillColor('#EF4444')
        .fontSize(10)
-       .text('★ LANDMARK: UNOFFICIAL COPY — FOR INTERNAL ACADEMIC AUDIT ONLY ★', 50, 725, { align: 'center', bold: true });
+       .font('Roboto-Bold')
+       .text('★ LANDMARK: UNOFFICIAL COPY — FOR INTERNAL ACADEMIC AUDIT ONLY ★', 50, 725, { align: 'center' });
 
     doc.end();
 
