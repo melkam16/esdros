@@ -159,20 +159,23 @@ export default function SidebarNavigation({ role }: SidebarProps) {
   const activeModules = rawModules.map(module => {
     if (activeRole === 'ADMIN') {
       const filtered = module.items.filter(item => {
-        // Only Super Admins can access manage-admins
-        if (item.href.includes('/manage-admins') && !isSuperAdmin) {
+        // Only Super Admins can access manage-admins, finance, and reports
+        if (
+          (item.href.includes('/manage-admins') ||
+           item.href.includes('/finance') ||
+           item.href.includes('/reports')) && 
+          !isSuperAdmin
+        ) {
           return false;
         }
-        // Only Super Admins and Standard Admins can access settings, finance, reports, and requests
-        if (!isSuperAdmin && !isStandardAdmin) {
-          if (
-            item.href.includes('/settings') ||
-            item.href.includes('/finance') ||
-            item.href.includes('/reports') ||
-            item.href.includes('/requests')
-          ) {
-            return false;
-          }
+        
+        // Only Super Admins and Standard Admins can access settings and requests
+        if (
+          (item.href.includes('/settings') ||
+           item.href.includes('/requests')) &&
+          !isSuperAdmin && !isStandardAdmin
+        ) {
+          return false;
         }
         return true;
       });

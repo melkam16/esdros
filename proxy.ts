@@ -69,14 +69,26 @@ export async function proxy(req: NextRequest) {
         return handleUnauthorized('/dashboard/unauthorized');
       }
       const isSuper = payload.isSuperAdmin as boolean;
+      const isStandard = payload.isStandardAdmin as boolean;
+
+      // Super Admins only paths: manage-admins, finance, reports
       const superOnlyPaths = [
+        '/dashboard/admin/manage-admins',
         '/dashboard/admin/finance',
-        '/dashboard/admin/settings',
-        '/dashboard/admin/reports',
-        '/dashboard/admin/manage-admins'
+        '/dashboard/admin/reports'
       ];
       if (superOnlyPaths.some(p => pathname.startsWith(p)) && !isSuper) {
         console.log("Auth Proxy: Non-super-admin blocked from path:", pathname);
+        return handleUnauthorized('/dashboard/unauthorized');
+      }
+
+      // Standard Admins and Super Admins only paths: settings, requests
+      const standardOrSuperPaths = [
+        '/dashboard/admin/settings',
+        '/dashboard/admin/requests'
+      ];
+      if (standardOrSuperPaths.some(p => pathname.startsWith(p)) && !isSuper && !isStandard) {
+        console.log("Auth Proxy: Non-super/non-standard-admin blocked from path:", pathname);
         return handleUnauthorized('/dashboard/unauthorized');
       }
     }
