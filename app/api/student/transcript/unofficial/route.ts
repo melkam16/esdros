@@ -172,6 +172,8 @@ export async function GET() {
          .text('No academic enrollment history or transcripts logged for this account.', 70, y, { italic: true });
     } else {
       student.enrollments.forEach(e => {
+        if (!e.courseSection || !e.courseSection.course) return;
+
         // Simple page breaking safeguard if too many courses are present
         if (y > 670) {
           doc.addPage();
