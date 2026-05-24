@@ -108,13 +108,6 @@ export default async function AcademicsPage(props: { searchParams: Promise<{ suc
           <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <h2 className="text-lg font-bold text-slate-800">Historical & Current Term Enrollments</h2>
             <div className="flex gap-2 items-center">
-              <a 
-                href="/api/student/transcript/unofficial" 
-                target="_blank"
-                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold rounded-xl transition-all shadow-md flex items-center gap-2"
-              >
-                📥 Download Unofficial Transcript
-              </a>
               <form action={handleRequestOfficial}>
                 <button 
                   type="submit"
