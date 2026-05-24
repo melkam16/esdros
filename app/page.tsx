@@ -43,7 +43,7 @@ export default function HomePage() {
       <Header />
 
       {/* ─── HERO ─── */}
-      <section className="relative overflow-hidden" style={{ backgroundImage: "url('https://us.eotcmk.org/sites/default/files/styles/original/public/2025-12/esderos%20seminary_Desktop.jpg?itok=OXrr_BPc')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <section className="relative overflow-hidden" style={{ backgroundImage: "url('/esdros%20seminary_Desktop.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#009fe5]/80 to-[#1e508d]/60 mix-blend-multiply" />
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20 text-center space-y-5">
           <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-white/20 border border-white/30 rounded-full text-white text-xs font-semibold uppercase tracking-wide backdrop-blur-sm shadow-sm">
