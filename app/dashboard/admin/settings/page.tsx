@@ -17,6 +17,7 @@ export default function SettingsPage() {
     SEMESTER_END: '',
     REGISTRATION_LOCKED: 'false',
     PUBLIC_REGISTRATION_LOCKED: 'false',
+    ENFORCE_MFA: 'false',
     IS_SUPER_ADMIN: 'false',
     IS_STANDARD_ADMIN: 'false'
   });
@@ -488,12 +489,33 @@ export default function SettingsPage() {
                         </select>
                       </div>
                     </div>
+
+                    {/* Enforce Two-Factor Auth (MFA) by Email */}
+                    <div className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                      <div>
+                        <h4 className="font-bold text-slate-850 text-sm">Enforce Two-Factor Auth (MFA) by Email</h4>
+                        <p className="text-[11px] text-slate-500 mt-1 max-w-sm">
+                          If enabled, all users must verify a secure 6-digit one-time passcode (MFA OTP) sent to their email during login.
+                        </p>
+                      </div>
+                      <div>
+                        <select 
+                          value={formData.ENFORCE_MFA}
+                          onChange={e => setFormData(prev => ({ ...prev, ENFORCE_MFA: e.target.value }))}
+                          className="px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none transition-all disabled:opacity-50"
+                          disabled={!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true'}
+                        >
+                          <option value="false">🔓 OPTIONAL / Off</option>
+                          <option value="true">🔒 ENFORCED / On</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
                   <button
-                    onClick={() => handleSaveCard(['REGISTRATION_LOCKED', 'PUBLIC_REGISTRATION_LOCKED'], 'Safeguard Access')}
+                    onClick={() => handleSaveCard(['REGISTRATION_LOCKED', 'PUBLIC_REGISTRATION_LOCKED', 'ENFORCE_MFA'], 'Safeguard Access')}
                     disabled={isSaving || (!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true')}
                     className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl shadow-md transition-all disabled:bg-slate-350 text-xs uppercase tracking-wider"
                   >

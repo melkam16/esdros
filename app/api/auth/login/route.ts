@@ -68,16 +68,59 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email or password credentials' }, { status: 401 });
     }
 
-    // 2.3 Enforce MFA login check if enabled
-    if (user.mfaEnabled) {
+    // 2.3 Enforce MFA login check if enabled globally or on the user profile
+    const mfaSetting = await prisma.systemSetting.findUnique({
+      where: { key: 'ENFORCE_MFA' }
+    });
+    const isMfaEnforced = mfaSetting?.value === 'true';
+
+    if (isMfaEnforced || user.mfaEnabled) {
       if (!mfaCode) {
+        // Generate a 6-digit secure numeric passcode
+        const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Save the OTP code into user's mfaSecret
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { mfaSecret: emailOtp }
+        });
+
+        // Send OTP email
+        try {
+          const { sendEmail } = await import('@/lib/mail');
+          await sendEmail({
+            to: user.email,
+            subject: 'Esderos Theological Seminary — Two-Factor Verification Code',
+            text: `Hello ${user.firstName},\n\nYour 2FA email verification code is: ${emailOtp}\n\nThis code is valid for 10 minutes. Please enter this code to complete your login process.\n\nBest regards,\nOffice of the Registrar\nEsderos EOTC Theological Seminary`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px;">
+                <h2 style="color: #0f172a; margin-top: 0;">Two-Factor Authentication</h2>
+                <p style="color: #475569; font-size: 14px;">Hello <b>${user.firstName}</b>,</p>
+                <p style="color: #475569; font-size: 14px;">To secure your account access, please use the following one-time passcode (OTP) to complete your login:</p>
+                <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; text-align: center; color: #009fe5; letter-spacing: 5px; margin: 20px 0;">
+                  ${emailOtp}
+                </div>
+                <p style="color: #94a3b8; font-size: 11px; text-align: center;">This code will expire in 10 minutes. If you did not request this login attempt, please secure your credentials immediately.</p>
+              </div>
+            `
+          });
+        } catch (mailErr) {
+          console.error("MFA Email transmission failed:", mailErr);
+        }
+
         return NextResponse.json({ mfaRequired: true, email: user.email });
       }
-      const { verifyTotp } = await import('@/lib/totp');
-      const isTotpValid = verifyTotp(mfaCode, user.mfaSecret || '');
-      if (!isTotpValid) {
-        return NextResponse.json({ error: 'Invalid 6-digit Authenticator verification code' }, { status: 401 });
+
+      // Verify the submitted OTP code
+      if (user.mfaSecret !== mfaCode) {
+        return NextResponse.json({ error: 'Invalid two-factor verification code. Please check your email.' }, { status: 401 });
       }
+
+      // Clear the temporary passcode after successful validation
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { mfaSecret: null }
+      });
     }
 
     // 2.5 Deactivation check for DISMISSED students

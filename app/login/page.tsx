@@ -167,8 +167,8 @@ export default function LoginPage() {
                 </form>
               ) : (
                 <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-xs text-emerald-800 leading-relaxed font-medium">
-                    🔒 <b>MFA verification required</b>. Please enter the 6-digit verification code from your authenticator app.
+                  <div className="bg-indigo-50 border border-indigo-100 p-3 rounded-lg text-xs text-indigo-800 leading-relaxed font-medium">
+                    🔒 <b>MFA verification required</b>. Please enter the secure 6-digit verification code sent to your registered email address.
                   </div>
                   <div>
                     <label htmlFor="login-mfa-code" className="block text-sm font-semibold text-slate-700 mb-1.5 text-center font-bold">

@@ -43,6 +43,7 @@ export async function GET(req: Request) {
       SEMESTER_END: settingsMap.SEMESTER_END || '2026-12-25',
       REGISTRATION_LOCKED: settingsMap.REGISTRATION_LOCKED || 'false',
       PUBLIC_REGISTRATION_LOCKED: settingsMap.PUBLIC_REGISTRATION_LOCKED || 'false',
+      ENFORCE_MFA: settingsMap.ENFORCE_MFA || 'false',
       IS_SUPER_ADMIN: dbUser.isSuperAdmin ? 'true' : 'false',
       IS_STANDARD_ADMIN: dbUser.isStandardAdmin ? 'true' : 'false'
     };
