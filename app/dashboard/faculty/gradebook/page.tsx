@@ -11,6 +11,13 @@ export default function GradebookPage() {
   const [courseMapping, setCourseMapping] = useState<Record<string, string>>({});
   const [gradingScales, setGradingScales] = useState<Record<string, Record<string, number>>>({});
   const [loading, setLoading] = useState(true);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (msg: string, type: 'success' | 'error') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   // Gradebook Columns State
   const defaultColumns = [
@@ -93,7 +100,6 @@ export default function GradebookPage() {
           studentList.forEach((s: any) => {
             if (s.grade && !newGrades[s.enrollmentId]) {
               // If we have a DB grade but no local data, we just distribute it so Total equals the DB grade roughly
-              // Or better yet, we just let calculateTotal handle it. We won't spoof local grades.
             }
           });
           return newGrades;
@@ -197,18 +203,147 @@ export default function GradebookPage() {
       setTimeout(() => setSavedSuccessId(null), 2000);
     } catch(e) {
       console.error(e);
+      showToast('Failed to save grade.', 'error');
     }
     setSavingId(null);
+  };
+
+  const handlePublishAll = async () => {
+    if (filteredStudents.length === 0) return;
+    setIsPublishing(true);
+    let successCount = 0;
+    
+    try {
+      for (const s of filteredStudents) {
+        const total = calculateTotal(s.enrollmentId, s.grade);
+        const numericTotal = parseFloat(total) || 0;
+        
+        await fetch('/api/faculty/submit-grade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enrollmentId: s.enrollmentId, mark: numericTotal })
+        });
+        successCount++;
+      }
+      showToast(`Successfully published grades for all ${successCount} students!`, 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to publish all grades. Please check your network and retry.', 'error');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (filteredStudents.length === 0) {
+      showToast('No students available in this course to export.', 'error');
+      return;
+    }
+
+    // Header row: "Student Name", "Student ID", "Enrollment ID", [Column 1], [Column 2]...
+    const header = [
+      'Student Name',
+      'Student ID',
+      'Enrollment ID',
+      ...columns.map(col => `${col.name} (${col.weight}%)`)
+    ];
+
+    const rows = filteredStudents.map(s => {
+      const studentGrades = grades[s.enrollmentId] || {};
+      return [
+        `"${s.name || 'Unknown'}"`,
+        `"${s.id}"`,
+        `"${s.enrollmentId}"`,
+        ...columns.map(col => studentGrades[col.name] || '')
+      ];
+    });
+
+    const csvContent = [
+      header.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Grade_Template_${selectedCourse.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Grading template spreadsheet exported successfully!', 'success');
+  };
+
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+
+      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+      if (lines.length < 2) {
+        showToast('Empty or invalid CSV template file.', 'error');
+        return;
+      }
+
+      // Extract headers to match columns
+      const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
+      
+      const newGrades = { ...grades };
+      
+      // We start reading from line 1
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.replace(/^["']|["']$/g, '').trim());
+        
+        // Find indexes
+        const enrollmentIdIdx = headers.indexOf('Enrollment ID');
+        if (enrollmentIdIdx === -1 || enrollmentIdIdx >= values.length) continue;
+        
+        const enrollmentId = values[enrollmentIdIdx];
+        if (!enrollmentId) continue;
+
+        if (!newGrades[enrollmentId]) {
+          newGrades[enrollmentId] = {};
+        }
+
+        // Map columns
+        columns.forEach(col => {
+          // Find matching header
+          const colIdx = headers.findIndex(h => h.toLowerCase().startsWith(col.name.toLowerCase()));
+          if (colIdx !== -1 && colIdx < values.length) {
+            newGrades[enrollmentId][col.name] = values[colIdx];
+          }
+        });
+      }
+
+      setGrades(newGrades);
+      showToast('CSV Grades template imported successfully! Review scores below.', 'success');
+    };
+    reader.readAsText(file);
+    
+    // Clear input so same file can be uploaded again
+    e.target.value = '';
   };
 
   return (
     <div className="pl-0 lg:pl-64 pt-14 lg:pt-0 min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-indigo-200">
       <SidebarNavigation role="FACULTY" />
+
+      {toast && (
+        <div className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-xl shadow-xl text-sm font-medium flex items-center gap-2 animate-bounce ${
+          toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
+        }`}>
+          {toast.type === 'success' ? '✓' : '⚠'} {toast.msg}
+        </div>
+      )}
       
       <main className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
         {/* Premium Header */}
-        <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden flex items-center gap-8">
+        <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center gap-8">
           <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl -mr-20 -mt-20"></div>
           
           <div className="relative z-10 w-24 h-24 bg-gradient-to-br from-amber-500 to-orange-500 rounded-3xl flex items-center justify-center text-5xl shadow-lg shadow-amber-500/30 text-white flex-shrink-0">
@@ -222,7 +357,7 @@ export default function GradebookPage() {
             </p>
           </div>
           
-          <div className="relative z-10 hidden md:flex items-center gap-4">
+          <div className="relative z-10 flex items-center gap-4">
             <button 
               onClick={() => setIsManagingColumns(!isManagingColumns)}
               className={`px-6 py-3 font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 border ${
@@ -233,8 +368,12 @@ export default function GradebookPage() {
             >
               ⚙️ Manage Columns
             </button>
-            <button className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5">
-              Publish All Grades
+            <button 
+              onClick={handlePublishAll}
+              disabled={isPublishing || filteredStudents.length === 0}
+              className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPublishing ? 'Publishing...' : 'Publish All Grades'}
             </button>
           </div>
         </div>
@@ -305,10 +444,10 @@ export default function GradebookPage() {
           </div>
         ) : (
           <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
-            <div className="px-8 py-6 bg-slate-50/80 border-b border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="px-8 py-6 bg-slate-50/80 border-b border-slate-100 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
               <h2 className="text-lg font-extrabold text-slate-800">Student Roster Grading</h2>
               
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3">
                 <select 
                   value={selectedCourse}
                   onChange={(e) => setSelectedCourse(e.target.value)}
@@ -317,6 +456,28 @@ export default function GradebookPage() {
                   {courses.length === 0 && <option value="">No Courses Assigned</option>}
                   {courses.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+                
+                <button 
+                  onClick={handleExportCSV}
+                  title="Download an Excel-friendly CSV grading template pre-filled with this student roster"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-extrabold shadow-sm transition-all flex items-center gap-1.5"
+                >
+                  📥 Export Template
+                </button>
+                
+                <label 
+                  title="Upload a completed CSV template to auto-populate grades"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-extrabold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  📤 Import Template
+                  <input 
+                    type="file" 
+                    accept=".csv" 
+                    onChange={handleImportCSV} 
+                    className="hidden" 
+                  />
+                </label>
+
                 <div className="bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-bold text-slate-500">
                   {filteredStudents.length} Students
                 </div>
