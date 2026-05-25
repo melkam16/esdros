@@ -12,6 +12,7 @@ export default function GradebookPage() {
   const [gradingScales, setGradingScales] = useState<Record<string, Record<string, number>>>({});
   const [loading, setLoading] = useState(true);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isImported, setIsImported] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   const showToast = (msg: string, type: 'success' | 'error') => {
@@ -226,6 +227,7 @@ export default function GradebookPage() {
         successCount++;
       }
       showToast(`Successfully published grades for all ${successCount} students!`, 'success');
+      setIsImported(false);
     } catch (err) {
       console.error(err);
       showToast('Failed to publish all grades. Please check your network and retry.', 'error');
@@ -320,6 +322,7 @@ export default function GradebookPage() {
       }
 
       setGrades(newGrades);
+      setIsImported(true);
       showToast('CSV Grades template imported successfully! Review scores below.', 'success');
     };
     reader.readAsText(file);
@@ -477,6 +480,16 @@ export default function GradebookPage() {
                     className="hidden" 
                   />
                 </label>
+
+                {isImported && (
+                  <button 
+                    onClick={handlePublishAll}
+                    disabled={isPublishing}
+                    className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg text-xs font-extrabold shadow-md shadow-amber-500/20 transition-all flex items-center gap-1.5 animate-pulse"
+                  >
+                    💾 Bulk Save Imported Grades
+                  </button>
+                )}
 
                 <div className="bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-bold text-slate-500">
                   {filteredStudents.length} Students

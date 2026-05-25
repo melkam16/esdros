@@ -73,8 +73,37 @@ export async function POST(req: Request) {
 
         let student = existingStudent;
         if (!student) {
+          // Resolve Department code
+          const targetClass = await tx.class.findUnique({
+            where: { id: targetClassId },
+            include: { department: true }
+          });
+          const deptCode = targetClass?.department?.code || (application.targetTrack === 'THEOLOGY' ? 'THEO' : 'GEEZ');
+
+          // Generate sequential simple Student ID
+          const count = await tx.student.count({
+            where: { id: { startsWith: `${deptCode}-` } }
+          });
+          
+          let sequentialNumber = String(count + 1).padStart(4, '0');
+          let studentId = `${deptCode}-${sequentialNumber}`;
+          let isUnique = false;
+          let attempt = 0;
+          
+          while (!isUnique) {
+            const existing = await tx.student.findUnique({ where: { id: studentId } });
+            if (!existing) {
+              isUnique = true;
+            } else {
+              attempt++;
+              const newNum = String(count + 1 + attempt).padStart(4, '0');
+              studentId = `${deptCode}-${newNum}`;
+            }
+          }
+
           student = await tx.student.create({
             data: {
+              id: studentId,
               userId: application.userId,
               status: 'ACTIVE',
               track: application.targetTrack,
