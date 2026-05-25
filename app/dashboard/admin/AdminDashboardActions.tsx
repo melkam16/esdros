@@ -6,13 +6,29 @@ export default function AdminDashboardActions() {
   const [isExporting, setIsExporting] = useState(false);
   const [isLocking, setIsLocking] = useState(false);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     setIsExporting(true);
-    // Simulate network delay for PDF generation
-    setTimeout(() => {
-      alert("System PDF Report generated and exported successfully.");
+    try {
+      const response = await fetch('/api/admin/reports/system');
+      if (!response.ok) {
+        throw new Error('Failed to generate executive system report');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'Esderos_Seminary_Administration_System_Report.pdf');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      alert('Error: Failed to export executive system PDF report. Please try again.');
+    } finally {
       setIsExporting(false);
-    }, 1500);
+    }
   };
 
   const handleLock = () => {
