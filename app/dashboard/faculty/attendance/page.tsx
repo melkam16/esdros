@@ -11,6 +11,10 @@ export default function AttendancePage() {
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'RECORD' | 'LEDGER'>('RECORD');
 
+  // Lock and daily states
+  const [isLocked, setIsLocked] = useState(false);
+  const [loadingDailyRecords, setLoadingDailyRecords] = useState(false);
+
   // Summary state
   const [summaryRecords, setSummaryRecords] = useState<any[]>([]);
   const [loadingSummary, setLoadingSummary] = useState(false);
@@ -57,6 +61,49 @@ export default function AttendancePage() {
       });
   };
 
+  const fetchDailyRecords = (sectionId: string, dateString: string) => {
+    if (!sectionId || !dateString) return;
+    setLoadingDailyRecords(true);
+    fetch(`/api/faculty/attendance?courseSectionId=${sectionId}&date=${dateString}`)
+      .then(res => res.json())
+      .then(d => {
+        if (d.success && d.data && d.data.length > 0) {
+          setIsLocked(true);
+          const recordsMap: Record<string, { status: 'PRESENT' | 'ABSENT' | 'EXCUSED'; notes: string }> = {};
+          
+          const activeSection = sections.find(s => s.id === sectionId);
+          if (activeSection) {
+            activeSection.enrollments.forEach((e: any) => {
+              recordsMap[e.student.id] = { status: 'PRESENT', notes: '' };
+            });
+          }
+          
+          d.data.forEach((r: any) => {
+            recordsMap[r.studentId] = {
+              status: r.status as 'PRESENT' | 'ABSENT' | 'EXCUSED',
+              notes: r.notes || ''
+            };
+          });
+          setAttendanceRecords(recordsMap);
+        } else {
+          setIsLocked(false);
+          const activeSection = sections.find(s => s.id === sectionId);
+          if (activeSection) {
+            const recordsMap: Record<string, { status: 'PRESENT' | 'ABSENT' | 'EXCUSED'; notes: string }> = {};
+            activeSection.enrollments.forEach((e: any) => {
+              recordsMap[e.student.id] = { status: 'PRESENT', notes: '' };
+            });
+            setAttendanceRecords(recordsMap);
+          }
+        }
+        setLoadingDailyRecords(false);
+      })
+      .catch(err => {
+        console.error("Error loading daily records:", err);
+        setLoadingDailyRecords(false);
+      });
+  };
+
   useEffect(() => {
     if (selectedSectionId) {
       fetchSummary(selectedSectionId);
@@ -64,17 +111,13 @@ export default function AttendancePage() {
   }, [selectedSectionId]);
 
   useEffect(() => {
-    const activeSection = sections.find(s => s.id === selectedSectionId);
-    if (activeSection) {
-      const records: Record<string, { status: 'PRESENT' | 'ABSENT' | 'EXCUSED'; notes: string }> = {};
-      activeSection.enrollments.forEach((e: any) => {
-        records[e.student.id] = { status: 'PRESENT', notes: '' };
-      });
-      setAttendanceRecords(records);
+    if (selectedSectionId && selectedDate) {
+      fetchDailyRecords(selectedSectionId, selectedDate);
     }
-  }, [selectedSectionId, sections]);
+  }, [selectedSectionId, selectedDate, sections]);
 
   const handleStatusChange = (studentId: string, status: 'PRESENT' | 'ABSENT' | 'EXCUSED') => {
+    if (isLocked) return;
     setAttendanceRecords(prev => ({
       ...prev,
       [studentId]: {
@@ -85,6 +128,7 @@ export default function AttendancePage() {
   };
 
   const handleNotesChange = (studentId: string, notes: string) => {
+    if (isLocked) return;
     setAttendanceRecords(prev => ({
       ...prev,
       [studentId]: {
@@ -124,6 +168,7 @@ export default function AttendancePage() {
       const d = await res.json();
       if (d.success) {
         showToast(`Successfully recorded attendance for ${recordsArray.length} student(s)!`, 'success');
+        setIsLocked(true);
         fetchSummary(selectedSectionId);
       } else {
         showToast(d.error || 'Failed to submit attendance.', 'error');
@@ -193,13 +238,22 @@ export default function AttendancePage() {
           
           {activeTab === 'RECORD' && selectedSectionId && (
             <div className="relative z-10">
-              <button 
-                onClick={handleSubmitSession}
-                disabled={submitting}
-                className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? 'Submitting...' : 'Submit Session Record'}
-              </button>
+              {isLocked ? (
+                <button 
+                  onClick={() => setIsLocked(false)}
+                  className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl shadow-lg shadow-amber-500/20 transition-all hover:-translate-y-0.5"
+                >
+                  🔓 Unlock to Edit Record
+                </button>
+              ) : (
+                <button 
+                  onClick={handleSubmitSession}
+                  disabled={submitting}
+                  className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitting ? 'Submitting...' : 'Submit Session Record'}
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -269,85 +323,115 @@ export default function AttendancePage() {
               </div>
             </div>
 
+            {activeTab === 'RECORD' && isLocked && (
+              <div className="bg-amber-50 border-b border-amber-100 px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🔒</span>
+                  <div>
+                    <p className="font-extrabold text-amber-800 text-sm">Attendance Already Submitted</p>
+                    <p className="text-xs text-amber-600 mt-0.5 font-medium">Records for this date are locked. You can view student presence statuses below.</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsLocked(false)}
+                  className="px-4 py-1.5 bg-white border border-amber-300 hover:border-amber-500 rounded-lg text-xs font-black text-amber-700 hover:text-amber-800 transition-colors shadow-sm self-start sm:self-center"
+                >
+                  🔓 Unlock to Modify
+                </button>
+              </div>
+            )}
+
             {activeTab === 'RECORD' ? (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead>
-                    <tr className="bg-white border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
-                      <th className="p-6">Student Roster Identity</th>
-                      <th className="p-6 text-center">Status Toggle Check</th>
-                      <th className="p-6">Attendance Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {activeSection?.enrollments.map((e: any) => {
-                      const studentId = e.student.id;
-                      const record = attendanceRecords[studentId] || { status: 'PRESENT', notes: '' };
-                      return (
-                        <tr key={studentId} className="hover:bg-slate-50/50 transition-colors group">
-                          <td className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-500">
-                                {e.student.user.firstName.charAt(0)}
+                {loadingDailyRecords ? (
+                  <div className="flex justify-center p-12">
+                    <div className="w-8 h-8 border-3 border-rose-200 border-t-rose-500 rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  <table className="w-full text-left text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-white border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-xs">
+                        <th className="p-6">Student Roster Identity</th>
+                        <th className="p-6 text-center">Status Toggle Check</th>
+                        <th className="p-6">Attendance Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {activeSection?.enrollments.map((e: any) => {
+                        const studentId = e.student.id;
+                        const record = attendanceRecords[studentId] || { status: 'PRESENT', notes: '' };
+                        return (
+                          <tr key={studentId} className="hover:bg-slate-50/50 transition-colors group">
+                            <td className="p-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-500">
+                                  {e.student.user.firstName.charAt(0)}
+                                </div>
+                                <div>
+                                  <p className="font-extrabold text-slate-900">
+                                    {e.student.user.firstName} {e.student.user.lastName}
+                                  </p>
+                                  <p className="text-xs text-slate-400 mt-0.5 font-mono">
+                                    ID: {studentId} | {activeSection.course.code}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="font-extrabold text-slate-900">
-                                  {e.student.user.firstName} {e.student.user.lastName}
-                                </p>
-                                <p className="text-xs text-slate-400 mt-0.5 font-mono">
-                                  ID: {studentId} | {activeSection.course.code}
-                                </p>
+                            </td>
+                            <td className="p-6">
+                              <div className="flex items-center justify-center gap-3">
+                                <button 
+                                  onClick={() => handleStatusChange(studentId, 'PRESENT')}
+                                  disabled={isLocked}
+                                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                                    record.status === 'PRESENT'
+                                      ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm shadow-emerald-500/20'
+                                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                  } ${isLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                >
+                                  Present
+                                </button>
+                                <button 
+                                  onClick={() => handleStatusChange(studentId, 'ABSENT')}
+                                  disabled={isLocked}
+                                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                                    record.status === 'ABSENT'
+                                      ? 'bg-rose-500 border-rose-500 text-white shadow-sm shadow-rose-500/20'
+                                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                  } ${isLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                >
+                                  Absent
+                                </button>
+                                <button 
+                                  onClick={() => handleStatusChange(studentId, 'EXCUSED')}
+                                  disabled={isLocked}
+                                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                                    record.status === 'EXCUSED'
+                                      ? 'bg-amber-500 border-amber-500 text-white shadow-sm shadow-amber-500/20'
+                                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                  } ${isLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                >
+                                  Excused
+                                </button>
                               </div>
-                            </div>
-                          </td>
-                          <td className="p-6">
-                            <div className="flex items-center justify-center gap-3">
-                              <button 
-                                onClick={() => handleStatusChange(studentId, 'PRESENT')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                                  record.status === 'PRESENT'
-                                    ? 'bg-emerald-550 border-emerald-250 text-white bg-emerald-500 border-emerald-500 shadow-sm shadow-emerald-500/20'
-                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                            </td>
+                            <td className="p-6">
+                              <input 
+                                type="text"
+                                value={record.notes}
+                                disabled={isLocked}
+                                onChange={(e) => handleNotesChange(studentId, e.target.value)}
+                                placeholder={isLocked ? "No session remarks" : "Reason if absent/excused..."}
+                                className={`w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-rose-500/50 outline-none ${
+                                  isLocked ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : ''
                                 }`}
-                              >
-                                Present
-                              </button>
-                              <button 
-                                onClick={() => handleStatusChange(studentId, 'ABSENT')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                                  record.status === 'ABSENT'
-                                    ? 'bg-rose-550 border-rose-250 text-white bg-rose-500 border-rose-500 shadow-sm shadow-rose-500/20'
-                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                                }`}
-                              >
-                                Absent
-                              </button>
-                              <button 
-                                onClick={() => handleStatusChange(studentId, 'EXCUSED')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                                  record.status === 'EXCUSED'
-                                    ? 'bg-amber-550 border-amber-250 text-white bg-amber-500 border-amber-500 shadow-sm shadow-amber-500/20'
-                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                                }`}
-                              >
-                                Excused
-                              </button>
-                            </div>
-                          </td>
-                          <td className="p-6">
-                            <input 
-                              type="text"
-                              value={record.notes}
-                              onChange={(e) => handleNotesChange(studentId, e.target.value)}
-                              placeholder="Reason if absent/excused..."
-                              className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-rose-500/50 outline-none"
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
               </div>
             ) : (
               <div className="overflow-x-auto">
