@@ -1,4 +1,4 @@
-import { Document, Paragraph, TextRun, HeadingLevel, Packer, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle } from "docx";
+import { Document, Paragraph, TextRun, HeadingLevel, Packer, Table, TableRow, TableCell, WidthType, AlignmentType } from "docx";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -83,7 +83,7 @@ function createCoverPage(title: string, subtitle: string) {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({
-          text: `Version 1.0.0 | Date: ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}`,
+          text: `Version 1.1.0 | Date: ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}`,
           color: "64748B",
           font: "Calibri",
           size: 18,
@@ -100,17 +100,33 @@ function generateStudentDoc() {
     sections: [{
       properties: {},
       children: [
-        ...createCoverPage("Student Portal Guide", "Academic Enrollment, Transcript Requests, & Tuition Ledger Operations"),
+        ...createCoverPage("Student Portal Guide", "Authentication, Settings, Academic Enrollment, & Financial Ledger Operations"),
         
         new Paragraph({
-          text: "1. Core Portal Dashboard & MFA Setup",
+          text: "1. Login Page Authentication & Session Setup",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
         new Paragraph({
           children: [
             new TextRun({
-              text: "Welcome to the Esderos Student Portal. This system serves as your centralized operational matrix for tracking course progressions, requesting transcripts, and settling tuition fees.",
+              text: "To access your Student Portal, navigate to the Seminary's central authentication portal. Enter your registered email address and credentials in the designated inputs. If Two-Factor Email Authentication is globally or personally enabled, the system redirects you to the secure MFA passcode screen, prompting you for the 6-digit security key dispatched to your inbox. Once entered successfully, an active encrypted session is created.",
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+          spacing: { after: 240 },
+        }),
+
+        new Paragraph({
+          text: "2. Personal Settings & MFA Profile Console",
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 240, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "The Profile Settings panel is located in the bottom left navigation sidebar. Inside this panel, you can maintain your core identity details and configure account security parameters:",
               font: "Calibri",
               size: 22,
             }),
@@ -120,19 +136,9 @@ function generateStudentDoc() {
         new Paragraph({
           children: [
             new TextRun({
-              text: "🔒 Securing Your Account with MFA:",
-              bold: true,
-              color: "0E2A47",
-              font: "Calibri",
-              size: 22,
-            }),
-          ],
-          spacing: { before: 120, after: 80 },
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "To ensure absolute privacy of your academic and financial records, you can enable Two-Factor Authentication (MFA) via Email directly inside your Profile settings. Once active, logging in requires entering a verification passcode sent to your registered email address.",
+              text: "• Profile Details: Re-verify your registered first name, last name, and administrative department cohort details.\n" +
+                    "• Password Modifications: Re-write your account credentials by entering your current password followed by your desired new secure password.\n" +
+                    "• Self-Service Email MFA Toggle: When enabled, a verification email is sent to your inbox upon logging in. Inputting this code is required to establish a valid student portal session.",
               font: "Calibri",
               size: 22,
             }),
@@ -141,14 +147,14 @@ function generateStudentDoc() {
         }),
 
         new Paragraph({
-          text: "2. Academic Enrollment Engine",
+          text: "3. Academic Enrollment Engine",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
         new Paragraph({
           children: [
             new TextRun({
-              text: "Your academic enrollment dashboard lists only relevant, active course offerings designated for your specific cohort program track (Theology or Geez Language). The panel is divided into three distinct segments to give you immediate status feedback:",
+              text: "Your academic enrollment dashboard lists only active, non-legacy course offerings designated for your cohort program track (Theology or Geez Language). The board is cleanly structured into three reactive sections:",
               font: "Calibri",
               size: 22,
             }),
@@ -187,14 +193,14 @@ function generateStudentDoc() {
         }),
 
         new Paragraph({
-          text: "3. Verified Transcript Requests",
+          text: "4. Verified Transcript Requests",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
         new Paragraph({
           children: [
             new TextRun({
-              text: "To ensure the highest standard of academic security, all unofficial download triggers have been removed from the portal, directing all transcript audits through verified channels. To request your official transcripts:",
+              text: "All unofficial transcript downloads have been removed from the portal, directing all transcript inquiries to verified official channels. To request your official transcripts:",
               font: "Calibri",
               size: 22,
             }),
@@ -213,7 +219,7 @@ function generateStudentDoc() {
         }),
 
         new Paragraph({
-          text: "4. Tuition & Invoices Ledger",
+          text: "5. Tuition & Invoices Ledger",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
@@ -238,10 +244,54 @@ function generateFacultyDoc() {
     sections: [{
       properties: {},
       children: [
-        ...createCoverPage("Faculty Portal Guide", "Excel Gradebook Templates & Attendance Tracking with Lock Modals"),
+        ...createCoverPage("Faculty Portal Guide", "Login, Settings, Gradebooks, & Attendance Tracking with Lock Modals"),
         
         new Paragraph({
-          text: "1. Interactive Gradebook & Spreadsheet Integration",
+          text: "1. Login Page Authentication & Session Setup",
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 240, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "To log into the Faculty Portal, navigate to the central login screen and enter your faculty email address and password. If global security is activated, you will be prompted to enter the 6-digit MFA passcode sent to your registered email inbox to authorize access.",
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+          spacing: { after: 240 },
+        }),
+
+        new Paragraph({
+          text: "2. Personal Settings & Security Profile Console",
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 240, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "The Settings page lets you update your instructor credentials and configure additional security locks:",
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+          spacing: { after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "• Profile Updates: Review registered academic ranks, titles, and assigned departments.\n" +
+                    "• Password Revisions: Update your credentials securely under Settings.\n" +
+                    "• Self-Service Email MFA Toggle: Toggle personal two-factor verification code requirements on login to secure your grading ledgers.",
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+          spacing: { after: 240 },
+        }),
+
+        new Paragraph({
+          text: "3. Interactive Gradebook & Spreadsheet Integration",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
@@ -293,7 +343,7 @@ function generateFacultyDoc() {
         }),
 
         new Paragraph({
-          text: "2. Attendance Roster & Smart Locking Mechanics",
+          text: "4. Attendance Roster & Smart Locking Mechanics",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
@@ -319,7 +369,7 @@ function generateFacultyDoc() {
         }),
 
         new Paragraph({
-          text: "3. Attendance Summary Ledger",
+          text: "5. Attendance Summary Ledger",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
@@ -344,10 +394,54 @@ function generateAdminDoc() {
     sections: [{
       properties: {},
       children: [
-        ...createCoverPage("Admin Portal Guide", "Global Security Settings, Term Locking, & Admissions Pipeline CRM"),
+        ...createCoverPage("Admin Portal Guide", "Security Governance, Lock Modals, CRM, & Global Settings"),
         
         new Paragraph({
-          text: "1. Administrative Overview & Term Security Controls",
+          text: "1. Administrator Secure Login & Access Control",
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 240, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Access to the Admin Portal is strictly restricted to authorized Super Admins and Standard Admins. Navigate to the administrator login screen, enter your email and password, and complete the mandatory two-factor email verification code challenge to establish a secure admin session.",
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+          spacing: { after: 240 },
+        }),
+
+        new Paragraph({
+          text: "2. Global Settings Workspace & MFA Enforcement",
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 240, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "The Admin Settings portal provides critical institutional controls for configuring portal-wide systems and managing security parameters:",
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+          spacing: { after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "• Global MFA Security Switch: When enabled, all active student, faculty, and administrator logins are globally required to complete Two-Factor Email Verification code checks. This ensures strict institutional data privacy.\n" +
+                    "• Seminary System Metrics: Configure system settings, active enrollment periods, admissions windows, and register departments.\n" +
+                    "• Security Logs: Track administrator sign-ins, audit credential updates, and monitor enrollment approval records.",
+              font: "Calibri",
+              size: 22,
+            }),
+          ],
+          spacing: { after: 240 },
+        }),
+
+        new Paragraph({
+          text: "3. Administrative Overview & Term Security Controls",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
@@ -385,23 +479,7 @@ function generateAdminDoc() {
         }),
 
         new Paragraph({
-          text: "2. Global MFA Security Governance",
-          heading: HeadingLevel.HEADING_1,
-          spacing: { before: 240, after: 120 },
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "Under global Settings, Super Admins can toggle the mandatory MFA switch. When active, all platform users (students, faculty, and administrators) are globally required to use two-factor email verification code checks upon login.",
-              font: "Calibri",
-              size: 22,
-            }),
-          ],
-          spacing: { after: 240 },
-        }),
-
-        new Paragraph({
-          text: "3. Admissions CRM & Sequential ID Pipelines",
+          text: "4. Admissions CRM & Sequential ID Pipelines",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
@@ -417,7 +495,7 @@ function generateAdminDoc() {
         }),
 
         new Paragraph({
-          text: "4. Student Cohort Imports & Alumni Migrations",
+          text: "5. Student Cohort Imports & Alumni Migrations",
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 240, after: 120 },
         }),
@@ -458,7 +536,7 @@ async function main() {
   fs.writeFileSync(path.join(targetDir, "Esderos_Admin_Portal_User_Guide.docx"), adminBuffer);
   console.log("Generated: Esderos_Admin_Portal_User_Guide.docx");
 
-  console.log("All three guides successfully generated inside 'user_guides' directory!");
+  console.log("All three guides successfully generated with Login and Settings segments!");
 }
 
 main().catch(err => {
