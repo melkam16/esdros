@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 interface Faculty {
   id: string;
   userId: string;
+  title?: string;
   name: string;
   email: string;
   role: string;

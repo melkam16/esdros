@@ -5,7 +5,7 @@ import { hash } from 'crypto';
 
 export async function POST(req: Request) {
   try {
-    const { firstName, lastName, email, departmentId, password, pictureUrl } = await req.json();
+    const { title, firstName, lastName, email, departmentId, password, pictureUrl } = await req.json();
 
     // Validate required fields
     if (!firstName || !lastName || !email || !departmentId || !password) {
@@ -46,6 +46,7 @@ export async function POST(req: Request) {
         data: {
           userId: user.id,
           departmentId,
+          title: title || null,
           pictureUrl: pictureUrl || null,
         },
       });
@@ -114,7 +115,8 @@ export async function GET() {
         data: faculty.map((f) => ({
           id: f.id,
           userId: f.user.id,
-          name: `${f.user.firstName} ${f.user.lastName}`,
+          title: f.title || undefined,
+          name: f.title ? `${f.title} ${f.user.firstName} ${f.user.lastName}` : `${f.user.firstName} ${f.user.lastName}`,
           email: f.user.email,
           role: f.user.role,
           isSuperAdmin: f.user.isSuperAdmin,

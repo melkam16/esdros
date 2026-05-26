@@ -59,7 +59,7 @@ function createCoverPage(title: string, subtitle: string) {
       children: [
         new TextRun({
           text: subtitle,
-          italic: true,
+          italics: true,
           color: "475569",
           font: "Calibri",
           size: 22,
@@ -189,8 +189,8 @@ function generateStudentDoc() {
               ],
             }),
           ],
-          spacing: { after: 240 },
         }),
+        new Paragraph({ text: "", spacing: { before: 240 } }),
 
         new Paragraph({
           text: "4. Verified Transcript Requests",
@@ -339,8 +339,8 @@ function generateFacultyDoc() {
               ],
             }),
           ],
-          spacing: { after: 240 },
         }),
+        new Paragraph({ text: "", spacing: { before: 240 } }),
 
         new Paragraph({
           text: "4. Attendance Roster & Smart Locking Mechanics",
@@ -521,20 +521,32 @@ async function main() {
     fs.mkdirSync(targetDir, { recursive: true });
   }
 
+  const writeDoc = (filename: string, buffer: Buffer) => {
+    try {
+      fs.writeFileSync(path.join(targetDir, filename), buffer);
+      console.log(`Generated: ${filename}`);
+    } catch (e: any) {
+      if (e.code === 'EBUSY') {
+        const fallbackName = filename.replace(".docx", "_updated.docx");
+        fs.writeFileSync(path.join(targetDir, fallbackName), buffer);
+        console.log(`Generated (Fallback due to Word lock): ${fallbackName}`);
+      } else {
+        throw e;
+      }
+    }
+  };
+
   const studentDoc = generateStudentDoc();
   const studentBuffer = await Packer.toBuffer(studentDoc);
-  fs.writeFileSync(path.join(targetDir, "Esderos_Student_Portal_User_Guide.docx"), studentBuffer);
-  console.log("Generated: Esderos_Student_Portal_User_Guide.docx");
+  writeDoc("Esderos_Student_Portal_User_Guide.docx", studentBuffer);
 
   const facultyDoc = generateFacultyDoc();
   const facultyBuffer = await Packer.toBuffer(facultyDoc);
-  fs.writeFileSync(path.join(targetDir, "Esderos_Faculty_Portal_User_Guide.docx"), facultyBuffer);
-  console.log("Generated: Esderos_Faculty_Portal_User_Guide.docx");
+  writeDoc("Esderos_Faculty_Portal_User_Guide.docx", facultyBuffer);
 
   const adminDoc = generateAdminDoc();
   const adminBuffer = await Packer.toBuffer(adminDoc);
-  fs.writeFileSync(path.join(targetDir, "Esderos_Admin_Portal_User_Guide.docx"), adminBuffer);
-  console.log("Generated: Esderos_Admin_Portal_User_Guide.docx");
+  writeDoc("Esderos_Admin_Portal_User_Guide.docx", adminBuffer);
 
   console.log("All three guides successfully generated with Login and Settings segments!");
 }

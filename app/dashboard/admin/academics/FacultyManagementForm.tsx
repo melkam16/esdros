@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 interface FacultyFormData {
+  title: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -27,6 +28,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [formData, setFormData] = useState<FacultyFormData>({
+    title: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -68,6 +70,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          title: formData.title || undefined,
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
@@ -82,6 +85,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
       if (response.ok) {
         setMessage({ type: 'success', text: 'Faculty member added successfully!' });
         setFormData({
+          title: '',
           firstName: '',
           lastName: '',
           email: '',
@@ -116,7 +120,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
       </div>
 
       {isOpen && (
-        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm animate-in fade-in duration-300">
           <h3 className="text-xl font-bold text-slate-900 mb-6">Add New Faculty Member</h3>
 
           {message && (
@@ -133,6 +137,47 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Title select prefix */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Faculty Title Prefix</label>
+                <select
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                >
+                  <option value="">None (No Prefix)</option>
+                  <option value="Dn.">Dn. (Deacon)</option>
+                  <option value="Rev.">Rev. (Reverend)</option>
+                  <option value="Dr.">Dr. (Doctor)</option>
+                  <option value="Professor">Professor</option>
+                  <option value="Archdeacon">Archdeacon</option>
+                  <option value="Mr.">Mr.</option>
+                  <option value="Mrs.">Mrs.</option>
+                </select>
+              </div>
+
+              {/* Department selection */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Department Affiliation</label>
+                <select
+                  name="departmentId"
+                  value={formData.departmentId}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  required
+                >
+                  <option value="">Select a department</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* First Name */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
                 <input
@@ -146,6 +191,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                 />
               </div>
 
+              {/* Last Name */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
                 <input
@@ -159,6 +205,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                 />
               </div>
 
+              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
                 <input
@@ -172,24 +219,20 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                 />
               </div>
 
+              {/* Portrait URL */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Department</label>
-                <select
-                  name="departmentId"
-                  value={formData.departmentId}
+                <label className="block text-sm font-medium text-slate-700 mb-2">Picture URL (Optional)</label>
+                <input
+                  type="url"
+                  name="pictureUrl"
+                  value={formData.pictureUrl}
                   onChange={handleChange}
+                  placeholder="Enter portrait image URL"
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select a department</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
 
+              {/* Password */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
                 <input
@@ -203,6 +246,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                 />
               </div>
 
+              {/* Confirm Password */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Confirm Password</label>
                 <input
@@ -215,24 +259,12 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                   required
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Picture URL (Optional)</label>
-                <input
-                  type="url"
-                  name="pictureUrl"
-                  value={formData.pictureUrl}
-                  onChange={handleChange}
-                  placeholder="Enter portrait image URL"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm shadow-sm"
             >
               {isLoading ? 'Adding Faculty Member...' : 'Add Faculty Member'}
             </button>
