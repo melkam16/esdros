@@ -38,6 +38,59 @@ export default function SettingsPage() {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+  // Security / Password change states
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPass, setIsChangingPass] = useState(false);
+  const [passFeedback, setPassFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassFeedback(null);
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPassFeedback({ type: 'error', text: 'All fields are required.' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPassFeedback({ type: 'error', text: 'New passwords do not match.' });
+      return;
+    }
+
+    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!passRegex.test(newPassword)) {
+      setPassFeedback({
+        type: 'error',
+        text: 'Password combination rules: must be more than 7 characters, include at least one uppercase letter, one lowercase letter, one number, and one special character.'
+      });
+      return;
+    }
+
+    setIsChangingPass(true);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPassFeedback({ type: 'success', text: data.message || 'Password changed successfully!' });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setPassFeedback({ type: 'error', text: data.error || 'Failed to change password.' });
+      }
+    } catch (err) {
+      setPassFeedback({ type: 'error', text: 'An unexpected network error occurred.' });
+    } finally {
+      setIsChangingPass(false);
+    }
+  };
+
   const fetchSettingsAndContext = async () => {
     try {
       // 1. Fetch settings
@@ -672,6 +725,85 @@ export default function SettingsPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+
+            {/* Card: Security & Password Reset */}
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">🔐</span>
+                  Personal Account Security & Password
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">Manage your administrative credentials and security options.</p>
+              </div>
+
+              <div className="p-8 space-y-6">
+                {passFeedback && (
+                  <div
+                    className={`p-4 rounded-xl text-sm border font-medium ${
+                      passFeedback.type === 'success'
+                        ? 'bg-green-50 text-green-800 border-green-200'
+                        : 'bg-red-50 text-red-800 border-red-200'
+                    }`}
+                  >
+                    {passFeedback.text}
+                  </div>
+                )}
+
+                <form onSubmit={handlePasswordChange} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Current Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Confirm New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-400 font-medium italic">
+                    To comply with seminary portal administrative credentials, your new password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one numeric digit, and one special character.
+                  </p>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      disabled={isChangingPass}
+                      className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-slate-900/25 transition disabled:opacity-50"
+                    >
+                      {isChangingPass ? 'Updating Credentials...' : 'Change Password'}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
 

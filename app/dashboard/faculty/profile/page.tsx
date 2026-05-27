@@ -20,6 +20,60 @@ export default function FacultyProfilePage() {
   // Feedback state
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Security / Password change states
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPass, setIsChangingPass] = useState(false);
+  const [passFeedback, setPassFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassFeedback(null);
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      passFeedback; // satisfy no-unused-vars if any
+      setPassFeedback({ type: 'error', text: 'All fields are required.' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPassFeedback({ type: 'error', text: 'New passwords do not match.' });
+      return;
+    }
+
+    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!passRegex.test(newPassword)) {
+      setPassFeedback({
+        type: 'error',
+        text: 'Password combination rules: must be more than 7 characters, include at least one uppercase letter, one lowercase letter, one number, and one special character.'
+      });
+      return;
+    }
+
+    setIsChangingPass(true);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPassFeedback({ type: 'success', text: data.message || 'Password changed successfully!' });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setPassFeedback({ type: 'error', text: data.error || 'Failed to change password.' });
+      }
+    } catch (err) {
+      setPassFeedback({ type: 'error', text: 'An unexpected network error occurred.' });
+    } finally {
+      setIsChangingPass(false);
+    }
+  };
+
   const fetchProfile = async () => {
     try {
       const res = await fetch('/api/faculty/profile');
@@ -157,109 +211,187 @@ export default function FacultyProfilePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            {/* Form Column */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/30 lg:col-span-2 space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-xl font-extrabold text-slate-800">Update Profile Details</h2>
-                <p className="text-xs text-slate-400 mt-1">Modify your instructional rank and core contact information.</p>
+               {/* Form Column Wrapper */}
+            <div className="lg:col-span-2 space-y-8">
+              
+              {/* Profile Details Card */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/30 space-y-6">
+                <div className="border-b border-slate-100 pb-4">
+                  <h2 className="text-xl font-extrabold text-slate-800">Update Profile Details</h2>
+                  <p className="text-xs text-slate-400 mt-1">Modify your instructional rank and core contact information.</p>
+                </div>
+
+                {feedback && (
+                  <div
+                    className={`p-4 rounded-xl text-sm border font-medium ${
+                      feedback.type === 'success'
+                        ? 'bg-green-50 text-green-800 border-green-200'
+                        : 'bg-red-50 text-red-800 border-red-200'
+                    }`}
+                  >
+                    {feedback.text}
+                  </div>
+                )}
+
+                <form onSubmit={handleSave} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    {/* Title Select Section */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Faculty Title Prefix</label>
+                      <select
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 font-medium text-slate-700 transition"
+                      >
+                        <option value="">None (No Prefix)</option>
+                        <option value="Dn.">Dn. (Deacon)</option>
+                        <option value="Rev.">Rev. (Reverend)</option>
+                        <option value="Dr.">Dr. (Doctor)</option>
+                        <option value="Professor">Professor</option>
+                        <option value="Archdeacon">Archdeacon</option>
+                        <option value="Mr.">Mr.</option>
+                        <option value="Mrs.">Mrs.</option>
+                      </select>
+                    </div>
+
+                    {/* First Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">First Name</label>
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="Enter first name"
+                      />
+                    </div>
+
+                    {/* Last Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Last Name</label>
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="Enter last name"
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Contact Email Address</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 font-mono transition"
+                        placeholder="Enter email address"
+                      />
+                    </div>
+
+                    {/* Portrait URL */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Portrait Photo URL (Optional)</label>
+                      <input
+                        type="url"
+                        value={pictureUrl}
+                        onChange={(e) => setPictureUrl(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="https://example.com/photo.jpg"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                      <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Saving Profile Changes...</>
+                    ) : (
+                      'Save Profile Changes'
+                    )}
+                  </button>
+                </form>
               </div>
 
-              {feedback && (
-                <div
-                  className={`p-4 rounded-xl text-sm border font-medium ${
-                    feedback.type === 'success'
-                      ? 'bg-green-50 text-green-800 border-green-200'
-                      : 'bg-red-50 text-red-800 border-red-200'
-                  }`}
-                >
-                  {feedback.text}
+              {/* Security & Password Card */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/30 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="border-b border-slate-100 pb-4">
+                  <h2 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+                    <span className="text-lg">🔐</span> Security & Authentication
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">Manage your account credentials and login safety settings.</p>
                 </div>
-              )}
 
-              <form onSubmit={handleSave} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                  {/* Title Select Section */}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Faculty Title Prefix</label>
-                    <select
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 font-medium text-slate-700 transition"
+                {passFeedback && (
+                  <div
+                    className={`p-4 rounded-xl text-sm border font-medium ${
+                      passFeedback.type === 'success'
+                        ? 'bg-green-50 text-green-800 border-green-200'
+                        : 'bg-red-50 text-red-800 border-red-200'
+                    }`}
+                  >
+                    {passFeedback.text}
+                  </div>
+                )}
+
+                <form onSubmit={handlePasswordChange} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Current Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400 font-medium">
+                    To satisfy institutional security compliance, your password must be at least 8 characters long and contain uppercase, lowercase, numbers, and special symbols.
+                  </p>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      disabled={isChangingPass}
+                      className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl transition text-xs uppercase tracking-wider disabled:opacity-50"
                     >
-                      <option value="">None (No Prefix)</option>
-                      <option value="Dn.">Dn. (Deacon)</option>
-                      <option value="Rev.">Rev. (Reverend)</option>
-                      <option value="Dr.">Dr. (Doctor)</option>
-                      <option value="Professor">Professor</option>
-                      <option value="Archdeacon">Archdeacon</option>
-                      <option value="Mr.">Mr.</option>
-                      <option value="Mrs.">Mrs.</option>
-                    </select>
+                      {isChangingPass ? 'Updating Credentials...' : 'Change Password'}
+                    </button>
                   </div>
+                </form>
+              </div>
 
-                  {/* First Name */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">First Name</label>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
-                      placeholder="Enter first name"
-                    />
-                  </div>
-
-                  {/* Last Name */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Last Name</label>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
-                      placeholder="Enter last name"
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Contact Email Address</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 font-mono transition"
-                      placeholder="Enter email address"
-                    />
-                  </div>
-
-                  {/* Portrait URL */}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Portrait Photo URL (Optional)</label>
-                    <input
-                      type="url"
-                      value={pictureUrl}
-                      onChange={(e) => setPictureUrl(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
-                      placeholder="https://example.com/photo.jpg"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 text-sm disabled:opacity-50"
-                >
-                  {isSaving ? (
-                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Saving Profile Changes...</>
-                  ) : (
-                    'Save Profile Changes'
-                  )}
-                </button>
-              </form>
             </div>
 
             {/* Sidebar Column */}
