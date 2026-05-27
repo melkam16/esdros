@@ -56,11 +56,12 @@ export async function POST(req: Request) {
     });
 
     // Send email with credentials
+    const origin = new URL(req.url).origin;
     const { sendEmail } = await import('@/lib/mail');
     await sendEmail({
       to: email,
       subject: 'Welcome to Esderos EOTC Theological Seminary - Faculty Credentials',
-      text: `Hello ${firstName} ${lastName},\n\nYou have been added as a Faculty Member on the Esderos EOTC Theological Seminary platform inside ${department.name}.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsderos EOTC Theological Seminary`
+      text: `Hello ${firstName} ${lastName},\n\nYou have been added as a Faculty Member on the Esderos EOTC Theological Seminary platform inside ${department.name}.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${origin}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsderos EOTC Theological Seminary`
     });
 
     return NextResponse.json(

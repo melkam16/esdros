@@ -5,6 +5,7 @@ import { sendEmail } from '@/lib/mail';
 
 export async function POST(req: Request) {
   try {
+    const origin = new URL(req.url).origin;
     const { email, action } = await req.json();
 
     if (!email || !action) {
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
       await sendEmail({
         to: user.email,
         subject: 'Institutional Account Password Reset',
-        text: `Hello ${user.firstName} ${user.lastName},\n\nYou requested a password reset for your institutional account on Esderos EOTC Theological Seminary.\n\nYour temporary password has been successfully generated:\nTemporary Password: ${tempPassword}\n\nPlease login using this temporary password at:\n${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, you must update your password inside your Profile/Settings page immediately after logging in.\n\nBest regards,\nIT Support Desk\nEsderos EOTC Theological Seminary`
+        text: `Hello ${user.firstName} ${user.lastName},\n\nYou requested a password reset for your institutional account on Esderos EOTC Theological Seminary.\n\nYour temporary password has been successfully generated:\nTemporary Password: ${tempPassword}\n\nPlease login using this temporary password at:\n${origin}/login\n\nFor security reasons, you must update your password inside your Profile/Settings page immediately after logging in.\n\nBest regards,\nIT Support Desk\nEsderos EOTC Theological Seminary`
       });
 
       return NextResponse.json({
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
       await sendEmail({
         to: user.email,
         subject: 'Institutional Account MFA Status Reset',
-        text: `Hello ${user.firstName} ${user.lastName},\n\nYou requested an MFA reset for your account on Esderos EOTC Theological Seminary.\n\nYour Multi-Factor Authentication (MFA) has been successfully deactivated. You can now login using just your password.\n\nLogin URL: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nTo keep your account secure, please re-enable MFA from your Student/Faculty profile settings at your earliest convenience.\n\nIf you did not request this change, please contact the IT Helpdesk immediately.\n\nBest regards,\nIT Support Desk\nEsderos EOTC Theological Seminary`
+        text: `Hello ${user.firstName} ${user.lastName},\n\nYou requested an MFA reset for your account on Esderos EOTC Theological Seminary.\n\nYour Multi-Factor Authentication (MFA) has been successfully deactivated. You can now login using just your password.\n\nLogin URL: ${origin}/login\n\nTo keep your account secure, please re-enable MFA from your Student/Faculty profile settings at your earliest convenience.\n\nIf you did not request this change, please contact the IT Helpdesk immediately.\n\nBest regards,\nIT Support Desk\nEsderos EOTC Theological Seminary`
       });
 
       return NextResponse.json({

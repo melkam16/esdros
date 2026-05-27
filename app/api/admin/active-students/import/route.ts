@@ -199,8 +199,8 @@ export async function POST(req: Request) {
         }
 
         // Send sign-up invitation email
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-        const signupUrl = `${appUrl}/signup?email=${encodeURIComponent(email)}`;
+        const origin = new URL(req.url).origin;
+        const signupUrl = `${origin}/signup?email=${encodeURIComponent(email)}`;
 
         await sendEmail({
           to: email,

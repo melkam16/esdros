@@ -71,11 +71,12 @@ export async function POST(req: Request) {
     });
 
     // Send email to assigned faculty
+    const origin = new URL(req.url).origin;
     const { sendEmail } = await import('@/lib/mail');
     await sendEmail({
       to: section.faculty.user.email,
       subject: `Academic Notice: Course Assigned - ${section.course.title}`,
-      text: `Hello Professor ${section.faculty.user.firstName} ${section.faculty.user.lastName},\n\nYou have been assigned to instruct a course section at Esderos EOTC Theological Seminary.\n\nCOURSE DETAILS:\n----------------------------------------\nCourse Name: ${section.course.title}\nCourse Code: ${section.course.code}\nSemester: ${section.semester}\nClassroom/Room: ${section.room || 'TBD'}\nCapacity: ${section.capacity}\nCredits: ${section.course.credits}\n----------------------------------------\n\nYou can access your class roster, marked attendance, and grading dashboard inside the Faculty Portal:\nPortal URL: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nIf you have any questions or require administrative support, please contact the Academic Dean office.\n\nBest regards,\nOffice of Academic Affairs\nEsderos EOTC Theological Seminary`
+      text: `Hello Professor ${section.faculty.user.firstName} ${section.faculty.user.lastName},\n\nYou have been assigned to instruct a course section at Esderos EOTC Theological Seminary.\n\nCOURSE DETAILS:\n----------------------------------------\nCourse Name: ${section.course.title}\nCourse Code: ${section.course.code}\nSemester: ${section.semester}\nClassroom/Room: ${section.room || 'TBD'}\nCapacity: ${section.capacity}\nCredits: ${section.course.credits}\n----------------------------------------\n\nYou can access your class roster, marked attendance, and grading dashboard inside the Faculty Portal:\nPortal URL: ${origin}/login\n\nIf you have any questions or require administrative support, please contact the Academic Dean office.\n\nBest regards,\nOffice of Academic Affairs\nEsderos EOTC Theological Seminary`
     });
 
     return NextResponse.json(
