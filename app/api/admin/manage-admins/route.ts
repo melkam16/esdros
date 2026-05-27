@@ -83,7 +83,8 @@ export async function POST(req: Request) {
         passwordHash,
         role: 'ADMIN',
         isSuperAdmin: !!isSuperAdmin,
-        isStandardAdmin: !isSuperAdmin && !!isStandardAdmin
+        isStandardAdmin: !isSuperAdmin && !!isStandardAdmin,
+        mustChangePassword: true
       },
       select: {
         id: true,
