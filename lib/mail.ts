@@ -6,25 +6,33 @@ import { prisma } from './prisma';
 
 // Get transporter
 const getTransporter = async () => {
-  // Try loading dynamic settings from db
-  const dbSettings = await prisma.systemSetting.findMany().catch(() => []);
-  const settingsMap = dbSettings.reduce((acc: any, s) => {
-    acc[s.key] = s.value;
-    return acc;
-  }, {});
+  try {
+    // Try loading dynamic settings from db
+    const dbSettings = await prisma.systemSetting.findMany().catch(() => []);
+    const settingsMap = dbSettings.reduce((acc: any, s) => {
+      acc[s.key] = s.value;
+      return acc;
+    }, {});
 
-  const host = settingsMap.SMTP_HOST || process.env.SMTP_HOST;
-  const port = parseInt(settingsMap.SMTP_PORT || process.env.SMTP_PORT || '587');
-  const user = settingsMap.SMTP_USER || process.env.SMTP_USER;
-  const pass = settingsMap.SMTP_PASSWORD || process.env.SMTP_PASS;
+    const host = (settingsMap.SMTP_HOST || process.env.SMTP_HOST || '').trim();
+    const portVal = (settingsMap.SMTP_PORT || process.env.SMTP_PORT || '587').trim();
+    let port = parseInt(portVal, 10);
+    if (isNaN(port) || port <= 0) {
+      port = 587;
+    }
+    const user = (settingsMap.SMTP_USER || process.env.SMTP_USER || '').trim();
+    const pass = (settingsMap.SMTP_PASSWORD || process.env.SMTP_PASSWORD || process.env.SMTP_PASS || '').trim();
 
-  if (host && user && pass) {
-    return nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass }
-    });
+    if (host && user && pass) {
+      return nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass }
+      });
+    }
+  } catch (err) {
+    console.error('Error creating nodemailer transporter:', err);
   }
   return null;
 };
