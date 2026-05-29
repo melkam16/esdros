@@ -245,12 +245,13 @@ export default function FacultyProfilePage() {
                         className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 font-medium text-slate-700 transition"
                       >
                         <option value="">None (No Prefix)</option>
-                        <option value="Dn.">Dn. (Deacon)</option>
-                        <option value="Rev.">Rev. (Reverend)</option>
-                        <option value="Dr.">Dr. (Doctor)</option>
-                        <option value="Professor">Professor</option>
-                        <option value="Archdeacon">Archdeacon</option>
+                        <option value="Fr.">Fr.</option>
+                        <option value="Fr. Dr.">Fr. Dr.</option>
+                        <option value="Dn.">Dn.</option>
+                        <option value="Prof.">Prof.</option>
+                        <option value="Dn. Dr.">Dn. Dr.</option>
                         <option value="Mr.">Mr.</option>
+                        <option value="Ms.">Ms.</option>
                         <option value="Mrs.">Mrs.</option>
                       </select>
                     </div>
