@@ -30,6 +30,7 @@ export default async function TranscriptsPage() {
   });
 
   const classes = await prisma.class.findMany({
+    include: { department: true },
     orderBy: { name: 'asc' }
   });
 

@@ -59,30 +59,36 @@ export default function TranscriptClient({ students, classes = [], withdrawalReq
   // Automatically select a class matching the track and generate password when modal opens
   useEffect(() => {
     if (isOnboardingManual) {
-      const filteredClasses = classes.filter((c: any) => 
+      let filtered = classes.filter((c: any) => 
         manualStudentForm.track === 'THEOLOGY' 
           ? c.department?.code === 'THEO' || c.code.startsWith('TH')
           : c.department?.code === 'GEEZ' || c.code.startsWith('GZ')
       );
+      if (filtered.length === 0) {
+        filtered = classes;
+      }
       setManualStudentForm(prev => ({
         ...prev,
         password: generateTempPassword(),
-        classId: filteredClasses[0]?.id || classes[0]?.id || ''
+        classId: filtered[0]?.id || ''
       }));
     }
   }, [isOnboardingManual, classes]);
 
   // Adjust cohort class automatically if track changes in the form
   const handleTrackChange = (newTrack: string) => {
-    const filteredClasses = classes.filter((c: any) => 
+    let filtered = classes.filter((c: any) => 
       newTrack === 'THEOLOGY' 
         ? c.department?.code === 'THEO' || c.code.startsWith('TH')
         : c.department?.code === 'GEEZ' || c.code.startsWith('GZ')
     );
+    if (filtered.length === 0) {
+      filtered = classes;
+    }
     setManualStudentForm(prev => ({
       ...prev,
       track: newTrack,
-      classId: filteredClasses[0]?.id || classes[0]?.id || ''
+      classId: filtered[0]?.id || ''
     }));
   };
 
@@ -1179,18 +1185,20 @@ export default function TranscriptClient({ students, classes = [], withdrawalReq
                     onChange={e => setManualStudentForm(prev => ({ ...prev, classId: e.target.value }))}
                     className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-semibold text-sm text-slate-800 focus:outline-none cursor-pointer"
                   >
-                    {classes.filter((c: any) => 
-                      manualStudentForm.track === 'THEOLOGY' 
-                        ? c.department?.code === 'THEO' || c.code.startsWith('TH')
-                        : c.department?.code === 'GEEZ' || c.code.startsWith('GZ')
-                    ).map((c: any) => (
-                      <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
-                    ))}
-                    {classes.filter((c: any) => 
-                      manualStudentForm.track === 'THEOLOGY' 
-                        ? c.department?.code === 'THEO' || c.code.startsWith('TH')
-                        : c.department?.code === 'GEEZ' || c.code.startsWith('GZ')
-                    ).length === 0 && (
+                    {(() => {
+                      let filtered = classes.filter((c: any) => 
+                        manualStudentForm.track === 'THEOLOGY' 
+                          ? c.department?.code === 'THEO' || c.code.startsWith('TH')
+                          : c.department?.code === 'GEEZ' || c.code.startsWith('GZ')
+                      );
+                      if (filtered.length === 0) {
+                        filtered = classes;
+                      }
+                      return filtered.map((c: any) => (
+                        <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
+                      ));
+                    })()}
+                    {classes.length === 0 && (
                       <option value="">— No matching classes found —</option>
                     )}
                   </select>
