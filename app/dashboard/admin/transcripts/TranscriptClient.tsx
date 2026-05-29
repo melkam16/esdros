@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function TranscriptClient({ students, withdrawalRequests = [] }: { students: any[], withdrawalRequests?: any[] }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,6 +9,20 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [yearFilter, setYearFilter] = useState('ALL');
   const [activeTab, setActiveTab] = useState<'roster' | 'withdrawals'>('roster');
+
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.isSuperAdmin) {
+          setIsSuperAdmin(true);
+        }
+      })
+      .catch(err => console.error('Error fetching user metadata:', err));
+  }, []);
 
   const [localWithdrawals, setLocalWithdrawals] = useState<any[]>(withdrawalRequests);
 
@@ -247,6 +261,29 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
       }
     } catch {
       alert('Network error updating student status.');
+    }
+  };
+
+  const handleDeleteStudent = async (studentId: string, name: string) => {
+    const doubleConfirm = window.confirm(`⚠️ WARNING: Permanent Student Purge Requested ⚠️\n\nAre you absolutely sure you want to permanently delete student "${name}"?\n\nThis action CANNOT be undone and will permanently delete:\n- Their student profile & user account\n- All of their course enrollments & sections history\n- All their grades & transcript records\n- All attendance history\n- All associated invoices and payments\n\nType OK to confirm.`);
+    if (!doubleConfirm) return;
+
+    setIsDeleting(studentId);
+    try {
+      const res = await fetch(`/api/admin/students/delete?studentId=${studentId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to delete student.');
+      } else {
+        alert(data.message || 'Student permanently deleted.');
+        window.location.reload();
+      }
+    } catch (err) {
+      alert('Network error deleting student.');
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -505,12 +542,23 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
                         </select>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => setSelectedStudent(student)}
-                          className="px-4 py-2 bg-blue-50 text-blue-700 font-bold text-xs rounded-lg hover:bg-blue-100 transition whitespace-nowrap"
-                        >
-                          View Transcript
-                        </button>
+                        <div className="flex justify-end items-center gap-2 whitespace-nowrap">
+                          <button 
+                            onClick={() => setSelectedStudent(student)}
+                            className="px-4 py-2 bg-blue-50 text-blue-700 font-bold text-xs rounded-lg hover:bg-blue-100 transition whitespace-nowrap"
+                          >
+                            View Transcript
+                          </button>
+                          {isSuperAdmin && (
+                            <button
+                              onClick={() => handleDeleteStudent(student.id, `${student.user.firstName} ${student.user.lastName}`)}
+                              disabled={isDeleting === student.id}
+                              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg transition disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {isDeleting === student.id ? 'Deleting...' : 'Delete Student'}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

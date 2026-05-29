@@ -21,9 +21,16 @@ export default function FacultyListView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'ACTIVE' | 'OFFBOARDED'>('ACTIVE');
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
     fetchFaculty();
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.isSuperAdmin) setIsSuperAdmin(true);
+      })
+      .catch(err => console.error('Failed to get current user details', err));
   }, []);
 
   const fetchFaculty = async () => {
@@ -91,6 +98,29 @@ export default function FacultyListView() {
       }
     } catch (e) {
       alert('Network error');
+    } finally {
+      setIsProcessing(null);
+    }
+  };
+
+  const handleDeleteFaculty = async (facultyId: string, name: string) => {
+    const doubleConfirm = window.confirm(`⚠️ WARNING: Permanent Faculty Purge Requested ⚠️\n\nAre you absolutely sure you want to permanently delete archived faculty member "${name}"?\n\nThis action CANNOT be undone and will permanently delete:\n- Their faculty profile & user account\n- All course sections taught by them (and cascade to enrollments & grades in those sections)\n- All attendances marked by them\n\nType OK to confirm.`);
+    if (!doubleConfirm) return;
+
+    setIsProcessing(facultyId);
+    try {
+      const res = await fetch(`/api/admin/faculty/delete?facultyId=${facultyId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to delete faculty member.');
+      } else {
+        alert(data.message || 'Faculty member permanently deleted.');
+        fetchFaculty(); // Refresh list
+      }
+    } catch (err) {
+      alert('Network error deleting faculty member.');
     } finally {
       setIsProcessing(null);
     }
@@ -240,7 +270,19 @@ export default function FacultyListView() {
                         </button>
                       </div>
                     ) : (
-                      <span className="text-xs text-slate-400 italic">Archived Record</span>
+                      <div className="flex justify-end items-center gap-2 whitespace-nowrap">
+                        {isSuperAdmin ? (
+                          <button
+                            onClick={() => handleDeleteFaculty(f.id, f.name)}
+                            disabled={isProcessing === f.id}
+                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {isProcessing === f.id ? 'Deleting...' : 'Delete Permanently'}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-400 italic">Archived Record</span>
+                        )}
+                      </div>
                     )}
                   </td>
                 </tr>
