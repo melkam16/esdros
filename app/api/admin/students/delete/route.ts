@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 
 export async function DELETE(req: Request) {
   try {
@@ -60,6 +61,9 @@ export async function DELETE(req: Request) {
         where: { id: student.userId }
       });
     });
+
+    // Invalidate the transcripts dashboard page cache in Next.js App Router
+    revalidatePath('/dashboard/admin/transcripts');
 
     return NextResponse.json({
       success: true,

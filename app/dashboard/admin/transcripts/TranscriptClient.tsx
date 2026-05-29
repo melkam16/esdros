@@ -1,7 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function TranscriptClient({ students, withdrawalRequests = [] }: { students: any[], withdrawalRequests?: any[] }) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -238,7 +240,7 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
         alert(data.error || 'Failed to process request.');
       } else {
         alert(data.message || 'Request processed successfully!');
-        window.location.reload();
+        router.refresh();
       }
     } catch {
       alert('Network error processing request.');
@@ -257,7 +259,7 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
         alert(data.error || 'Failed to update student status.');
       } else {
         alert('Student status updated successfully!');
-        window.location.reload();
+        router.refresh();
       }
     } catch {
       alert('Network error updating student status.');
@@ -278,7 +280,7 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
         alert(data.error || 'Failed to delete student.');
       } else {
         alert(data.message || 'Student permanently deleted.');
-        window.location.reload();
+        router.refresh();
       }
     } catch (err) {
       alert('Network error deleting student.');
