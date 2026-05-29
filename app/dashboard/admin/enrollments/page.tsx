@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import SidebarNavigation from '../../../components/SidebarNavigation';
 import EnrollmentsClient from './EnrollmentsClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function EnrollmentRequestsPage() {
   const enrollments = await prisma.enrollment.findMany({
     where: {

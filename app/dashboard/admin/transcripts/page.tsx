@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import SidebarNavigation from '../../../components/SidebarNavigation';
 import TranscriptClient from './TranscriptClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TranscriptsPage() {
   const students = await prisma.student.findMany({
     include: {

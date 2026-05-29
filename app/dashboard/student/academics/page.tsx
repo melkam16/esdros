@@ -52,7 +52,7 @@ export default async function AcademicsPage(props: { searchParams: Promise<{ suc
               name: `${student.user.firstName} ${student.user.lastName}`,
               email: student.user.email,
               phone: student.phone || '',
-              details: `Official transcript requested directly by active student ${student.user.firstName} ${student.user.lastName} (Student ID: ${student.id.substring(0, 8).toUpperCase()}) from their student academics portal console.`
+              details: `Official transcript requested directly by active student ${student.user.firstName} ${student.user.lastName} (Student ID: ${student.id.includes('-') || student.id.length < 15 ? student.id.toUpperCase() : student.id.substring(0, 8).toUpperCase()}) from their student academics portal console.`
             }
           });
           requestSuccess = true;

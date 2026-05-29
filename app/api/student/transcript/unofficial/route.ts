@@ -169,7 +169,7 @@ export async function GET() {
        .font('Roboto-Bold')
        .text(`Student Candidate: ${student.user.firstName} ${student.user.lastName}`, 70, 130)
        .font('Roboto-Regular')
-       .text(`Student ID: ${student.id.substring(0, 8).toUpperCase()}`, 70, 150)
+       .text(`Student ID: ${student.id.includes('-') || student.id.length < 15 ? student.id.toUpperCase() : student.id.substring(0, 8).toUpperCase()}`, 70, 150)
        .text(`Program Track: ${student.track || 'Theological Studies'}`, 70, 170);
 
     doc.text(`Cumulative GPA: ${gpa}`, 350, 130)

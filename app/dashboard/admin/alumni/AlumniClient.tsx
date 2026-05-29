@@ -341,7 +341,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
                   <td className="px-6 py-4 font-bold text-slate-800">
                     {alumnus.user.firstName} {alumnus.user.lastName}
                   </td>
-                  <td className="px-6 py-4 text-slate-500 font-mono text-xs">{alumnus.id.substring(0, 8).toUpperCase()}</td>
+                  <td className="px-6 py-4 text-slate-500 font-mono text-xs">{alumnus.id.includes('-') || alumnus.id.length < 15 ? alumnus.id.toUpperCase() : alumnus.id.substring(0, 8).toUpperCase()}</td>
                   <td className="px-6 py-4 text-slate-600 font-medium">{alumnus.track.replace('_', ' ')}</td>
                   <td className="px-6 py-4">
                     <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-bold uppercase">
@@ -698,7 +698,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
             <div className="p-8 border-b border-slate-200 bg-slate-900 text-white flex justify-between items-start">
               <div>
                 <h3 className="text-2xl font-black">{selectedAlumnus.user.firstName} {selectedAlumnus.user.lastName}</h3>
-                <p className="text-slate-400 font-mono text-sm mt-1">{selectedAlumnus.id.substring(0, 8).toUpperCase()}</p>
+                <p className="text-slate-400 font-mono text-sm mt-1">{selectedAlumnus.id.includes('-') || selectedAlumnus.id.length < 15 ? selectedAlumnus.id.toUpperCase() : selectedAlumnus.id.substring(0, 8).toUpperCase()}</p>
                 <div className="flex gap-2 mt-4">
                   <span className="px-3 py-1 bg-white/10 rounded-md text-xs font-bold text-blue-300 backdrop-blur-sm border border-white/10 uppercase">
                     {selectedAlumnus.track.replace('_', ' ')}
@@ -788,7 +788,7 @@ export default function AlumniClient({ initialAlumni }: { initialAlumni: any[] }
             </div>
             <div className="text-right">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Academic Profile</p>
-              <p className="text-lg font-bold text-slate-800">ID: {selectedAlumnus.id.substring(0, 8).toUpperCase()}</p>
+              <p className="text-lg font-bold text-slate-800">ID: {selectedAlumnus.id.includes('-') || selectedAlumnus.id.length < 15 ? selectedAlumnus.id.toUpperCase() : selectedAlumnus.id.substring(0, 8).toUpperCase()}</p>
               <p className="text-sm font-bold text-blue-600 mt-1 uppercase">{selectedAlumnus.track.replace('_', ' ')} TRACK</p>
               <p className="text-sm font-bold text-slate-500 mt-1">Conferred: {new Date().toLocaleDateString()}</p>
             </div>

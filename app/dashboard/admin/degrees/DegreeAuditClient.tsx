@@ -88,7 +88,7 @@ export default function DegreeAuditClient({ students }: { students: any[] }) {
                     <td className="px-6 py-4 font-bold text-slate-800">
                       {student.user.firstName} {student.user.lastName}
                     </td>
-                    <td className="px-6 py-4 text-slate-500 font-mono text-xs">{student.id.substring(0, 8).toUpperCase()}</td>
+                    <td className="px-6 py-4 text-slate-500 font-mono text-xs">{student.id.includes('-') || student.id.length < 15 ? student.id.toUpperCase() : student.id.substring(0, 8).toUpperCase()}</td>
                     <td className="px-6 py-4">
                       <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-bold uppercase">
                         {student.track.replace('_', ' ')}
@@ -134,7 +134,7 @@ export default function DegreeAuditClient({ students }: { students: any[] }) {
                   &larr; Back to Directory
                 </button>
                 <h2 className="text-3xl font-black">{auditedStudent.user.firstName} {auditedStudent.user.lastName}</h2>
-                <p className="text-blue-300 font-mono mt-1 text-sm tracking-wider">ADM-{auditedStudent.id.substring(0, 8).toUpperCase()}</p>
+                <p className="text-blue-300 font-mono mt-1 text-sm tracking-wider">ADM-{auditedStudent.id.includes('-') || auditedStudent.id.length < 15 ? auditedStudent.id.toUpperCase() : auditedStudent.id.substring(0, 8).toUpperCase()}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Academic Status</p>

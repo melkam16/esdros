@@ -849,7 +849,7 @@ export default function TranscriptClient({ students, classes = [], withdrawalReq
               </div>
               <div className="text-right">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Academic Profile</p>
-                <p className="text-lg font-bold text-slate-800">ID: {selectedStudent.id.substring(0, 8).toUpperCase()}</p>
+                <p className="text-lg font-bold text-slate-800">ID: {selectedStudent.id.includes('-') || selectedStudent.id.length < 15 ? selectedStudent.id.toUpperCase() : selectedStudent.id.substring(0, 8).toUpperCase()}</p>
                 <p className="text-sm font-bold text-blue-600 mt-1 uppercase">{selectedStudent.track} TRACK</p>
                 <p className="text-sm text-slate-500 mt-1">Enrolled: {new Date(selectedStudent.enrollDate).toLocaleDateString()}</p>
               </div>

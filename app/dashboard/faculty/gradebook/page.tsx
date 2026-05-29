@@ -525,7 +525,7 @@ export default function GradebookPage() {
                             </div>
                             <div>
                               <p className="font-extrabold text-slate-900">{s.name || 'Unknown Student'}</p>
-                              <p className="text-xs text-slate-400 mt-0.5">ID: {s.id.substring(0, 8)} | {s.courseCode}</p>
+                              <p className="text-xs text-slate-400 mt-0.5">ID: {s.id.includes('-') || s.id.length < 15 ? s.id.toUpperCase() : s.id.substring(0, 8).toUpperCase()} | {s.courseCode}</p>
                             </div>
                           </div>
                         </td>
