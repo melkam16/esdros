@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { logActivity } from '@/lib/audit';
 
 export async function DELETE(req: Request) {
   try {
@@ -64,6 +65,15 @@ export async function DELETE(req: Request) {
 
     // Invalidate the transcripts dashboard page cache in Next.js App Router
     revalidatePath('/dashboard/admin/transcripts');
+
+    // Log deletion event to system audit logs
+    logActivity({
+      userId: dbUser.id,
+      email: dbUser.email,
+      role: dbUser.role,
+      action: 'DELETE_STUDENT',
+      details: `Permanently deleted student record for ${student.user.firstName} ${student.user.lastName} (ID: ${student.id}) and all associated academic data.`
+    });
 
     return NextResponse.json({
       success: true,

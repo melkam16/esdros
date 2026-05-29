@@ -95,6 +95,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
         title: 'System Administration',
         items: [
           { name: 'Manage Admins', href: '/dashboard/admin/manage-admins', icon: '👥' },
+          { name: 'Activity Logs', href: '/dashboard/admin/activity-logs', icon: '📋' },
           { name: 'Settings', href: '/dashboard/admin/settings', icon: '⚙️' },
         ],
       },
@@ -159,9 +160,10 @@ export default function SidebarNavigation({ role }: SidebarProps) {
   const activeModules = rawModules.map(module => {
     if (activeRole === 'ADMIN') {
       const filtered = module.items.filter(item => {
-        // Only Super Admins can access manage-admins, finance, and reports
+        // Only Super Admins can access manage-admins, activity-logs, finance, and reports
         if (
           (item.href.includes('/manage-admins') ||
+           item.href.includes('/activity-logs') ||
            item.href.includes('/finance') ||
            item.href.includes('/reports')) && 
           !isSuperAdmin

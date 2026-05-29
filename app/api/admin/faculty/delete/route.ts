@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { logActivity } from '@/lib/audit';
 
 export async function DELETE(req: Request) {
   try {
@@ -96,6 +97,15 @@ export async function DELETE(req: Request) {
 
     // Invalidate the faculty management page cache in Next.js App Router
     revalidatePath('/dashboard/admin/faculty');
+
+    // Log deletion event to system audit logs
+    logActivity({
+      userId: dbUser.id,
+      email: dbUser.email,
+      role: dbUser.role,
+      action: 'DELETE_FACULTY',
+      details: `Permanently deleted archived faculty profile for ${faculty.user.firstName} ${faculty.user.lastName} (ID: ${faculty.id}) and all associated teaching records.`
+    });
 
     return NextResponse.json(
       {
