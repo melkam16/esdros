@@ -120,6 +120,15 @@ export async function GET(req: Request) {
     const sections = await prisma.courseSection.findMany({
       where: {
         facultyId: facultyId ? facultyId : undefined,
+        faculty: {
+          user: {
+            NOT: {
+              lastName: {
+                contains: '(Offboarded)'
+              }
+            }
+          }
+        },
         NOT: {
           semester: {
             contains: 'Legacy',

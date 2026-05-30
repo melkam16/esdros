@@ -4,6 +4,8 @@ import SidebarNavigation from '../../../components/SidebarNavigation';
 import CourseAssignmentForm from '../academics/CourseAssignmentForm';
 import CourseListView from './CourseListView';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CourseManagementPage() {
   // Fetch all courses
   const courses = await prisma.course.findMany({
@@ -14,6 +16,17 @@ export default async function CourseManagementPage() {
         },
       },
       sections: {
+        where: {
+          faculty: {
+            user: {
+              NOT: {
+                lastName: {
+                  contains: '(Offboarded)'
+                }
+              }
+            }
+          }
+        },
         include: {
           faculty: {
             include: {
