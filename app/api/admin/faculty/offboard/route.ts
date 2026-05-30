@@ -4,6 +4,7 @@ import { hash } from 'crypto';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { logActivity } from '@/lib/audit';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(req: Request) {
   try {
@@ -54,14 +55,27 @@ export async function POST(req: Request) {
     // Scramble password hash to immediately revoke login access
     const newHash = hash('sha256', Math.random().toString(36).substring(2, 15));
 
-    await prisma.user.update({
-      where: { id: faculty.user.id },
-      data: {
-        lastName: newLastName,
-        email: newEmail,
-        passwordHash: newHash
-      }
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete all course sections taught by this faculty member
+      // Note: CourseSection cascades delete to Enrollment and Attendance in that section
+      await tx.courseSection.deleteMany({
+        where: { facultyId: faculty.id }
+      });
+
+      // 2. Archive and update user profile
+      await tx.user.update({
+        where: { id: faculty.user.id },
+        data: {
+          lastName: newLastName,
+          email: newEmail,
+          passwordHash: newHash
+        }
+      });
     });
+
+    // Invalidate the cache for administrative pages
+    revalidatePath('/dashboard/admin/faculty');
+    revalidatePath('/dashboard/admin/courses');
 
     // Log the offboarding action to system audit logs
     logActivity({
