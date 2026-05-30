@@ -201,12 +201,16 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Course section not found' }, { status: 404 });
     }
 
-    // Prevent deletion if there are active enrollments
-    if (section.enrollments.length > 0) {
+    const isFacultyOffboarded = section.faculty.user.lastName.includes('(Offboarded)');
+    const force = searchParams.get('force') === 'true';
+
+    // Prevent deletion if there are active enrollments, unless force parameter is passed or faculty is offboarded
+    if (section.enrollments.length > 0 && !force && !isFacultyOffboarded) {
       return NextResponse.json(
         {
           error: 'Cannot delete course assignment with active enrollments',
           enrollmentCount: section.enrollments.length,
+          canForce: true
         },
         { status: 409 }
       );

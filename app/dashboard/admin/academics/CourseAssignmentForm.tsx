@@ -149,11 +149,12 @@ export default function CourseAssignmentForm({ courses }: CourseAssignmentFormPr
     }
   };
 
-  const handleDeleteAssignment = async (sectionId: string) => {
-    if (!confirm('Are you sure you want to remove this course assignment?')) return;
+  const handleDeleteAssignment = async (sectionId: string, forceDelete: boolean = false) => {
+    if (!forceDelete && !confirm('Are you sure you want to remove this course assignment?')) return;
 
     try {
-      const response = await fetch(`/api/admin/faculty/assign-course?sectionId=${sectionId}`, {
+      const url = `/api/admin/faculty/assign-course?sectionId=${sectionId}${forceDelete ? '&force=true' : ''}`;
+      const response = await fetch(url, {
         method: 'DELETE',
       });
 
@@ -162,7 +163,16 @@ export default function CourseAssignmentForm({ courses }: CourseAssignmentFormPr
         await fetchAssignments();
       } else {
         const data = await response.json();
-        setMessage({ type: 'error', text: data.error || 'Failed to remove assignment' });
+        if (response.status === 409 && data.canForce) {
+          const forceConfirm = confirm(
+            `⚠️ WARNING: This course assignment has ${data.enrollmentCount} active student enrollment(s).\n\nRemoving it will permanently drop all enrolled students from this section and delete their attendance ledger entries.\n\nAre you absolutely sure you want to force-delete this assignment?`
+          );
+          if (forceConfirm) {
+            await handleDeleteAssignment(sectionId, true);
+          }
+        } else {
+          setMessage({ type: 'error', text: data.error || 'Failed to remove assignment' });
+        }
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'An error occurred' });
