@@ -33,6 +33,25 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
   const [linkingUserId, setLinkingUserId] = useState<string | null>(null);
   const [isLinking, setIsLinking] = useState(false);
 
+  const generateTemporaryPassword = () => {
+    const lowercase = 'abcdefghijkmnpqrstuvwxyz';
+    const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const digits = '23456789';
+    const specials = '!@#$%&*';
+    const allChars = lowercase + uppercase + digits + specials;
+    
+    let pass = '';
+    pass += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+    pass += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+    pass += digits.charAt(Math.floor(Math.random() * digits.length));
+    pass += specials.charAt(Math.floor(Math.random() * specials.length));
+    
+    for (let i = 0; i < 8; i++) {
+      pass += allChars.charAt(Math.floor(Math.random() * allChars.length));
+    }
+    return pass.split('').sort(() => 0.5 - Math.random()).join('');
+  };
+
   // Form State
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -63,6 +82,7 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
 
   useEffect(() => {
     fetchAdmins();
+    setPassword(generateTemporaryPassword());
     // Get currently logged-in user id to prevent self-deletion
     fetch('/api/auth/me')
       .then(res => res.json())
@@ -98,7 +118,7 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
       setFirstName('');
       setLastName('');
       setEmail('');
-      setPassword('');
+      setPassword(generateTemporaryPassword());
       setIsSuperAdmin(false);
       setIsStandardAdmin(false);
       fetchAdmins(); // Refresh lists
@@ -298,15 +318,23 @@ export default function ManageAdminsClient({ departments }: ManageAdminsProps) {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Password</label>
-              <input
-                type="password"
-                required
-                className="w-full px-3.5 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Generated Password</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  className="w-full px-3.5 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 font-mono focus:outline-none cursor-not-allowed"
+                  value={password}
+                />
+                <button
+                  type="button"
+                  onClick={() => setPassword(generateTemporaryPassword())}
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold whitespace-nowrap transition"
+                >
+                  Regenerate
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">This temporary password will be sent automatically in the welcome email.</p>
             </div>
 
             <div className="space-y-1.5">

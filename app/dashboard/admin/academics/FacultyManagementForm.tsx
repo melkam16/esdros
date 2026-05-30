@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FacultyFormData {
   title: string;
@@ -27,6 +27,26 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  const generateTemporaryPassword = () => {
+    const lowercase = 'abcdefghijkmnpqrstuvwxyz';
+    const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const digits = '23456789';
+    const specials = '!@#$%&*';
+    const allChars = lowercase + uppercase + digits + specials;
+    
+    let pass = '';
+    pass += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+    pass += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+    pass += digits.charAt(Math.floor(Math.random() * digits.length));
+    pass += specials.charAt(Math.floor(Math.random() * specials.length));
+    
+    for (let i = 0; i < 8; i++) {
+      pass += allChars.charAt(Math.floor(Math.random() * allChars.length));
+    }
+    return pass.split('').sort(() => 0.5 - Math.random()).join('');
+  };
+
   const [formData, setFormData] = useState<FacultyFormData>({
     title: '',
     firstName: '',
@@ -37,6 +57,17 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
     confirmPassword: '',
     pictureUrl: '',
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      const securePass = generateTemporaryPassword();
+      setFormData((prev) => ({
+        ...prev,
+        password: securePass,
+        confirmPassword: securePass,
+      }));
+    }
+  }, [isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -84,14 +115,15 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Faculty member added successfully!' });
+        const nextPass = generateTemporaryPassword();
         setFormData({
           title: '',
           firstName: '',
           lastName: '',
           email: '',
           departmentId: departments[0]?.id || '',
-          password: '',
-          confirmPassword: '',
+          password: nextPass,
+          confirmPassword: nextPass,
           pictureUrl: '',
         });
         setTimeout(() => {
@@ -233,32 +265,32 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                 />
               </div>
 
-              {/* Password */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter password"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Confirm Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Confirm password"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
+              {/* Generated Password */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Generated Password</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-600 font-mono focus:outline-none cursor-not-allowed text-sm"
+                    value={formData.password}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const securePass = generateTemporaryPassword();
+                      setFormData((prev) => ({
+                        ...prev,
+                        password: securePass,
+                        confirmPassword: securePass,
+                      }));
+                    }}
+                    className="px-5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 rounded-lg text-sm font-bold whitespace-nowrap transition"
+                  >
+                    Regenerate
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">This temporary password will be sent automatically in the welcome email.</p>
               </div>
             </div>
 
