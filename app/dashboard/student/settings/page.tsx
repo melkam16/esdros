@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [showPasswordPopup, setShowPasswordPopup] = useState(false);
 
   const [withdrawalReason, setWithdrawalReason] = useState('');
   const [withdrawalSubmitting, setWithdrawalSubmitting] = useState(false);
@@ -101,6 +102,9 @@ export default function SettingsPage() {
       const result = await res.json();
       if (result.success) {
         setMessage({ type: 'success', text: 'Settings and profile updated successfully!' });
+        if (formData.password) {
+          setShowPasswordPopup(true);
+        }
         setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
       } else {
         setMessage({ type: 'error', text: result.error || 'Failed to update settings.' });
@@ -436,6 +440,36 @@ export default function SettingsPage() {
         )}
 
       </main>
+
+      {/* Premium Password Updated Success Modal Popup */}
+      {showPasswordPopup && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white/95 border border-slate-200 rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl space-y-6 relative overflow-hidden text-center animate-in zoom-in-95 duration-200">
+            {/* Absolute background visual blobs */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100 rounded-full blur-3xl -mr-10 -mt-10"></div>
+            
+            <div className="relative z-10 space-y-4">
+              <div className="w-16 h-16 bg-emerald-500/10 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl mx-auto border border-emerald-500/20 shadow-sm animate-bounce">
+                🎉
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="text-xl font-black text-slate-900 tracking-tight">Password Updated!</h3>
+                <p className="text-xs text-slate-500 font-semibold leading-relaxed px-2">
+                  Your new authentication credentials have been successfully updated in the database. Use your new password for all subsequent portal sign-ins.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowPasswordPopup(false)}
+                className="w-full mt-4 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-xl text-xs uppercase tracking-wider shadow-md shadow-emerald-600/20 transition hover:-translate-y-0.5"
+              >
+                Awesome, Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
