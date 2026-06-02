@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import SidebarNavigation from '../../../components/SidebarNavigation';
 import CourseAssignmentForm from '../academics/CourseAssignmentForm';
 import CourseListView from './CourseListView';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,9 +52,17 @@ export default async function CourseManagementPage() {
       
       <main className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
         {/* Page Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Course Management</h1>
-          <p className="text-sm text-slate-500 mt-1">Assign courses to faculty members and manage course sections.</p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Course Management</h1>
+            <p className="text-sm text-slate-500 mt-1">Assign courses to faculty members and manage course sections.</p>
+          </div>
+          <Link
+            href="/dashboard/admin/courses/import-grades"
+            className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold rounded-xl shadow-md shadow-amber-500/20 text-xs tracking-wide transition-all hover:-translate-y-0.5 flex items-center gap-2"
+          >
+            📊 Import Course Grades
+          </Link>
         </div>
 
         {/* Stats Overview */}

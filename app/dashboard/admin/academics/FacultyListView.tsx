@@ -126,6 +126,29 @@ export default function FacultyListView() {
     }
   };
 
+  const handleResetPassword = async (userId: string, email: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to reset the password for ${name}?\n\nThis will generate a temporary password and email it to ${email}.`)) return;
+    
+    setIsProcessing(userId);
+    try {
+      const res = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: userId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || `Success! Temporary password has been sent to ${email}.`);
+      } else {
+        alert(data.error || 'Failed to reset password.');
+      }
+    } catch (err) {
+      alert('Network error resetting password.');
+    } finally {
+      setIsProcessing(null);
+    }
+  };
+
   return (
     <div className="space-y-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
       {/* Header Tabs */}
@@ -261,6 +284,13 @@ export default function FacultyListView() {
                             Grant Admin
                           </button>
                         )}
+                        <button
+                          onClick={() => handleResetPassword(f.userId, f.email, f.name)}
+                          disabled={isProcessing === f.userId}
+                          className="px-3 py-1.5 bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-lg hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 transition disabled:opacity-50 whitespace-nowrap"
+                        >
+                          🔑 Reset Password
+                        </button>
                         <button 
                           onClick={() => handleOffboard(f.id, f.name)}
                           disabled={isProcessing === f.id}

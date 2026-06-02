@@ -268,6 +268,34 @@ export default function StudentDirectoryClient({
     }
   };
 
+  const handleResetPassword = async (userId: string, email: string, name: string) => {
+    const confirmReset = window.confirm(
+      `🔑 Password Reset Request 🔑\n\nAre you sure you want to reset the login password for student "${name}"?\n\nThis will generate a temporary password and email it directly to: ${email}`
+    );
+    if (!confirmReset) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: userId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to reset password.');
+      }
+
+      alert(data.message || `Password has been reset. Temporary credentials successfully sent to ${email}.`);
+      router.refresh();
+    } catch (err: any) {
+      alert(err.message || 'Error resetting password.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* ── METRICS GRID ────────────────────────────────────────── */}
@@ -499,6 +527,13 @@ export default function StudentDirectoryClient({
                                 >
                                   ✏️ Edit
                                 </button>
+                                <button
+                                  onClick={() => handleResetPassword(student.userId, student.user.email, `${student.user.firstName} ${student.user.lastName}`)}
+                                  className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg transition"
+                                  title="Reset Password & Email Credentials"
+                                >
+                                  🔑
+                                </button>
                                 {isSuperAdmin ? (
                                   <button
                                     onClick={() => handleDeleteStudent(student.id, `${student.user.firstName} ${student.user.lastName}`)}
@@ -573,6 +608,13 @@ export default function StudentDirectoryClient({
                           className="flex-1 text-center py-1.5 bg-white text-slate-800 hover:bg-slate-100 border border-slate-300 text-xs font-bold rounded-lg transition"
                         >
                           ✏️ Assign Cohort
+                        </button>
+                        <button
+                          onClick={() => handleResetPassword(student.userId, student.user.email, `${student.user.firstName} ${student.user.lastName}`)}
+                          className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg transition"
+                          title="Reset Password & Email Credentials"
+                        >
+                          🔑
                         </button>
                         {isSuperAdmin && (
                           <button
@@ -651,6 +693,13 @@ export default function StudentDirectoryClient({
                           className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold rounded-lg hover:bg-blue-100 transition"
                         >
                           ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleResetPassword(student.userId, student.user.email, `${student.user.firstName} ${student.user.lastName}`)}
+                          className="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg hover:bg-amber-100 transition"
+                          title="Reset Password & Email Credentials"
+                        >
+                          🔑 Reset
                         </button>
                         {isSuperAdmin && (
                           <button
@@ -916,6 +965,24 @@ export default function StudentDirectoryClient({
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Reset Password Administration Panel */}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between animate-fadeIn">
+                <div>
+                  <h4 className="text-xs font-bold text-amber-900">🔒 Security Credentials</h4>
+                  <p className="text-[10px] text-amber-700 mt-0.5">Generate a new temporary password and email it immediately.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleResetPassword(editingStudent.userId, editingStudent.user.email, `${editingStudent.user.firstName} ${editingStudent.user.lastName}`);
+                    setIsEditModalOpen(false); // Close edit modal after triggering reset
+                  }}
+                  className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow transition"
+                >
+                  🔑 Reset Password
+                </button>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
