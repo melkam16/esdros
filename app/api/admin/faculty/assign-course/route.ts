@@ -247,3 +247,85 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+// PUT - Update course assignment
+export async function PUT(req: Request) {
+  try {
+    const { sectionId, facultyId, semester, room, capacity } = await req.json();
+
+    if (!sectionId || !facultyId || !semester) {
+      return NextResponse.json(
+        { error: 'Missing required fields: sectionId, facultyId, semester' },
+        { status: 400 }
+      );
+    }
+
+    // Check if section exists
+    const section = await prisma.courseSection.findUnique({
+      where: { id: sectionId },
+    });
+
+    if (!section) {
+      return NextResponse.json({ error: 'Course section not found' }, { status: 404 });
+    }
+
+    // Check if faculty exists
+    const faculty = await prisma.faculty.findUnique({
+      where: { id: facultyId },
+      include: { user: true, department: true },
+    });
+
+    if (!faculty) {
+      return NextResponse.json({ error: 'Faculty member not found' }, { status: 404 });
+    }
+
+    // Check if assignment already exists for this faculty, course, and semester (excluding current section)
+    const existingSection = await prisma.courseSection.findFirst({
+      where: {
+        facultyId,
+        courseId: section.courseId,
+        semester,
+        NOT: { id: sectionId },
+      },
+    });
+
+    if (existingSection) {
+      return NextResponse.json(
+        { error: 'This faculty member is already assigned to this course for this semester' },
+        { status: 400 }
+      );
+    }
+
+    // Update course section
+    const updatedSection = await prisma.courseSection.update({
+      where: { id: sectionId },
+      data: {
+        facultyId,
+        semester,
+        room: room || null,
+        capacity: typeof capacity === 'string' ? parseInt(capacity) : capacity || 40,
+      },
+      include: {
+        course: true,
+        faculty: {
+          include: {
+            user: true,
+            department: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Course assignment updated successfully',
+      data: updatedSection,
+    });
+  } catch (error) {
+    console.error('Error updating course assignment:', error);
+    return NextResponse.json(
+      { error: 'Failed to update course assignment' },
+      { status: 500 }
+    );
+  }
+}
