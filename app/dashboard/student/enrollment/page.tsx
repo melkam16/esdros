@@ -37,7 +37,11 @@ async function getData() {
         semester: currentSemester
       },
       include: {
-        course: true,
+        course: {
+          include: {
+            class: true
+          }
+        },
         faculty: { include: { user: true } },
         _count: { select: { enrollments: { where: { enrollmentStatus: 'APPROVED' } } } },
       },
@@ -152,7 +156,8 @@ export default async function EnrollmentConsolePage() {
 
           <EnrollmentConsoleClient
             isWithdrawn={isWithdrawn}
-            sections={availableSectionsForEnrollment.map((s) => ({
+            studentClassId={student.classId || ''}
+            sections={availableSectionsForEnrollment.map((s: any) => ({
               id: s.id,
               courseCode: s.course?.code || 'CRS',
               courseTitle: s.course?.title || 'Course Offering',
@@ -164,6 +169,8 @@ export default async function EnrollmentConsolePage() {
               enrolled: s._count.enrollments,
               alreadyEnrolled: false,
               enrollmentStatus: null,
+              classId: s.course?.classId || '',
+              className: s.course?.class?.name || 'General Course',
             }))}
           />
         </div>

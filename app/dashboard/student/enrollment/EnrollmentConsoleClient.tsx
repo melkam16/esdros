@@ -15,14 +15,25 @@ interface SectionRow {
   enrolled: number;
   alreadyEnrolled: boolean;
   enrollmentStatus: string | null;
+  classId: string;
+  className: string;
 }
 
-export default function EnrollmentConsoleClient({ sections, isWithdrawn = false }: { sections: SectionRow[], isWithdrawn?: boolean }) {
+export default function EnrollmentConsoleClient({ 
+  sections, 
+  studentClassId = '', 
+  isWithdrawn = false 
+}: { 
+  sections: SectionRow[], 
+  studentClassId?: string, 
+  isWithdrawn?: boolean 
+}) {
   const [sectionStates, setSectionStates] = useState<Record<string, { loading: boolean; status: string | null }>>(
     Object.fromEntries(sections.map((s) => [s.id, { loading: false, status: s.enrollmentStatus }]))
   );
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [search, setSearch] = useState('');
+  const [filterByCohort, setFilterByCohort] = useState(!!studentClassId);
 
   const showToast = (msg: string, type: 'success' | 'error') => {
     setToast({ msg, type });
@@ -76,10 +87,12 @@ export default function EnrollmentConsoleClient({ sections, isWithdrawn = false 
 
   const filtered = sections.filter(
     (s) =>
-      !search ||
-      s.courseTitle.toLowerCase().includes(search.toLowerCase()) ||
-      s.courseCode.toLowerCase().includes(search.toLowerCase()) ||
-      s.faculty.toLowerCase().includes(search.toLowerCase())
+      (!filterByCohort || s.classId === studentClassId) &&
+      (!search ||
+        s.courseTitle.toLowerCase().includes(search.toLowerCase()) ||
+        s.courseCode.toLowerCase().includes(search.toLowerCase()) ||
+        s.faculty.toLowerCase().includes(search.toLowerCase()) ||
+        s.className.toLowerCase().includes(search.toLowerCase()))
   );
 
   const grouped = filtered.reduce<Record<string, SectionRow[]>>((acc, s) => {
@@ -96,14 +109,29 @@ export default function EnrollmentConsoleClient({ sections, isWithdrawn = false 
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">Available Course Sections</h2>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div className="space-y-1">
+          <h2 className="text-base font-extrabold text-slate-800">Available Course Sections</h2>
+          {studentClassId && (
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={filterByCohort}
+                onChange={(e) => setFilterByCohort(e.target.checked)}
+                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-305 cursor-pointer transition-all"
+              />
+              <span className="text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors">
+                🎯 Filter to my Cohort's Courses only
+              </span>
+            </label>
+          )}
+        </div>
         <input
           id="section-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search courses, faculty..."
-          className="px-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-56"
+          className="px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 hover:bg-white focus:bg-white w-full md:w-64 transition-all font-semibold"
         />
       </div>
 
@@ -129,6 +157,7 @@ export default function EnrollmentConsoleClient({ sections, isWithdrawn = false 
                       <h4 className="font-semibold text-slate-900">{s.courseTitle}</h4>
                       <span className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">{s.courseCode}</span>
                       <span className="text-xs text-slate-400">{s.credits} credits</span>
+                      <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2.5 py-0.5 rounded-full border border-blue-100">{s.className}</span>
                     </div>
                     <p className="text-xs text-slate-500">Instructor: {s.faculty}{s.room ? ` · Room ${s.room}` : ''}</p>
                     {/* Capacity bar */}
