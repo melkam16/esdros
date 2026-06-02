@@ -1,13 +1,45 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+function normalizeObjectKeys(obj: any, context: 'department' | 'class' | 'course'): any {
+  if (!obj || typeof obj !== 'object') return obj;
+  const normalized: any = {};
+  for (const key of Object.keys(obj)) {
+    const rawValue = obj[key];
+    const k = key.toLowerCase().replace(/[\s_\-]/g, '');
+    
+    if (context === 'department') {
+      if (k === 'code' || k === 'deptcode' || k === 'departmentcode') normalized.Code = rawValue;
+      else if (k === 'name' || k === 'title') normalized.Name = rawValue;
+      else if (k === 'description' || k === 'desc') normalized.Description = rawValue;
+      else normalized[key] = rawValue;
+    } 
+    else if (context === 'class') {
+      if (k === 'code' || k === 'classcode' || k === 'cohortcode') normalized.Code = rawValue;
+      else if (k === 'name' || k === 'title' || k === 'classlabel') normalized.Name = rawValue;
+      else if (k === 'departmentcode' || k === 'deptcode') normalized.DepartmentCode = rawValue;
+      else normalized[key] = rawValue;
+    } 
+    else if (context === 'course') {
+      if (k === 'code' || k === 'coursecode' || k === 'subjectcode') normalized.Code = rawValue;
+      else if (k === 'title' || k === 'name' || k === 'coursetitle' || k === 'subject') normalized.Title = rawValue;
+      else if (k === 'description' || k === 'desc') normalized.Description = rawValue;
+      else if (k === 'credits' || k === 'credit' || k === 'credithours') normalized.Credits = rawValue;
+      else if (k === 'track') normalized.Track = rawValue;
+      else if (k === 'classcode' || k === 'cohortcode') normalized.ClassCode = rawValue;
+      else normalized[key] = rawValue;
+    }
+  }
+  return normalized;
+}
+
 export async function POST(req: Request) {
   try {
     const { departments, classes, courses } = await req.json();
 
-    const deptsArray = Array.isArray(departments) ? departments : [];
-    const classesArray = Array.isArray(classes) ? classes : [];
-    const coursesArray = Array.isArray(courses) ? courses : [];
+    const deptsArray = (Array.isArray(departments) ? departments : []).map(d => normalizeObjectKeys(d, 'department'));
+    const classesArray = (Array.isArray(classes) ? classes : []).map(c => normalizeObjectKeys(c, 'class'));
+    const coursesArray = (Array.isArray(courses) ? courses : []).map(co => normalizeObjectKeys(co, 'course'));
 
     if (deptsArray.length === 0 && classesArray.length === 0 && coursesArray.length === 0) {
       return NextResponse.json({ success: false, error: 'No data rows found in the provided Excel sheets' }, { status: 400 });

@@ -81,8 +81,8 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
       
       reader.onload = async (evt) => {
         try {
-          const binaryStr = evt.target?.result;
-          const workbook = XLSX.read(binaryStr, { type: 'binary' });
+          const data = evt.target?.result;
+          const workbook = XLSX.read(data, { type: 'array' });
           
           const departmentsSheet = workbook.Sheets['Departments'];
           const classesSheet = workbook.Sheets['Classes'];
@@ -120,7 +120,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         }
       };
       
-      reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer(file);
     } catch (err: any) {
       alert(`Library initialization error: ${err.message}`);
       setLoading(false);
@@ -139,8 +139,8 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
       
       reader.onload = async (evt) => {
         try {
-          const binaryStr = evt.target?.result;
-          const workbook = XLSX.read(binaryStr, { type: 'binary' });
+          const data = evt.target?.result;
+          const workbook = XLSX.read(data, { type: 'array' });
           
           // Try to resolve sheet: 'Courses' or first sheet
           const sheetName = workbook.SheetNames.includes('Courses') 
@@ -206,7 +206,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         }
       };
       
-      reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer(file);
     } catch (err: any) {
       alert(`Library initialization error: ${err.message}`);
       setLoading(false);
