@@ -127,6 +127,92 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
     }
   };
 
+  // Client-Side Excel Course-Only Spreadsheet Parser
+  const handleImportCoursesOnly = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setLoading(true);
+    try {
+      const XLSX = await import('xlsx');
+      const reader = new FileReader();
+      
+      reader.onload = async (evt) => {
+        try {
+          const binaryStr = evt.target?.result;
+          const workbook = XLSX.read(binaryStr, { type: 'binary' });
+          
+          // Try to resolve sheet: 'Courses' or first sheet
+          const sheetName = workbook.SheetNames.includes('Courses') 
+            ? 'Courses' 
+            : workbook.SheetNames[0];
+          
+          const coursesSheet = workbook.Sheets[sheetName];
+          if (!coursesSheet) {
+            alert("Could not locate any valid courses worksheet inside spreadsheet.");
+            setLoading(false);
+            return;
+          }
+          
+          const parsedCourses = XLSX.utils.sheet_to_json(coursesSheet);
+          
+          if (parsedCourses.length === 0) {
+            alert("No course rows found in the selected sheet.");
+            setLoading(false);
+            return;
+          }
+
+          // Validate presence of key column structures
+          const firstRow: any = parsedCourses[0];
+          const codeKey = Object.keys(firstRow).find(k => k.toLowerCase() === 'code');
+          const titleKey = Object.keys(firstRow).find(k => k.toLowerCase() === 'title');
+          const classCodeKey = Object.keys(firstRow).find(k => k.toLowerCase() === 'classcode');
+          
+          if (!codeKey || !titleKey || !classCodeKey) {
+            alert("Invalid Format: Spreadsheet must contain column headers for 'Code', 'Title', and 'ClassCode'.");
+            setLoading(false);
+            return;
+          }
+
+          // Standardize column structures
+          const coursesPayload = parsedCourses.map((row: any) => ({
+            Code: row[codeKey],
+            Title: row[titleKey],
+            Description: row[Object.keys(firstRow).find(k => k.toLowerCase() === 'description') || ''] || '',
+            Credits: parseInt(row[Object.keys(firstRow).find(k => k.toLowerCase() === 'credits') || '']) || 3,
+            Track: row[Object.keys(firstRow).find(k => k.toLowerCase() === 'track') || ''] || 'THEOLOGY',
+            ClassCode: row[classCodeKey]
+          }));
+          
+          const response = await fetch('/api/admin/academics/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ departments: [], classes: [], courses: coursesPayload })
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            alert(`Excel Courses Import Success!\n\nSuccessfully matched and imported ${result.coursesCount} Courses.`);
+            router.refresh();
+          } else {
+            alert(`Import Failed: ${result.error}`);
+          }
+        } catch (error: any) {
+          alert(`Error parsing Excel courses data: ${error.message}`);
+        } finally {
+          setLoading(false);
+          e.target.value = '';
+        }
+      };
+      
+      reader.readAsBinaryString(file);
+    } catch (err: any) {
+      alert(`Library initialization error: ${err.message}`);
+      setLoading(false);
+    }
+  };
+
   // Unified Action Processing Pipeline (POST)
   const executePost = async (action: string, payload: object) => {
     setLoading(true);
@@ -327,7 +413,19 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
 
       {/* Block 3: Subjects / Courses */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <h3 className="text-md font-bold text-slate-900 border-b pb-2">Step 3: Subject & Course Connector</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-2">
+          <h3 className="text-md font-bold text-slate-900">Step 3: Subject & Course Connector</h3>
+          <div className="relative inline-flex items-center justify-center px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg border border-blue-200 transition cursor-pointer self-start sm:self-center">
+            <input 
+              type="file" 
+              accept=".xlsx,.xls" 
+              disabled={loading}
+              onChange={handleImportCoursesOnly}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <span>📊 Bulk Import Courses (Spreadsheet)</span>
+          </div>
+        </div>
         <div className="grid grid-cols-5 gap-3">
           <input type="text" placeholder="Title (e.g., Geez Syntax)" className="p-2 border rounded text-sm w-full" value={subjectTitle} onChange={e => setSubjectTitle(e.target.value)} />
           <input type="text" placeholder="Code (e.g., GZ102)" className="p-2 border rounded text-sm w-full" value={subjectCode} onChange={e => setSubjectCode(e.target.value)} />
