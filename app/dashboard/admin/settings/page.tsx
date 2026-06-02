@@ -4,6 +4,12 @@ import { useState, useEffect } from 'react';
 import SidebarNavigation from '../../../components/SidebarNavigation';
 
 export default function SettingsPage() {
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 15 }, (_, i) => (currentYear - 2 + i).toString());
+
+  const [semTerm, setSemTerm] = useState('Fall');
+  const [semYear, setSemYear] = useState(new Date().getFullYear().toString());
+
   const [formData, setFormData] = useState({
     SMTP_HOST: '',
     SMTP_PORT: '',
@@ -98,6 +104,13 @@ export default function SettingsPage() {
       const settingsResult = await settingsRes.json();
       if (settingsResult.success) {
         setFormData(settingsResult.data);
+        if (settingsResult.data.CURRENT_SEMESTER) {
+          const parts = settingsResult.data.CURRENT_SEMESTER.trim().split(/\s+/);
+          if (parts.length === 2) {
+            setSemTerm(parts[0]);
+            setSemYear(parts[1]);
+          }
+        }
       }
 
       // 2. Fetch notifications lists, classes, and departments
@@ -442,16 +455,41 @@ export default function SettingsPage() {
                   </div>
                   
                   <div className="p-8 space-y-5">
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Current Active Term Identifier</label>
-                      <input 
-                        type="text" 
-                        value={formData.CURRENT_SEMESTER}
-                        onChange={e => setFormData(prev => ({ ...prev, CURRENT_SEMESTER: e.target.value }))}
-                        placeholder="Fall 2026"
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50" 
-                        disabled={!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true'}
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Active Semester Term</label>
+                        <select 
+                          value={semTerm}
+                          onChange={e => {
+                            const nextTerm = e.target.value;
+                            setSemTerm(nextTerm);
+                            setFormData(prev => ({ ...prev, CURRENT_SEMESTER: `${nextTerm} ${semYear}` }));
+                          }}
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50 text-sm bg-white" 
+                          disabled={!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true'}
+                        >
+                          <option value="Fall">Fall</option>
+                          <option value="Spring">Spring</option>
+                          <option value="Summer">Summer</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Active Academic Year</label>
+                        <select 
+                          value={semYear}
+                          onChange={e => {
+                            const nextYear = e.target.value;
+                            setSemYear(nextYear);
+                            setFormData(prev => ({ ...prev, CURRENT_SEMESTER: `${semTerm} ${nextYear}` }));
+                          }}
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-500 transition-all disabled:opacity-50 text-sm bg-white" 
+                          disabled={!isSuperAdmin && formData.IS_STANDARD_ADMIN !== 'true'}
+                        >
+                          {years.map(yr => (
+                            <option key={yr} value={yr}>{yr}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

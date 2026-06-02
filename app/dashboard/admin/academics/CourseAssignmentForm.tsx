@@ -44,15 +44,25 @@ interface CourseAssignment {
 }
 
 export default function CourseAssignmentForm({ courses }: CourseAssignmentFormProps) {
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 15 }, (_, i) => (currentYear - 2 + i).toString());
+
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [faculty, setFaculty] = useState<Faculty[]>([]);
   const [assignments, setAssignments] = useState<CourseAssignment[]>([]);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const initialTerm = ['Fall', 'Spring', 'Summer'][new Date().getMonth() > 8 ? 0 : new Date().getMonth() > 4 ? 1 : 2];
+  const initialYear = new Date().getFullYear().toString();
+
+  const [selectedTerm, setSelectedTerm] = useState(initialTerm);
+  const [selectedYear, setSelectedYear] = useState(initialYear);
+
   const [formData, setFormData] = useState({
     facultyId: '',
     courseId: '',
-    semester: `${new Date().getFullYear()}-${['Fall', 'Spring', 'Summer'][new Date().getMonth() > 8 ? 0 : new Date().getMonth() > 4 ? 1 : 2]}`,
+    semester: `${initialTerm} ${initialYear}`,
     room: '',
     capacity: '40',
   });
@@ -99,6 +109,16 @@ export default function CourseAssignmentForm({ courses }: CourseAssignmentFormPr
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleTermChange = (term: string) => {
+    setSelectedTerm(term);
+    setFormData(prev => ({ ...prev, semester: `${term} ${selectedYear}` }));
+  };
+
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    setFormData(prev => ({ ...prev, semester: `${selectedTerm} ${year}` }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -127,10 +147,12 @@ export default function CourseAssignmentForm({ courses }: CourseAssignmentFormPr
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Course assigned successfully!' });
+        setSelectedTerm(initialTerm);
+        setSelectedYear(initialYear);
         setFormData({
           facultyId: '',
           courseId: '',
-          semester: `${new Date().getFullYear()}-${['Fall', 'Spring', 'Summer'][new Date().getMonth() > 8 ? 0 : new Date().getMonth() > 4 ? 1 : 2]}`,
+          semester: `${initialTerm} ${initialYear}`,
           room: '',
           capacity: '40',
         });
@@ -251,17 +273,35 @@ export default function CourseAssignmentForm({ courses }: CourseAssignmentFormPr
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Semester</label>
-                <input
-                  type="text"
-                  name="semester"
-                  value={formData.semester}
-                  onChange={handleChange}
-                  placeholder="e.g., 2026-Fall"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Semester Term</label>
+                  <select
+                    value={selectedTerm}
+                    onChange={(e) => handleTermChange(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
+                    required
+                  >
+                    <option value="Fall">Fall</option>
+                    <option value="Spring">Spring</option>
+                    <option value="Summer">Summer</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Academic Year</label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => handleYearChange(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
+                    required
+                  >
+                    {years.map((yr) => (
+                      <option key={yr} value={yr}>
+                        {yr}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>
