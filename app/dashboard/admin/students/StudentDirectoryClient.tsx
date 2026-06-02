@@ -36,8 +36,8 @@ interface Student {
   user: User;
   status: string; // ACTIVE, INACTIVE, ON_LEAVE, GRADUATED, etc.
   track: string; // THEOLOGY, GEEZ_LANGUAGE
-  classId: string;
-  class: Class;
+  classId?: string | null;
+  class?: Class | null;
   enrollDate: any;
   phone?: string | null;
   bio?: string | null;
@@ -131,7 +131,7 @@ export default function StudentDirectoryClient({
     // 3. Department Filter
     const deptMatch =
       selectedDepartment === 'ALL' ||
-      student.class.departmentId === selectedDepartment;
+      student.class?.departmentId === selectedDepartment;
 
     // 4. Class Cohort Filter
     const classMatch = selectedClass === 'ALL' || student.classId === selectedClass;
@@ -202,7 +202,7 @@ export default function StudentDirectoryClient({
       bio: student.bio || '',
       status: student.status,
       track: student.track,
-      classId: student.classId,
+      classId: student.classId || '',
     });
     setEditError(null);
     setIsEditModalOpen(true);
@@ -428,7 +428,7 @@ export default function StudentDirectoryClient({
                     <p className="text-xs text-slate-400">Department Code: {dept.code}</p>
                   </div>
                   <span className="bg-blue-600 text-xs px-2.5 py-1 rounded font-bold">
-                    {filteredStudents.filter((s) => s.class.departmentId === dept.id).length} Students
+                    {filteredStudents.filter((s) => s.class?.departmentId === dept.id).length} Students
                   </span>
                 </div>
 
@@ -521,6 +521,75 @@ export default function StudentDirectoryClient({
               </div>
             );
           })}
+
+          {/* Unassigned Students Section */}
+          {filteredStudents.some((s) => !s.classId) && (
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-fadeIn">
+              <div className="bg-slate-700 px-6 py-4 flex justify-between items-center text-white">
+                <div>
+                  <h2 className="text-lg font-bold">Unassigned Students</h2>
+                  <p className="text-xs text-slate-300">Deferred Cohort (Awaiting Class Assignment)</p>
+                </div>
+                <span className="bg-amber-600 text-xs px-2.5 py-1 rounded font-bold">
+                  {filteredStudents.filter((s) => !s.classId).length} Students
+                </span>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredStudents.filter((s) => !s.classId).map((student) => (
+                    <div
+                      key={student.id}
+                      className="p-4 rounded-xl border border-amber-200 bg-amber-50/10 hover:bg-white hover:shadow-md hover:border-amber-300 transition-all flex flex-col justify-between space-y-4"
+                    >
+                      <div>
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <h4 className="font-bold text-slate-900">
+                              {student.user.firstName} {student.user.lastName}
+                            </h4>
+                            <p className="text-xs text-slate-500 font-semibold">{student.id}</p>
+                          </div>
+                          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                            student.status === 'ACTIVE'
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                              : 'bg-slate-100 border-slate-300 text-slate-600'
+                          }`}>
+                            {student.status}
+                          </span>
+                        </div>
+
+                        <div className="mt-3 space-y-1 text-xs text-slate-600">
+                          <p className="truncate">📧 {student.user.email}</p>
+                          {student.phone && <p>📞 {student.phone}</p>}
+                          <p className="mt-2 text-[10px] bg-amber-50 text-amber-800 w-fit px-1.5 py-0.5 rounded font-bold font-mono">
+                            {student.track.replace('_', ' ')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2 border-t border-slate-200">
+                        <button
+                          onClick={() => handleOpenEdit(student)}
+                          className="flex-1 text-center py-1.5 bg-white text-slate-800 hover:bg-slate-100 border border-slate-300 text-xs font-bold rounded-lg transition"
+                        >
+                          ✏️ Assign Cohort
+                        </button>
+                        {isSuperAdmin && (
+                          <button
+                            onClick={() => handleDeleteStudent(student.id, `${student.user.firstName} ${student.user.lastName}`)}
+                            className="px-2 text-center py-1.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 text-xs rounded-lg transition"
+                            title="Delete Student Permanent"
+                          >
+                            🗑️
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         /* Tabular Flat List View */
@@ -554,8 +623,8 @@ export default function StudentDirectoryClient({
                       {student.user.email}
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm font-semibold text-slate-800">{student.class.name}</p>
-                      <p className="text-xs text-slate-400">{student.class.department?.name}</p>
+                      <p className="text-sm font-semibold text-slate-800">{student.class?.name || 'Unassigned (No Cohort)'}</p>
+                      <p className="text-xs text-slate-400">{student.class?.department?.name || 'Awaiting Reassignment'}</p>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs bg-slate-100 font-mono text-slate-700 px-2 py-1 rounded">
@@ -839,6 +908,7 @@ export default function StudentDirectoryClient({
                     onChange={(e) => setEditForm({ ...editForm, classId: e.target.value })}
                     className="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 font-semibold"
                   >
+                    <option value="">-- Unassigned (No Cohort) --</option>
                     {classes.map((cls) => (
                       <option key={cls.id} value={cls.id}>
                         {cls.name} ({cls.code})

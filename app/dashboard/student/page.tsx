@@ -82,7 +82,7 @@ export default async function StudentDashboardHome() {
                 Welcome back, {data.user.firstName}! 👋
               </h1>
               <p className="text-lg text-blue-100/90 font-medium max-w-xl">
-                Here is what is happening with your <span className="text-white font-bold">{data.class.name}</span> cohort this semester. Keep up the excellent work!
+                Here is what is happening with your <span className="text-white font-bold">{data.class?.name || 'deferred'}</span> cohort this semester. Keep up the excellent work!
               </p>
             </div>
             

@@ -124,8 +124,8 @@ model Student {
   status     StudentStatus @default(ACTIVE)
   track      ProgramTrack
   
-  classId    String        // Mandates sorting students directly into an Academic Class
-  class      Class         @relation(fields: [classId], references: [id])
+  classId    String?       // Mandates sorting students directly into an Academic Class
+  class      Class?        @relation(fields: [classId], references: [id])
   enrollDate DateTime      @default(now())
 
   phone      String?       // Optional student contact phone

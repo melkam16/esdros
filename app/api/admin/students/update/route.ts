@@ -50,7 +50,7 @@ export async function PATCH(req: Request) {
 
     // 5. Validate class assignment if cohort is updated
     let targetClass = null;
-    if (classId && classId !== student.classId) {
+    if (classId && classId.trim() !== '' && classId !== student.classId) {
       targetClass = await prisma.class.findUnique({
         where: { id: classId }
       });
@@ -80,7 +80,9 @@ export async function PATCH(req: Request) {
       if (bio !== undefined) studentUpdates.bio = bio.trim();
       if (status !== undefined) studentUpdates.status = status;
       if (track !== undefined) studentUpdates.track = track;
-      if (classId !== undefined) studentUpdates.classId = classId;
+      if (classId !== undefined) {
+        studentUpdates.classId = (classId && classId.trim() !== '') ? classId : null;
+      }
 
       const updatedStudent = await tx.student.update({
         where: { id: studentId },
@@ -102,7 +104,11 @@ export async function PATCH(req: Request) {
     if (phone && phone !== student.phone) changedFields.push(`Phone (${student.phone || 'none'} -> ${phone})`);
     if (status && status !== student.status) changedFields.push(`Status (${student.status} -> ${status})`);
     if (track && track !== student.track) changedFields.push(`Track (${student.track} -> ${track})`);
-    if (classId && classId !== student.classId) changedFields.push(`Cohort Class (${student.class?.name || 'none'} -> ${updated.class?.name})`);
+    if (classId !== undefined && classId !== student.classId) {
+      const oldName = student.class?.name || 'Unassigned';
+      const newName = updated.class?.name || 'Unassigned';
+      changedFields.push(`Cohort Class (${oldName} -> ${newName})`);
+    }
 
     logActivity({
       userId: payload.id as string,

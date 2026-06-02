@@ -69,11 +69,11 @@ export default async function StudentProfilePage() {
               <div>
                 <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mb-4 text-xl">🏫</div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Assigned Class Framework</p>
-                <p className="text-lg font-extrabold text-slate-800">{profile.class.name}</p>
+                <p className="text-lg font-extrabold text-slate-800">{profile.class?.name || 'Unassigned / Deferred'}</p>
               </div>
               <div className="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Class Code Reference</p>
-                <p className="text-xl font-mono font-black text-slate-700">{profile.class.code}</p>
+                <p className="text-xl font-mono font-black text-slate-700">{profile.class?.code || 'DEFERRED'}</p>
               </div>
             </div>
           </div>
