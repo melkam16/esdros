@@ -294,7 +294,7 @@ export default function HomePage() {
             {[
               { icon: '📍', label: 'Address', val: '2312 Arcola Ave, Silver Spring, MD 20902' },
               { icon: '📞', label: 'Phone', val: '240-899-5215 (Ext 101)' },
-              { icon: '📧', label: 'Email', val: 'info@eotcmk.org' },
+              { icon: '📧', label: 'Email', val: 'us.esderos.support@eotcmk.org' },
             ].map((item) => (
               <div key={item.label} className="flex items-start gap-3">
                 <span className="text-2xl">{item.icon}</span>

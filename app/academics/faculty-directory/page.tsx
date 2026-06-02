@@ -331,7 +331,7 @@ export default function FacultyDirectoryPage() {
               <p className="text-xs text-slate-500">Join our academic team to teach theological tracks or Semitic linguistics in North America.</p>
             </div>
             <a
-              href="mailto:info@eotcmk.org"
+              href="mailto:us.esderos.support@eotcmk.org"
               className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition shadow-sm"
             >
               Contact Administrative Office
