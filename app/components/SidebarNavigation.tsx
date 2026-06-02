@@ -62,6 +62,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
         items: [
           { name: 'Academic Structure', href: '/dashboard/admin/academics', icon: '🏛️' },
           { name: 'Course Management', href: '/dashboard/admin/courses', icon: '📚' },
+          { name: 'Student Directory', href: '/dashboard/admin/students', icon: '👥' },
         ],
       },
       {
