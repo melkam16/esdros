@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface EntityProps {
@@ -10,6 +10,18 @@ interface EntityProps {
 export default function SetupFormInterface({ departments, classes }: EntityProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Local state to manage instant visual feedback on mutations
+  const [localDepartments, setLocalDepartments] = useState(departments);
+  const [localClasses, setLocalClasses] = useState(classes);
+
+  useEffect(() => {
+    setLocalDepartments(departments);
+  }, [departments]);
+
+  useEffect(() => {
+    setLocalClasses(classes);
+  }, [classes]);
 
   // Form Field Tracking Context Vectors
   const [deptName, setDeptName] = useState('');
@@ -223,20 +235,86 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         body: JSON.stringify({ action, data: payload })
       });
       
+      const result = await res.json();
+      
       if (res.ok) {
-        // Clear forms on success depending on creation type
-        if (action === 'CREATE_DEPARTMENT') { setDeptName(''); setDeptCode(''); }
-        if (action === 'CREATE_CLASS') { setClassName(''); setClassCode(''); setTargetDeptId(''); }
-        if (action === 'CREATE_SUBJECT') { setSubjectTitle(''); setSubjectCode(''); setTargetClassId(''); }
+        const createdOrUpdatedData = result.data;
+        
+        // Mutate local state depending on type of operation
+        if (action === 'CREATE_DEPARTMENT') { 
+          setDeptName(''); 
+          setDeptCode(''); 
+          setLocalDepartments(prev => [...prev, createdOrUpdatedData]);
+        }
+        if (action === 'CREATE_CLASS') { 
+          setClassName(''); 
+          setClassCode(''); 
+          setTargetDeptId(''); 
+          setLocalClasses(prev => [...prev, { ...createdOrUpdatedData, subjects: [] }]);
+        }
+        if (action === 'CREATE_SUBJECT') { 
+          setSubjectTitle(''); 
+          setSubjectCode(''); 
+          setTargetClassId(''); 
+          setLocalClasses(prev => prev.map(c => {
+            if (c.id === createdOrUpdatedData.classId) {
+              return {
+                ...c,
+                subjects: [...(c.subjects || []), createdOrUpdatedData]
+              };
+            }
+            return c;
+          }));
+        }
         if (action === 'UPDATE_NODE') {
           const type = (payload as any).updateType;
-          if (type === 'department') { setDeptName(''); setDeptCode(''); setEditDeptId(null); }
-          if (type === 'class') { setClassName(''); setClassCode(''); setTargetDeptId(''); setEditClassId(null); }
-          if (type === 'course') { setSubjectTitle(''); setSubjectCode(''); setTargetClassId(''); setEditSubjectId(null); }
+          if (type === 'department') { 
+            setDeptName(''); 
+            setDeptCode(''); 
+            setEditDeptId(null); 
+            setLocalDepartments(prev => prev.map(d => d.id === createdOrUpdatedData.id ? createdOrUpdatedData : d));
+          }
+          if (type === 'class') { 
+            setClassName(''); 
+            setClassCode(''); 
+            setTargetDeptId(''); 
+            setEditClassId(null); 
+            setLocalClasses(prev => prev.map(c => c.id === createdOrUpdatedData.id ? { ...c, ...createdOrUpdatedData } : c));
+          }
+          if (type === 'course') { 
+            setSubjectTitle(''); 
+            setSubjectCode(''); 
+            setTargetClassId(''); 
+            setEditSubjectId(null); 
+            setLocalClasses(prev => prev.map(c => {
+              const updatedSubjects = (c.subjects || []).filter((sub: any) => sub.id !== createdOrUpdatedData.id);
+              if (c.id === createdOrUpdatedData.classId) {
+                updatedSubjects.push(createdOrUpdatedData);
+              }
+              return {
+                ...c,
+                subjects: updatedSubjects
+              };
+            }));
+          }
+        }
+        if (action === 'DELETE_NODE') {
+          const { id, type } = payload as any;
+          if (type === 'department') {
+            setLocalDepartments(prev => prev.filter(d => d.id !== id));
+            // Cascade delete local classes linked to deleted department
+            setLocalClasses(prev => prev.filter(c => c.departmentId !== id));
+          } else if (type === 'class') {
+            setLocalClasses(prev => prev.filter(c => c.id !== id));
+          } else if (type === 'course') {
+            setLocalClasses(prev => prev.map(c => ({
+              ...c,
+              subjects: (c.subjects || []).filter((sub: any) => sub.id !== id)
+            })));
+          }
         }
       } else {
-        const errorData = await res.json();
-        alert(`Operation Failed: ${errorData.error || 'Server rejected request.'}${errorData.details ? `\n\nDetails: ${errorData.details}` : ''}`);
+        alert(`Operation Failed: ${result.error || 'Server rejected request.'}${result.details ? `\n\nDetails: ${result.details}` : ''}`);
       }
     } catch (err) {
       console.error("Failed to commit database transaction:", err);
@@ -336,7 +414,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Configured Departments Blueprint</p>
           <div className="max-h-40 overflow-y-auto border rounded-lg divide-y divide-slate-100 bg-slate-50/50">
-            {departments.map(d => (
+            {localDepartments.map(d => (
               <div key={d.id} className="p-3 flex justify-between items-center text-sm bg-white">
                 <span className="font-medium text-slate-700">{d.name} <span className="text-xs font-mono text-slate-400">({d.code})</span></span>
                 <div className="flex gap-2">
@@ -349,7 +427,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
                 </div>
               </div>
             ))}
-            {departments.length === 0 && <p className="p-3 text-xs italic text-slate-400">No departments found.</p>}
+            {localDepartments.length === 0 && <p className="p-3 text-xs italic text-slate-400">No departments found.</p>}
           </div>
         </div>
       </div>
@@ -362,7 +440,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
           <input type="text" placeholder="Class Code (e.g., TH-D1)" className="p-2 border rounded text-sm w-full" value={classCode} onChange={e => setClassCode(e.target.value)} />
           <select className="p-2 border rounded text-sm w-full bg-white" value={targetDeptId} onChange={e => setTargetDeptId(e.target.value)}>
             <option value="">Select Department Cluster...</option>
-            {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            {localDepartments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </div>
         <div className="flex gap-2 mt-2">
@@ -390,7 +468,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Active Class Group Mappings</p>
           <div className="max-h-40 overflow-y-auto border rounded-lg divide-y divide-slate-100 bg-slate-50/50">
-            {classes.map(c => (
+            {localClasses.map(c => (
               <div key={c.id} className="p-3 flex justify-between items-center text-sm bg-white">
                 <div>
                   <span className="font-medium text-slate-700">{c.name}</span>
@@ -406,7 +484,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
                 </div>
               </div>
             ))}
-            {classes.length === 0 && <p className="p-3 text-xs italic text-slate-400">No structural program classes assigned.</p>}
+            {localClasses.length === 0 && <p className="p-3 text-xs italic text-slate-400">No structural program classes assigned.</p>}
           </div>
         </div>
       </div>
@@ -439,7 +517,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
 
           <select className="p-2 border rounded text-sm w-full bg-white" value={targetClassId} onChange={e => setTargetClassId(e.target.value)}>
             <option value="">Select Target Class...</option>
-            {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {localClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div className="flex gap-2 mt-2">
@@ -470,11 +548,11 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
           )}
         </div>
 
-        {/* Inline Deep Inspection List for Subjects/Courses */}
+        {/* Inline Live Inspection List for Subjects/Courses */}
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Catalogued Subjects Base (Course Targets)</p>
           <div className="max-h-45 overflow-y-auto border rounded-lg divide-y divide-slate-100 bg-slate-50/50">
-            {classes.flatMap(c => c.subjects || []).map((sub: any) => (
+            {localClasses.flatMap(c => c.subjects || []).map((sub: any) => (
               <div key={sub.id} className="p-3 flex justify-between items-center text-sm bg-white">
                 <div>
                   <span className="font-medium text-slate-800">{sub.title}</span>
@@ -493,7 +571,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
                 </div>
               </div>
             ))}
-            {classes.flatMap(c => c.subjects || []).length === 0 && (
+            {localClasses.flatMap(c => c.subjects || []).length === 0 && (
               <p className="p-3 text-xs italic text-slate-400">No subject rows parsed in current memory context layout tree.</p>
             )}
           </div>
