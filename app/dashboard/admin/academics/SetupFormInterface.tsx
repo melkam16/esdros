@@ -236,7 +236,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         }
       } else {
         const errorData = await res.json();
-        alert(`Operation Failed: ${errorData.error || 'Server rejected request.'}`);
+        alert(`Operation Failed: ${errorData.error || 'Server rejected request.'}${errorData.details ? `\n\nDetails: ${errorData.details}` : ''}`);
       }
     } catch (err) {
       console.error("Failed to commit database transaction:", err);

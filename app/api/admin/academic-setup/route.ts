@@ -131,9 +131,15 @@ case 'CREATE_SUBJECT':
     }
   } catch (error: any) {
     console.error("Academic Setup Pipeline Error:", error);
+    const isRecordNotFound = error.code === 'P2025';
     return NextResponse.json(
-      { error: 'Database operation failure.', details: error.message },
-      { status: 500 }
+      { 
+        error: isRecordNotFound 
+          ? 'The target academic blueprint node could not be found or has already been deleted.' 
+          : 'Database operation failure.', 
+        details: error.message 
+      },
+      { status: isRecordNotFound ? 404 : 500 }
     );
   }
 }
