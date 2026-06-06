@@ -120,8 +120,8 @@ export default function HomePage() {
                 color: 'border-[#009fe5]',
                 badge: 'bg-[#e6f5fc] text-[#007bb5]',
                 subjects: [
-                  'BA in Theology',
-                  'Associate degrees in Theology',
+                  'BA in Theology (2-Year Transition)',
+                  'Diploma in Theology (3-Year Program)',
                   'Post graduate degree in Theology'
                 ],
               },
@@ -132,8 +132,8 @@ export default function HomePage() {
                 color: 'border-[#c02424]',
                 badge: 'bg-red-50 text-red-700',
                 subjects: [
-                  'BA in Geez Language',
-                  'Associate degrees in Geez Language'
+                  'BA in Geez Language (2-Year Transition)',
+                  'Diploma in Geez Language (3-Year Program)'
                 ],
               },
             ].map((prog) => (

@@ -34,9 +34,9 @@ const PROGRAM_TRACKS: Record<'THEOLOGY' | 'GEEZ', TrackData> = {
     levels: [
       {
         title: 'Bachelor of Arts (BA) in Theology',
-        credits: 120,
-        duration: '4 Years',
-        description: 'A comprehensive, deep dive into academic and systemic theology, church history, and biblical analysis, culminating in a senior thesis.',
+        credits: 60,
+        duration: '2 Years (Transition)',
+        description: 'A 2-year upgrade transition pathway designed for graduates of the 3-year Diploma in Theology. This program builds directly on the Diploma curriculum to complete a full Bachelor of Arts degree.',
         courses: [
           { name: 'Dogmatic Theology I, II & III', desc: 'Understanding the core dogmatic teachings, sacraments, and theological formulations of the Orthodox Church.' },
           { name: 'Advanced Patristics (The Fathers)', desc: 'Study of the patristic period and the key writings of the Church Fathers (Qedusan Abaw).' },
@@ -49,10 +49,10 @@ const PROGRAM_TRACKS: Record<'THEOLOGY' | 'GEEZ', TrackData> = {
         ]
       },
       {
-        title: 'Associate Degree in Theology',
+        title: 'Diploma in Theology',
         credits: 60,
         duration: '3 Years',
-        description: 'A solid, foundational program covering basic biblical study, theology, and ethical principles designed for lay leaders and Sunday school teachers.',
+        description: 'A comprehensive 3-year program covering basic biblical study, theology, and ethical principles. Successful completion awards a Diploma, qualifying graduates to enter the 2-year BA transition program.',
         courses: [
           { name: 'Introduction to Orthodox Dogma', desc: 'A basic introduction to the mysteries (Misterat) and faith tenets.' },
           { name: 'Survey of the Old Testament', desc: 'Historical overview, division, and context of the books of the Old Covenant.' },
@@ -84,9 +84,9 @@ const PROGRAM_TRACKS: Record<'THEOLOGY' | 'GEEZ', TrackData> = {
     levels: [
       {
         title: 'Bachelor of Arts (BA) in Geez Language',
-        credits: 120,
-        duration: '4 Years',
-        description: 'An exhaustive philological and creative curriculum designed to produce expert translators, hymnologists, and manuscript catalogers.',
+        credits: 60,
+        duration: '2 Years (Transition)',
+        description: 'A 2-year upgrade transition pathway designed for graduates of the 3-year Diploma in Geez Language. This program builds directly on the Diploma curriculum to complete a full Bachelor of Arts degree.',
         courses: [
           { name: 'Advanced Geez Grammar & Syntax (Sawasew)', desc: 'Comprehensive study of nouns, verbs, prepositions, and structural rules (Sawasew).' },
           { name: 'Geez Qine I, II & III (Classical Poetry)', desc: 'Analyzing, composing, and translating classical Ethiopian theological poetry.' },
@@ -99,10 +99,10 @@ const PROGRAM_TRACKS: Record<'THEOLOGY' | 'GEEZ', TrackData> = {
         ]
       },
       {
-        title: 'Associate Degree in Geez Language',
+        title: 'Diploma in Geez Language',
         credits: 60,
         duration: '3 Years',
-        description: 'Intermediate study focusing on verb morphological forms, vocabularies, and early liturgical translation.',
+        description: 'A comprehensive 3-year program focusing on classical Semitic morphology, early translations, and poetry. Successful completion awards a Diploma, qualifying graduates to enter the 2-year BA transition program.',
         courses: [
           { name: 'Geez Morphology & Verb Conjugations', desc: 'Detailed tracking of root verbs, active/passive forms, and tense modifiers.' },
           { name: 'Reading the Synaxarium in Geez', desc: 'Translation of biographical summaries of holy saints directly from Geez.' },
@@ -293,7 +293,7 @@ export default function DegreeProgramsPage() {
                 </h4>
                 <ul className="space-y-4">
                   {[
-                    { icon: '🎓', req: 'A high school diploma or equivalent is required for Associate and BA programs.' },
+                    { icon: '🎓', req: 'A high school diploma is required for the Diploma program, and a completed Diploma is required for the BA transition program.' },
                     { icon: '⛪', req: 'Submit a canonical reference letter from your parish priest.' },
                     { icon: '🌍', req: 'Fluent or conversational Amharic (as secondary language) is recommended.' },
                     { icon: '💻', req: 'A stable computer and high-speed internet connection for distance classrooms.' }

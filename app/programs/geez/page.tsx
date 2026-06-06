@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Geez Language Program | Esderos EOTC Theological Seminary',
-  description: 'Explore the BA, Associate, and Certificate Geez Language programs offered at Esderos EOTC Theological Seminary.',
+  description: 'Explore the BA (Transition), Diploma, and Certificate Geez Language programs offered at Esderos EOTC Theological Seminary.',
 };
 
 export default function GeezProgramPage() {
@@ -57,7 +57,7 @@ export default function GeezProgramPage() {
             {/* BA */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
               <h3 className="text-xl font-bold text-[#1e508d] mb-2">Bachelor of Arts (BA) in Geez Language</h3>
-              <p className="text-sm text-slate-500 mb-4">A comprehensive 4-year degree program requiring 120 credit hours.</p>
+              <p className="text-sm text-slate-500 mb-4">A 2-year transition program (60 credit hours) building upon the Diploma curriculum.</p>
               <h4 className="font-semibold text-slate-800 text-sm mb-2">Core Coursework:</h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-600">
                 <li>• Advanced Geez Grammar & Syntax (Sawasew)</li>
@@ -71,10 +71,10 @@ export default function GeezProgramPage() {
               </ul>
             </div>
 
-            {/* Associate */}
+            {/* Diploma */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <h3 className="text-xl font-bold text-[#1e508d] mb-2">Associate Degree in Geez</h3>
-              <p className="text-sm text-slate-500 mb-4">A 3-year fundamental program requiring 60 credit hours.</p>
+              <h3 className="text-xl font-bold text-[#1e508d] mb-2">Diploma in Geez Language</h3>
+              <p className="text-sm text-slate-500 mb-4">A 3-year fundamental program (60 credit hours). Graduates can upgrade to the BA degree at any time.</p>
               <h4 className="font-semibold text-slate-800 text-sm mb-2">Core Coursework:</h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-600">
                 <li>• Geez Morphology & Verb Conjugations</li>

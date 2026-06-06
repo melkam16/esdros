@@ -138,7 +138,7 @@ const ACADEMIC_YEAR_DATA: Record<'FALL' | 'SPRING' | 'SUMMER', TermData> = {
         title: 'Seminary Commencement / Graduation Ceremony',
         category: 'MILESTONE',
         categoryLabel: 'Academic Milestone',
-        desc: 'Official graduation ceremony conferring BA and Associate degrees to the Class of 2027.'
+        desc: 'Official graduation ceremony conferring BA degrees and Diplomas to the Class of 2027.'
       }
     ]
   },
