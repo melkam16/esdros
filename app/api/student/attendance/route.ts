@@ -46,7 +46,7 @@ export async function GET() {
           sectionId: a.courseSectionId,
           courseCode: a.courseSection.course.code,
           courseTitle: a.courseSection.course.title,
-          faculty: `${a.courseSection.faculty.user.firstName} ${a.courseSection.faculty.user.lastName}`,
+          faculty: a.courseSection.faculty ? `${a.courseSection.faculty.user.firstName} ${a.courseSection.faculty.user.lastName}` : 'TBD',
           semester: a.courseSection.semester,
           total: 0,
           present: 0,

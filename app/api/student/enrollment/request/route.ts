@@ -108,7 +108,7 @@ export async function GET() {
         courseCode: e.courseSection.course.code,
         courseTitle: e.courseSection.course.title,
         credits: e.courseSection.course.credits,
-        faculty: `${e.courseSection.faculty.user.firstName} ${e.courseSection.faculty.user.lastName}`,
+        faculty: e.courseSection.faculty ? `${e.courseSection.faculty.user.firstName} ${e.courseSection.faculty.user.lastName}` : 'TBD',
         semester: e.courseSection.semester,
         room: e.courseSection.room,
         status: e.enrollmentStatus,

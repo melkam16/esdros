@@ -76,7 +76,7 @@ export async function POST(req: Request) {
         email: payload.email as string,
         role: 'ADMIN',
         action: 'IMPORT_GRADES',
-        details: `Imported term grades for ${grades.length} students in course section ${section.course.code} (Taught by ${section.faculty.user.firstName} ${section.faculty.user.lastName})`,
+        details: `Imported term grades for ${grades.length} students in course section ${section.course.code} (Taught by ${section.faculty ? `${section.faculty.user.firstName} ${section.faculty.user.lastName}` : 'TBD'})`,
       },
     });
 

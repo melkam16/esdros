@@ -18,15 +18,20 @@ export default async function CourseManagementPage() {
       },
       sections: {
         where: {
-          faculty: {
-            user: {
-              NOT: {
-                lastName: {
-                  contains: '(Offboarded)'
+          OR: [
+            { faculty: null },
+            {
+              faculty: {
+                user: {
+                  NOT: {
+                    lastName: {
+                      contains: '(Offboarded)'
+                    }
+                  }
                 }
               }
             }
-          }
+          ]
         },
         include: {
           faculty: {

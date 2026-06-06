@@ -194,8 +194,8 @@ model CourseSection {
   id        String   @id @default(uuid())
   courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  facultyId String
-  faculty   Faculty  @relation(fields: [facultyId], references: [id])
+  facultyId String?
+  faculty   Faculty? @relation(fields: [facultyId], references: [id])
   semester  String   // e.g., "Fall 2026"
   room      String?
   capacity  Int      @default(40)

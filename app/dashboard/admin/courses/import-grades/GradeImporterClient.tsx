@@ -26,12 +26,12 @@ interface CourseSectionInfo {
     title: string;
     credits: number;
   };
-  faculty: {
+  faculty?: {
     user: {
       firstName: string;
       lastName: string;
     };
-  };
+  } | null;
   enrollments: EnrollmentInfo[];
 }
 
@@ -252,7 +252,7 @@ export default function GradeImporterClient({ initialSections }: { initialSectio
               <option value="">-- Choose Assigned Course Section --</option>
               {sections.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.course.code} - {s.course.title} ({s.faculty.user.firstName} {s.faculty.user.lastName}) [{s.semester}]
+                  {s.course.code} - {s.course.title} ({s.faculty ? `${s.faculty.user.firstName} ${s.faculty.user.lastName}` : 'Unassigned'}) [{s.semester}]
                 </option>
               ))}
             </select>
@@ -267,7 +267,7 @@ export default function GradeImporterClient({ initialSections }: { initialSectio
               </p>
               <p className="text-slate-600 flex items-center justify-between">
                 <span>👨‍🏫 <b>Instructor:</b></span>
-                <span className="font-bold text-slate-800">{selectedSection.faculty.user.firstName} {selectedSection.faculty.user.lastName}</span>
+                <span className="font-bold text-slate-800">{selectedSection.faculty ? `${selectedSection.faculty.user.firstName} ${selectedSection.faculty.user.lastName}` : 'Unassigned'}</span>
               </p>
               <p className="text-slate-600 flex items-center justify-between">
                 <span>📅 <b>Semester:</b></span>
