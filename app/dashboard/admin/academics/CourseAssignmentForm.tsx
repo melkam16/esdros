@@ -53,7 +53,14 @@ export default function CourseAssignmentForm({ courses }: CourseAssignmentFormPr
   const [assignments, setAssignments] = useState<CourseAssignment[]>([]);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const initialTerm = ['Fall', 'Spring', 'Summer'][new Date().getMonth() > 8 ? 0 : new Date().getMonth() > 4 ? 1 : 2];
+  const getInitialTerm = () => {
+    const month = new Date().getMonth();
+    if (month >= 8 && month <= 10) return 'Fall';
+    if (month === 11 || month <= 1) return 'Winter';
+    if (month >= 2 && month <= 4) return 'Spring';
+    return 'Summer';
+  };
+  const initialTerm = getInitialTerm();
   const initialYear = new Date().getFullYear().toString();
 
   const [selectedTerm, setSelectedTerm] = useState(initialTerm);
@@ -357,6 +364,7 @@ export default function CourseAssignmentForm({ courses }: CourseAssignmentFormPr
                     required
                   >
                     <option value="Fall">Fall</option>
+                    <option value="Winter">Winter</option>
                     <option value="Spring">Spring</option>
                     <option value="Summer">Summer</option>
                   </select>
@@ -548,6 +556,7 @@ export default function CourseAssignmentForm({ courses }: CourseAssignmentFormPr
                     required
                   >
                     <option value="Fall">Fall</option>
+                    <option value="Winter">Winter</option>
                     <option value="Spring">Spring</option>
                     <option value="Summer">Summer</option>
                   </select>
