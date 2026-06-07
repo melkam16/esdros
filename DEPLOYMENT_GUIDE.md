@@ -473,4 +473,4 @@ Add this line at the bottom to execute the backup script daily at **02:00 AM**:
 | `pm2 restart esdros-sms` | Hard restart the Next.js process |
 | `sudo tail -n 100 /var/log/nginx/error.log` | Check Nginx web server errors |
 | `sudo systemctl restart postgresql` | Restart PostgreSQL 16 database |
-| `sudo systemctl reload nginx` | Reload Nginx server configuration changes without downtime |
+| `sudo systemctl reload nginx` | Reload Nginx server configuration changes without downtime|
