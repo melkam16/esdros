@@ -304,7 +304,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="bg-[#0e2a47]/60 px-6 py-3 text-center text-blue-300 text-xs">
-        © {new Date().getFullYear()} Mahibere Kidusan North America · 2312 Arcola Ave, Silver Spring, MD 20902 · info@eotcmk.org
+        © {new Date().getFullYear()} Mahibere Kidusan North America · 2312 Arcola Ave, Silver Spring, MD 20902 · us.esderos.support@eotcmk.org
       </div>
     </div>
   );

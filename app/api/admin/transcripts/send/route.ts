@@ -120,7 +120,7 @@ Here is your Official Academic Transcript from Esderos EOTC Theological Seminary
 ACADEMIC DOSSIER SUMMARY:
 ----------------------------------------
 Student Candidate: ${student.user.firstName} ${student.user.lastName}
-Student ID: ${student.id.substring(0, 8).toUpperCase()}
+Student ID: ${student.id.includes('-') || student.id.length < 15 ? student.id.toUpperCase() : student.id.substring(0, 8).toUpperCase()}
 Program Track: ${student.track}
 Cumulative GPA: ${gpa}
 ----------------------------------------
@@ -152,7 +152,7 @@ Esderos EOTC Theological Seminary
     <table style="width: 100%; font-size: 13px;">
       <tr>
         <td style="color: #64748b; padding: 3px 0;">Student ID:</td>
-        <td style="font-weight: bold; color: #0f172a; font-family: monospace;">${student.id.substring(0, 8).toUpperCase()}</td>
+        <td style="font-weight: bold; color: #0f172a; font-family: monospace;">${student.id.includes('-') || student.id.length < 15 ? student.id.toUpperCase() : student.id.substring(0, 8).toUpperCase()}</td>
       </tr>
       <tr>
         <td style="color: #64748b; padding: 3px 0;">Program Track:</td>

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FacultyFormData {
+  title: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -26,7 +27,28 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  const generateTemporaryPassword = () => {
+    const lowercase = 'abcdefghijkmnpqrstuvwxyz';
+    const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const digits = '23456789';
+    const specials = '!@#$%&*';
+    const allChars = lowercase + uppercase + digits + specials;
+    
+    let pass = '';
+    pass += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+    pass += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+    pass += digits.charAt(Math.floor(Math.random() * digits.length));
+    pass += specials.charAt(Math.floor(Math.random() * specials.length));
+    
+    for (let i = 0; i < 8; i++) {
+      pass += allChars.charAt(Math.floor(Math.random() * allChars.length));
+    }
+    return pass.split('').sort(() => 0.5 - Math.random()).join('');
+  };
+
   const [formData, setFormData] = useState<FacultyFormData>({
+    title: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -35,6 +57,17 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
     confirmPassword: '',
     pictureUrl: '',
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      const securePass = generateTemporaryPassword();
+      setFormData((prev) => ({
+        ...prev,
+        password: securePass,
+        confirmPassword: securePass,
+      }));
+    }
+  }, [isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -68,6 +101,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          title: formData.title || undefined,
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
@@ -81,13 +115,15 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Faculty member added successfully!' });
+        const nextPass = generateTemporaryPassword();
         setFormData({
+          title: '',
           firstName: '',
           lastName: '',
           email: '',
           departmentId: departments[0]?.id || '',
-          password: '',
-          confirmPassword: '',
+          password: nextPass,
+          confirmPassword: nextPass,
           pictureUrl: '',
         });
         setTimeout(() => {
@@ -116,7 +152,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
       </div>
 
       {isOpen && (
-        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm animate-in fade-in duration-300">
           <h3 className="text-xl font-bold text-slate-900 mb-6">Add New Faculty Member</h3>
 
           {message && (
@@ -133,6 +169,48 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Title select prefix */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Faculty Title Prefix</label>
+                <select
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                >
+                  <option value="">None (No Prefix)</option>
+                  <option value="Fr.">Fr.</option>
+                  <option value="Fr. Dr.">Fr. Dr.</option>
+                  <option value="Dn.">Dn.</option>
+                  <option value="Prof.">Prof.</option>
+                  <option value="Dn. Dr.">Dn. Dr.</option>
+                  <option value="Mr.">Mr.</option>
+                  <option value="Ms.">Ms.</option>
+                  <option value="Mrs.">Mrs.</option>
+                </select>
+              </div>
+
+              {/* Department selection */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Department Affiliation</label>
+                <select
+                  name="departmentId"
+                  value={formData.departmentId}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  required
+                >
+                  <option value="">Select a department</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* First Name */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
                 <input
@@ -146,6 +224,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                 />
               </div>
 
+              {/* Last Name */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
                 <input
@@ -159,6 +238,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                 />
               </div>
 
+              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
                 <input
@@ -172,50 +252,7 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Department</label>
-                <select
-                  name="departmentId"
-                  value={formData.departmentId}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select a department</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter password"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Confirm Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Confirm password"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
+              {/* Portrait URL */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Picture URL (Optional)</label>
                 <input
@@ -227,12 +264,40 @@ export default function FacultyManagement({ departments }: FacultyManagementProp
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+
+              {/* Generated Password */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Generated Password</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-600 font-mono focus:outline-none cursor-not-allowed text-sm"
+                    value={formData.password}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const securePass = generateTemporaryPassword();
+                      setFormData((prev) => ({
+                        ...prev,
+                        password: securePass,
+                        confirmPassword: securePass,
+                      }));
+                    }}
+                    className="px-5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 rounded-lg text-sm font-bold whitespace-nowrap transition"
+                  >
+                    Regenerate
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">This temporary password will be sent automatically in the welcome email.</p>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm shadow-sm"
             >
               {isLoading ? 'Adding Faculty Member...' : 'Add Faculty Member'}
             </button>

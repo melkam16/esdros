@@ -45,7 +45,7 @@ export async function GET(req: Request) {
         courseTitle: e.courseSection.course.title,
         credits: e.courseSection.course.credits,
         semester: e.courseSection.semester,
-        faculty: `${e.courseSection.faculty.user.firstName} ${e.courseSection.faculty.user.lastName}`,
+        faculty: e.courseSection.faculty ? `${e.courseSection.faculty.user.firstName} ${e.courseSection.faculty.user.lastName}` : 'TBD',
         room: e.courseSection.room,
         status: e.enrollmentStatus,
         requestedAt: e.requestedAt,

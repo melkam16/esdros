@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import SidebarNavigation from '../../../components/SidebarNavigation';
 import EnrollmentsClient from './EnrollmentsClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function EnrollmentRequestsPage() {
   const enrollments = await prisma.enrollment.findMany({
     where: {
@@ -73,7 +75,7 @@ export default async function EnrollmentRequestsPage() {
             courseTitle: e.courseSection.course.title,
             credits: e.courseSection.course.credits,
             semester: e.courseSection.semester,
-            faculty: `${e.courseSection.faculty.user.firstName} ${e.courseSection.faculty.user.lastName}`,
+            faculty: e.courseSection.faculty ? `${e.courseSection.faculty.user.firstName} ${e.courseSection.faculty.user.lastName}` : 'TBD',
             room: e.courseSection.room,
             capacity: e.courseSection.capacity,
             enrolled: e.courseSection._count.enrollments,

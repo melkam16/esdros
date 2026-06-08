@@ -22,6 +22,7 @@ export async function GET() {
         role: true,
         isSuperAdmin: true,
         isStandardAdmin: true,
+        mustChangePassword: true,
         facultyProfile: { select: { id: true } },
         studentProfile: { select: { id: true } }
       }
@@ -35,6 +36,7 @@ export async function GET() {
       role: user.role,
       isSuperAdmin: user.isSuperAdmin,
       isStandardAdmin: user.isStandardAdmin,
+      mustChangePassword: user.mustChangePassword,
       hasFacultyProfile: !!user.facultyProfile,
       hasStudentProfile: !!user.studentProfile
     });

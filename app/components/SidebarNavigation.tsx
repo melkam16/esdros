@@ -33,7 +33,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
       .then(res => res.json())
       .then(data => {
         if (data.name) setUserName(data.name);
-        if (data.id) setUserId(data.id.substring(0, 8).toUpperCase());
+        if (data.id) setUserId(data.id.includes('-') || data.id.length < 15 ? data.id.toUpperCase() : data.id.substring(0, 8).toUpperCase());
         if (data.isSuperAdmin) setIsSuperAdmin(true);
         if (data.isStandardAdmin) setIsStandardAdmin(true);
         if (data.hasFacultyProfile) setHasFacultyProfile(true);
@@ -62,6 +62,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
         items: [
           { name: 'Academic Structure', href: '/dashboard/admin/academics', icon: '🏛️' },
           { name: 'Course Management', href: '/dashboard/admin/courses', icon: '📚' },
+          { name: 'Student Directory', href: '/dashboard/admin/students', icon: '👥' },
         ],
       },
       {
@@ -95,6 +96,7 @@ export default function SidebarNavigation({ role }: SidebarProps) {
         title: 'System Administration',
         items: [
           { name: 'Manage Admins', href: '/dashboard/admin/manage-admins', icon: '👥' },
+          { name: 'Activity Logs', href: '/dashboard/admin/activity-logs', icon: '📋' },
           { name: 'Settings', href: '/dashboard/admin/settings', icon: '⚙️' },
         ],
       },
@@ -159,9 +161,10 @@ export default function SidebarNavigation({ role }: SidebarProps) {
   const activeModules = rawModules.map(module => {
     if (activeRole === 'ADMIN') {
       const filtered = module.items.filter(item => {
-        // Only Super Admins can access manage-admins, finance, and reports
+        // Only Super Admins can access manage-admins, activity-logs, finance, and reports
         if (
           (item.href.includes('/manage-admins') ||
+           item.href.includes('/activity-logs') ||
            item.href.includes('/finance') ||
            item.href.includes('/reports')) && 
           !isSuperAdmin

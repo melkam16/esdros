@@ -1,0 +1,59 @@
+const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const { Pool } = require('pg');
+const fs = require('fs');
+
+function parseAndLoadFile(filePath) {
+  if (fs.existsSync(filePath)) {
+    const lines = fs.readFileSync(filePath, 'utf8').split('\n');
+    for (const line of lines) {
+      const match = line.match(/^\s*([\w\.\-]+)\s*=\s*(.*)?\s*$/);
+      if (match) {
+        let key = match[1].trim();
+        let value = (match[2] || '').replace(/\r/g, '').trim();
+        if (value.length > 0 && value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+          value = value.substring(1, value.length - 1);
+        }
+        if (value.length > 0 && value.charAt(0) === "'" && value.charAt(value.length - 1) === "'") {
+          value = value.substring(1, value.length - 1);
+        }
+        process.env[key] = value;
+      }
+    }
+  }
+}
+
+function loadEnv() {
+  parseAndLoadFile('.env');
+  parseAndLoadFile('.env.local');
+}
+
+loadEnv();
+
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error("DATABASE_URL is missing in environment");
+  process.exit(1);
+}
+
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
+async function main() {
+  try {
+    const count = await prisma.enrollment.count({
+      where: { courseSection: { courseId: 'da9734f4-cf31-40b7-a5b9-342afdc772ec' } }
+    });
+    console.log("Count query worked! Result:", count);
+  } catch (err) {
+    console.error("Filter failed!", err);
+  }
+}
+
+main()
+  .catch(err => console.error("Unhandled error:", err))
+  .finally(async () => {
+    await prisma.$disconnect();
+    await pool.end();
+  });

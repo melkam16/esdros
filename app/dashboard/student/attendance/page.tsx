@@ -61,7 +61,7 @@ export default async function StudentAttendancePage() {
       grouped[key] = {
         courseCode: a.courseSection.course.code,
         courseTitle: a.courseSection.course.title,
-        faculty: `${a.courseSection.faculty.user.firstName} ${a.courseSection.faculty.user.lastName}`,
+        faculty: a.courseSection.faculty ? `${a.courseSection.faculty.user.firstName} ${a.courseSection.faculty.user.lastName}` : 'TBD',
         semester: a.courseSection.semester,
         total: 0, present: 0, absent: 0, excused: 0,
         records: [],

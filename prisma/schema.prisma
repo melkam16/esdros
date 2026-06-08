@@ -75,6 +75,7 @@ model User {
   isStandardAdmin Boolean @default(false)
   mfaEnabled   Boolean  @default(false)
   mfaSecret    String?
+  mustChangePassword Boolean @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -123,8 +124,8 @@ model Student {
   status     StudentStatus @default(ACTIVE)
   track      ProgramTrack
   
-  classId    String        // Mandates sorting students directly into an Academic Class
-  class      Class         @relation(fields: [classId], references: [id])
+  classId    String?       // Mandates sorting students directly into an Academic Class
+  class      Class?        @relation(fields: [classId], references: [id])
   enrollDate DateTime      @default(now())
 
   phone      String?       // Optional student contact phone
@@ -144,6 +145,7 @@ model Faculty {
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   departmentId String     // Maps faculty directly to an administrative department
   department   Department @relation(fields: [departmentId], references: [id])
+  title        String?    // e.g., "Dr.", "Professor", "Archdeacon", "Dn."
   pictureUrl   String?    // Optional faculty portrait photo URL
 
   sections     CourseSection[]
@@ -192,8 +194,8 @@ model CourseSection {
   id        String   @id @default(uuid())
   courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  facultyId String
-  faculty   Faculty  @relation(fields: [facultyId], references: [id])
+  facultyId String?
+  faculty   Faculty? @relation(fields: [facultyId], references: [id])
   semester  String   // e.g., "Fall 2026"
   room      String?
   capacity  Int      @default(40)
@@ -338,3 +340,20 @@ model AlumniRequest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ==========================================
+// AUDIT & SYSTEM ACTIVITY LOGGER
+// ==========================================
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?  // Nullable to ensure logs persist if a user is deleted
+  email     String   // Track email permanently
+  role      String?  // Track role of user at time of action
+  action    String   // SIGN_IN, SIGN_OUT, DELETE_STUDENT, DELETE_FACULTY, OFFBOARD_FACULTY, UPDATE_STATUS
+  details   String?  // Human-readable summary
+  ipAddress String?  // Optional IP logging
+  userAgent String?  // Optional device/browser details
+  createdAt DateTime @default(now())
+}
+

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { SignJWT } from 'jose';
 import { hash } from 'crypto';
+import { logActivity } from '@/lib/audit';
 
 export async function POST(req: Request) {
   try {
@@ -165,6 +166,15 @@ export async function POST(req: Request) {
       sameSite: 'lax',
       path: '/',
       maxAge: 8 * 60 * 60, // 8 hours in seconds (matches JWT expiration)
+    });
+
+    // 6. Log successful sign-in
+    logActivity({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      action: 'SIGN_IN',
+      details: `User successfully authenticated session. MFA Enforced: ${isMfaEnforced || user.mfaEnabled ? 'Yes' : 'No'}.`
     });
 
     return response;

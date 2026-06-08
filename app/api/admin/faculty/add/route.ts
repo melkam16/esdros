@@ -5,7 +5,7 @@ import { hash } from 'crypto';
 
 export async function POST(req: Request) {
   try {
-    const { firstName, lastName, email, departmentId, password, pictureUrl } = await req.json();
+    const { title, firstName, lastName, email, departmentId, password, pictureUrl } = await req.json();
 
     // Validate required fields
     if (!firstName || !lastName || !email || !departmentId || !password) {
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
           lastName,
           passwordHash,
           role: 'FACULTY',
+          mustChangePassword: true,
         },
       });
 
@@ -46,6 +47,7 @@ export async function POST(req: Request) {
         data: {
           userId: user.id,
           departmentId,
+          title: title || null,
           pictureUrl: pictureUrl || null,
         },
       });
@@ -54,11 +56,12 @@ export async function POST(req: Request) {
     });
 
     // Send email with credentials
+    const origin = new URL(req.url).origin;
     const { sendEmail } = await import('@/lib/mail');
     await sendEmail({
       to: email,
       subject: 'Welcome to Esderos EOTC Theological Seminary - Faculty Credentials',
-      text: `Hello ${firstName} ${lastName},\n\nYou have been added as a Faculty Member on the Esderos EOTC Theological Seminary platform inside ${department.name}.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsderos EOTC Theological Seminary`
+      text: `Hello ${firstName} ${lastName},\n\nYou have been added as a Faculty Member on the Esderos EOTC Theological Seminary platform inside ${department.name}.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${origin}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsderos EOTC Theological Seminary`
     });
 
     return NextResponse.json(
@@ -114,7 +117,8 @@ export async function GET() {
         data: faculty.map((f) => ({
           id: f.id,
           userId: f.user.id,
-          name: `${f.user.firstName} ${f.user.lastName}`,
+          title: f.title || undefined,
+          name: f.title ? `${f.title} ${f.user.firstName} ${f.user.lastName}` : `${f.user.firstName} ${f.user.lastName}`,
           email: f.user.email,
           role: f.user.role,
           isSuperAdmin: f.user.isSuperAdmin,

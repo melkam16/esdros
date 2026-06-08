@@ -83,7 +83,8 @@ export async function POST(req: Request) {
         passwordHash,
         role: 'ADMIN',
         isSuperAdmin: !!isSuperAdmin,
-        isStandardAdmin: !isSuperAdmin && !!isStandardAdmin
+        isStandardAdmin: !isSuperAdmin && !!isStandardAdmin,
+        mustChangePassword: true
       },
       select: {
         id: true,
@@ -103,11 +104,12 @@ export async function POST(req: Request) {
         : 'Restricted Admin';
 
     // Send email with credentials
+    const origin = new URL(req.url).origin;
     const { sendEmail } = await import('@/lib/mail');
     await sendEmail({
       to: email,
       subject: 'Welcome to Esderos EOTC Theological Seminary - Administrator Access Granted',
-      text: `Hello ${firstName} ${lastName},\n\nYou have been added as an Administrator on the Esderos EOTC Theological Seminary platform with ${clearanceStr} clearance level.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsderos EOTC Theological Seminary`
+      text: `Hello ${firstName} ${lastName},\n\nYou have been added as an Administrator on the Esderos EOTC Theological Seminary platform with ${clearanceStr} clearance level.\n\nYour account credentials are:\nUsername/Email: ${email}\nTemporary Password: ${password}\n\nPlease login at: ${origin}/login\n\nFor security reasons, we strongly recommend resetting your password inside your settings immediately after first login.\n\nBest regards,\nEsderos EOTC Theological Seminary`
     });
 
     return NextResponse.json({

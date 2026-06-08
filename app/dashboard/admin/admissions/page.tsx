@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import SidebarNavigation from '../../../components/SidebarNavigation';
 import AdmissionsClient from './AdmissionsClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdmissionsCRM() {
   const [applications, classes] = await Promise.all([
     prisma.admissionApplication.findMany({

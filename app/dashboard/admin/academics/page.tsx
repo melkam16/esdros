@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import SidebarNavigation from '../../../components/SidebarNavigation';
 import SetupFormInterface from './SetupFormInterface';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AcademicStructureConsole() {
   // Fetch existing topology parameters for mapping references
   const departments = await prisma.department.findMany({ include: { classes: true } });

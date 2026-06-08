@@ -96,8 +96,8 @@ export async function POST(req: Request) {
     }
 
     const updates = Object.keys(body)
-      .filter(k => k !== 'IS_SUPER_ADMIN' && body[k] !== undefined && body[k] !== null)
-      .map(k => ({ key: k, value: String(body[k]) }));
+      .filter(k => k !== 'IS_SUPER_ADMIN' && body[k] !== undefined && body[k] !== null && !(k === 'SMTP_PASSWORD' && String(body[k]).trim() === ''))
+      .map(k => ({ key: k, value: String(body[k]).trim() }));
 
     if (updates.length > 0) {
       // Save inside transaction

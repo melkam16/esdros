@@ -17,12 +17,12 @@ interface Section {
   room: string | null;
   capacity: number;
   enrollments: any[];
-  faculty: {
+  faculty?: {
     user: {
       firstName: string;
       lastName: string;
     };
-  };
+  } | null;
 }
 
 interface CourseListViewProps {
@@ -187,7 +187,7 @@ export default function CourseListView({ courses }: CourseListViewProps) {
                             {course.sections.map((section) => (
                               <div key={section.id} className="text-xs">
                                 <p className="text-slate-700">
-                                  {section.faculty.user.firstName} {section.faculty.user.lastName}
+                                  {section.faculty ? `${section.faculty.user.firstName} ${section.faculty.user.lastName}` : 'TBD'}
                                 </p>
                                 <p className="text-slate-500">{section.semester}</p>
                               </div>

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-import { hash } from 'crypto';
+import { createHash } from 'crypto';
 
 export async function GET(req: Request) {
   try {
@@ -78,7 +78,8 @@ export async function POST(req: Request) {
           error: 'Password combination rules: must be more than 7 characters, include at least one uppercase letter, one lowercase letter, one number, and one special character.' 
         }, { status: 400 });
       }
-      userUpdateData.passwordHash = hash('sha256', password.trim());
+      userUpdateData.passwordHash = createHash('sha256').update(password.trim()).digest('hex');
+      userUpdateData.mustChangePassword = false;
     }
 
     if (Object.keys(userUpdateData).length > 0) {

@@ -101,7 +101,7 @@ export default function StudentsPage() {
                           <p className="font-extrabold text-slate-900">{s.name || 'Unknown Student'}</p>
                         </div>
                       </td>
-                      <td className="p-6 font-mono font-medium text-slate-500">{s.id.substring(0, 8).toUpperCase()}</td>
+                      <td className="p-6 font-mono font-medium text-slate-500">{s.id.includes('-') || s.id.length < 15 ? s.id.toUpperCase() : s.id.substring(0, 8).toUpperCase()}</td>
                       <td className="p-6 font-bold text-slate-700">
                         <span className="bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">{s.track || 'GENERAL'}</span>
                       </td>

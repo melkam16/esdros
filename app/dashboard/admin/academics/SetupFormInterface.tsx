@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface EntityProps {
@@ -10,6 +10,18 @@ interface EntityProps {
 export default function SetupFormInterface({ departments, classes }: EntityProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Local state to manage instant visual feedback on mutations
+  const [localDepartments, setLocalDepartments] = useState(departments);
+  const [localClasses, setLocalClasses] = useState(classes);
+
+  useEffect(() => {
+    setLocalDepartments(departments);
+  }, [departments]);
+
+  useEffect(() => {
+    setLocalClasses(classes);
+  }, [classes]);
 
   // Form Field Tracking Context Vectors
   const [deptName, setDeptName] = useState('');
@@ -81,8 +93,8 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
       
       reader.onload = async (evt) => {
         try {
-          const binaryStr = evt.target?.result;
-          const workbook = XLSX.read(binaryStr, { type: 'binary' });
+          const data = evt.target?.result;
+          const workbook = XLSX.read(data, { type: 'array' });
           
           const departmentsSheet = workbook.Sheets['Departments'];
           const classesSheet = workbook.Sheets['Classes'];
@@ -120,7 +132,93 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         }
       };
       
-      reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer(file);
+    } catch (err: any) {
+      alert(`Library initialization error: ${err.message}`);
+      setLoading(false);
+    }
+  };
+
+  // Client-Side Excel Course-Only Spreadsheet Parser
+  const handleImportCoursesOnly = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setLoading(true);
+    try {
+      const XLSX = await import('xlsx');
+      const reader = new FileReader();
+      
+      reader.onload = async (evt) => {
+        try {
+          const data = evt.target?.result;
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Try to resolve sheet: 'Courses' or first sheet
+          const sheetName = workbook.SheetNames.includes('Courses') 
+            ? 'Courses' 
+            : workbook.SheetNames[0];
+          
+          const coursesSheet = workbook.Sheets[sheetName];
+          if (!coursesSheet) {
+            alert("Could not locate any valid courses worksheet inside spreadsheet.");
+            setLoading(false);
+            return;
+          }
+          
+          const parsedCourses = XLSX.utils.sheet_to_json(coursesSheet);
+          
+          if (parsedCourses.length === 0) {
+            alert("No course rows found in the selected sheet.");
+            setLoading(false);
+            return;
+          }
+
+          // Validate presence of key column structures
+          const firstRow: any = parsedCourses[0];
+          const codeKey = Object.keys(firstRow).find(k => k.toLowerCase() === 'code');
+          const titleKey = Object.keys(firstRow).find(k => k.toLowerCase() === 'title');
+          const classCodeKey = Object.keys(firstRow).find(k => k.toLowerCase() === 'classcode');
+          
+          if (!codeKey || !titleKey || !classCodeKey) {
+            alert("Invalid Format: Spreadsheet must contain column headers for 'Code', 'Title', and 'ClassCode'.");
+            setLoading(false);
+            return;
+          }
+
+          // Standardize column structures
+          const coursesPayload = parsedCourses.map((row: any) => ({
+            Code: row[codeKey],
+            Title: row[titleKey],
+            Description: row[Object.keys(firstRow).find(k => k.toLowerCase() === 'description') || ''] || '',
+            Credits: parseInt(row[Object.keys(firstRow).find(k => k.toLowerCase() === 'credits') || '']) || 3,
+            Track: row[Object.keys(firstRow).find(k => k.toLowerCase() === 'track') || ''] || 'THEOLOGY',
+            ClassCode: row[classCodeKey]
+          }));
+          
+          const response = await fetch('/api/admin/academics/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ departments: [], classes: [], courses: coursesPayload })
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            alert(`Excel Courses Import Success!\n\nSuccessfully matched and imported ${result.coursesCount} Courses.`);
+            router.refresh();
+          } else {
+            alert(`Import Failed: ${result.error}`);
+          }
+        } catch (error: any) {
+          alert(`Error parsing Excel courses data: ${error.message}`);
+        } finally {
+          setLoading(false);
+          e.target.value = '';
+        }
+      };
+      
+      reader.readAsArrayBuffer(file);
     } catch (err: any) {
       alert(`Library initialization error: ${err.message}`);
       setLoading(false);
@@ -137,20 +235,86 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         body: JSON.stringify({ action, data: payload })
       });
       
+      const result = await res.json();
+      
       if (res.ok) {
-        // Clear forms on success depending on creation type
-        if (action === 'CREATE_DEPARTMENT') { setDeptName(''); setDeptCode(''); }
-        if (action === 'CREATE_CLASS') { setClassName(''); setClassCode(''); setTargetDeptId(''); }
-        if (action === 'CREATE_SUBJECT') { setSubjectTitle(''); setSubjectCode(''); setTargetClassId(''); }
+        const createdOrUpdatedData = result.data;
+        
+        // Mutate local state depending on type of operation
+        if (action === 'CREATE_DEPARTMENT') { 
+          setDeptName(''); 
+          setDeptCode(''); 
+          setLocalDepartments(prev => [...prev, createdOrUpdatedData]);
+        }
+        if (action === 'CREATE_CLASS') { 
+          setClassName(''); 
+          setClassCode(''); 
+          setTargetDeptId(''); 
+          setLocalClasses(prev => [...prev, { ...createdOrUpdatedData, subjects: [] }]);
+        }
+        if (action === 'CREATE_SUBJECT') { 
+          setSubjectTitle(''); 
+          setSubjectCode(''); 
+          setTargetClassId(''); 
+          setLocalClasses(prev => prev.map(c => {
+            if (c.id === createdOrUpdatedData.classId) {
+              return {
+                ...c,
+                subjects: [...(c.subjects || []), createdOrUpdatedData]
+              };
+            }
+            return c;
+          }));
+        }
         if (action === 'UPDATE_NODE') {
           const type = (payload as any).updateType;
-          if (type === 'department') { setDeptName(''); setDeptCode(''); setEditDeptId(null); }
-          if (type === 'class') { setClassName(''); setClassCode(''); setTargetDeptId(''); setEditClassId(null); }
-          if (type === 'course') { setSubjectTitle(''); setSubjectCode(''); setTargetClassId(''); setEditSubjectId(null); }
+          if (type === 'department') { 
+            setDeptName(''); 
+            setDeptCode(''); 
+            setEditDeptId(null); 
+            setLocalDepartments(prev => prev.map(d => d.id === createdOrUpdatedData.id ? createdOrUpdatedData : d));
+          }
+          if (type === 'class') { 
+            setClassName(''); 
+            setClassCode(''); 
+            setTargetDeptId(''); 
+            setEditClassId(null); 
+            setLocalClasses(prev => prev.map(c => c.id === createdOrUpdatedData.id ? { ...c, ...createdOrUpdatedData } : c));
+          }
+          if (type === 'course') { 
+            setSubjectTitle(''); 
+            setSubjectCode(''); 
+            setTargetClassId(''); 
+            setEditSubjectId(null); 
+            setLocalClasses(prev => prev.map(c => {
+              const updatedSubjects = (c.subjects || []).filter((sub: any) => sub.id !== createdOrUpdatedData.id);
+              if (c.id === createdOrUpdatedData.classId) {
+                updatedSubjects.push(createdOrUpdatedData);
+              }
+              return {
+                ...c,
+                subjects: updatedSubjects
+              };
+            }));
+          }
+        }
+        if (action === 'DELETE_NODE') {
+          const { id, type } = payload as any;
+          if (type === 'department') {
+            setLocalDepartments(prev => prev.filter(d => d.id !== id));
+            // Cascade delete local classes linked to deleted department
+            setLocalClasses(prev => prev.filter(c => c.departmentId !== id));
+          } else if (type === 'class') {
+            setLocalClasses(prev => prev.filter(c => c.id !== id));
+          } else if (type === 'course') {
+            setLocalClasses(prev => prev.map(c => ({
+              ...c,
+              subjects: (c.subjects || []).filter((sub: any) => sub.id !== id)
+            })));
+          }
         }
       } else {
-        const errorData = await res.json();
-        alert(`Operation Failed: ${errorData.error || 'Server rejected request.'}`);
+        alert(`Operation Failed: ${result.error || 'Server rejected request.'}${result.details ? `\n\nDetails: ${result.details}` : ''}`);
       }
     } catch (err) {
       console.error("Failed to commit database transaction:", err);
@@ -250,7 +414,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Configured Departments Blueprint</p>
           <div className="max-h-40 overflow-y-auto border rounded-lg divide-y divide-slate-100 bg-slate-50/50">
-            {departments.map(d => (
+            {localDepartments.map(d => (
               <div key={d.id} className="p-3 flex justify-between items-center text-sm bg-white">
                 <span className="font-medium text-slate-700">{d.name} <span className="text-xs font-mono text-slate-400">({d.code})</span></span>
                 <div className="flex gap-2">
@@ -263,7 +427,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
                 </div>
               </div>
             ))}
-            {departments.length === 0 && <p className="p-3 text-xs italic text-slate-400">No departments found.</p>}
+            {localDepartments.length === 0 && <p className="p-3 text-xs italic text-slate-400">No departments found.</p>}
           </div>
         </div>
       </div>
@@ -276,7 +440,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
           <input type="text" placeholder="Class Code (e.g., TH-D1)" className="p-2 border rounded text-sm w-full" value={classCode} onChange={e => setClassCode(e.target.value)} />
           <select className="p-2 border rounded text-sm w-full bg-white" value={targetDeptId} onChange={e => setTargetDeptId(e.target.value)}>
             <option value="">Select Department Cluster...</option>
-            {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            {localDepartments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </div>
         <div className="flex gap-2 mt-2">
@@ -304,7 +468,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Active Class Group Mappings</p>
           <div className="max-h-40 overflow-y-auto border rounded-lg divide-y divide-slate-100 bg-slate-50/50">
-            {classes.map(c => (
+            {localClasses.map(c => (
               <div key={c.id} className="p-3 flex justify-between items-center text-sm bg-white">
                 <div>
                   <span className="font-medium text-slate-700">{c.name}</span>
@@ -320,14 +484,26 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
                 </div>
               </div>
             ))}
-            {classes.length === 0 && <p className="p-3 text-xs italic text-slate-400">No structural program classes assigned.</p>}
+            {localClasses.length === 0 && <p className="p-3 text-xs italic text-slate-400">No structural program classes assigned.</p>}
           </div>
         </div>
       </div>
 
       {/* Block 3: Subjects / Courses */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <h3 className="text-md font-bold text-slate-900 border-b pb-2">Step 3: Subject & Course Connector</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-2">
+          <h3 className="text-md font-bold text-slate-900">Step 3: Subject & Course Connector</h3>
+          <div className="relative inline-flex items-center justify-center px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg border border-blue-200 transition cursor-pointer self-start sm:self-center">
+            <input 
+              type="file" 
+              accept=".xlsx,.xls" 
+              disabled={loading}
+              onChange={handleImportCoursesOnly}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <span>📊 Bulk Import Courses (Spreadsheet)</span>
+          </div>
+        </div>
         <div className="grid grid-cols-5 gap-3">
           <input type="text" placeholder="Title (e.g., Geez Syntax)" className="p-2 border rounded text-sm w-full" value={subjectTitle} onChange={e => setSubjectTitle(e.target.value)} />
           <input type="text" placeholder="Code (e.g., GZ102)" className="p-2 border rounded text-sm w-full" value={subjectCode} onChange={e => setSubjectCode(e.target.value)} />
@@ -341,7 +517,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
 
           <select className="p-2 border rounded text-sm w-full bg-white" value={targetClassId} onChange={e => setTargetClassId(e.target.value)}>
             <option value="">Select Target Class...</option>
-            {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {localClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div className="flex gap-2 mt-2">
@@ -372,11 +548,11 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
           )}
         </div>
 
-        {/* Inline Deep Inspection List for Subjects/Courses */}
+        {/* Inline Live Inspection List for Subjects/Courses */}
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Catalogued Subjects Base (Course Targets)</p>
           <div className="max-h-45 overflow-y-auto border rounded-lg divide-y divide-slate-100 bg-slate-50/50">
-            {classes.flatMap(c => c.subjects || []).map((sub: any) => (
+            {localClasses.flatMap(c => c.subjects || []).map((sub: any) => (
               <div key={sub.id} className="p-3 flex justify-between items-center text-sm bg-white">
                 <div>
                   <span className="font-medium text-slate-800">{sub.title}</span>
@@ -395,7 +571,7 @@ export default function SetupFormInterface({ departments, classes }: EntityProps
                 </div>
               </div>
             ))}
-            {classes.flatMap(c => c.subjects || []).length === 0 && (
+            {localClasses.flatMap(c => c.subjects || []).length === 0 && (
               <p className="p-3 text-xs italic text-slate-400">No subject rows parsed in current memory context layout tree.</p>
             )}
           </div>

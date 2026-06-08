@@ -233,11 +233,11 @@ export default function ApplyPage() {
               </div>
               <div className="grid grid-cols-1 gap-4">
                 {[
-                  { value: 'THEOLOGY', degree: 'BA in Theology', label: 'BA in Theology', icon: '🎓' },
-                  { value: 'THEOLOGY', degree: 'Associate degrees in Theology', label: 'Associate degrees in Theology', icon: '✝' },
+                  { value: 'THEOLOGY', degree: 'BA in Theology (2-Year Transition)', label: 'BA in Theology (2-Year Transition)', icon: '🎓' },
+                  { value: 'THEOLOGY', degree: 'Diploma in Theology (3-Year Program)', label: 'Diploma in Theology (3-Year Program)', icon: '✝' },
                   { value: 'THEOLOGY', degree: 'Post graduate degree in Theology', label: 'Post graduate degree in Theology', icon: '📜' },
-                  { value: 'GEEZ_LANGUAGE', degree: 'BA in Geez Language', label: 'BA in Geez Language', icon: '🎓' },
-                  { value: 'GEEZ_LANGUAGE', degree: 'Associate degrees in Geez Language', label: 'Associate degrees in Geez Language', icon: '𒀭' },
+                  { value: 'GEEZ_LANGUAGE', degree: 'BA in Geez Language (2-Year Transition)', label: 'BA in Geez Language (2-Year Transition)', icon: '🎓' },
+                  { value: 'GEEZ_LANGUAGE', degree: 'Diploma in Geez Language (3-Year Program)', label: 'Diploma in Geez Language (3-Year Program)', icon: '𒀭' },
                 ].map((track) => (
                   <button
                     key={track.degree}

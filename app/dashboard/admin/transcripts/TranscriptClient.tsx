@@ -1,7 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function TranscriptClient({ students, withdrawalRequests = [] }: { students: any[], withdrawalRequests?: any[] }) {
+export default function TranscriptClient({ students, classes = [], withdrawalRequests = [] }: { students: any[], classes?: any[], withdrawalRequests?: any[] }) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -10,12 +12,136 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
   const [yearFilter, setYearFilter] = useState('ALL');
   const [activeTab, setActiveTab] = useState<'roster' | 'withdrawals'>('roster');
 
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.isSuperAdmin) {
+          setIsSuperAdmin(true);
+        }
+      })
+      .catch(err => console.error('Error fetching user metadata:', err));
+  }, []);
+
   const [localWithdrawals, setLocalWithdrawals] = useState<any[]>(withdrawalRequests);
 
   const [isImportingActive, setIsImportingActive] = useState(false);
   const [excelActiveFile, setExcelActiveFile] = useState<File | null>(null);
   const [excelActiveParsedData, setExcelActiveParsedData] = useState<any[]>([]);
   const [isExcelActiveUploading, setIsExcelActiveUploading] = useState(false);
+
+  // Manual Onboarding states
+  const [isOnboardingManual, setIsOnboardingManual] = useState(false);
+  const [isOnboardingSubmit, setIsOnboardingSubmit] = useState(false);
+  const [onboardingMessage, setOnboardingMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  const generateTempPassword = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
+    let pass = 'Temp-';
+    for (let i = 0; i < 8; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pass;
+  };
+
+  const [manualStudentForm, setManualStudentForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    track: 'THEOLOGY',
+    classId: '',
+    password: ''
+  });
+
+  // Automatically select a class matching the track and generate password when modal opens
+  useEffect(() => {
+    if (isOnboardingManual) {
+      let filtered = classes.filter((c: any) => 
+        manualStudentForm.track === 'THEOLOGY' 
+          ? c.department?.code === 'THEO' || c.code.startsWith('TH')
+          : c.department?.code === 'GEEZ' || c.code.startsWith('GZ')
+      );
+      if (filtered.length === 0) {
+        filtered = classes;
+      }
+      setManualStudentForm(prev => ({
+        ...prev,
+        password: generateTempPassword(),
+        classId: filtered[0]?.id || ''
+      }));
+    }
+  }, [isOnboardingManual, classes]);
+
+  // Adjust cohort class automatically if track changes in the form
+  const handleTrackChange = (newTrack: string) => {
+    let filtered = classes.filter((c: any) => 
+      newTrack === 'THEOLOGY' 
+        ? c.department?.code === 'THEO' || c.code.startsWith('TH')
+        : c.department?.code === 'GEEZ' || c.code.startsWith('GZ')
+    );
+    if (filtered.length === 0) {
+      filtered = classes;
+    }
+    setManualStudentForm(prev => ({
+      ...prev,
+      track: newTrack,
+      classId: filtered[0]?.id || ''
+    }));
+  };
+
+  const handleManualOnboard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualStudentForm.firstName.trim() || !manualStudentForm.lastName.trim() || !manualStudentForm.email.trim() || !manualStudentForm.classId || !manualStudentForm.password) {
+      setOnboardingMessage({ type: 'error', text: 'Please fill in all required fields.' });
+      return;
+    }
+    
+    setIsOnboardingSubmit(true);
+    setOnboardingMessage(null);
+
+    try {
+      const res = await fetch('/api/admin/students/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: manualStudentForm.firstName.trim(),
+          lastName: manualStudentForm.lastName.trim(),
+          email: manualStudentForm.email.trim(),
+          track: manualStudentForm.track,
+          classId: manualStudentForm.classId,
+          password: manualStudentForm.password
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setOnboardingMessage({ type: 'error', text: data.error || 'Failed to onboard student.' });
+      } else {
+        setOnboardingMessage({ type: 'success', text: 'Student onboarded successfully! Welcome email sent.' });
+        // Clean form and wait a brief moment to close modal and refresh
+        setTimeout(() => {
+          setIsOnboardingManual(false);
+          setManualStudentForm({
+            firstName: '',
+            lastName: '',
+            email: '',
+            track: 'THEOLOGY',
+            classId: '',
+            password: ''
+          });
+          setOnboardingMessage(null);
+          router.refresh();
+        }, 1500);
+      }
+    } catch {
+      setOnboardingMessage({ type: 'error', text: 'Network error occurred. Please try again.' });
+    } finally {
+      setIsOnboardingSubmit(false);
+    }
+  };
 
   const downloadActiveExcelTemplate = async () => {
     try {
@@ -224,7 +350,7 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
         alert(data.error || 'Failed to process request.');
       } else {
         alert(data.message || 'Request processed successfully!');
-        window.location.reload();
+        router.refresh();
       }
     } catch {
       alert('Network error processing request.');
@@ -243,10 +369,33 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
         alert(data.error || 'Failed to update student status.');
       } else {
         alert('Student status updated successfully!');
-        window.location.reload();
+        router.refresh();
       }
     } catch {
       alert('Network error updating student status.');
+    }
+  };
+
+  const handleDeleteStudent = async (studentId: string, name: string) => {
+    const doubleConfirm = window.confirm(`⚠️ WARNING: Permanent Student Purge Requested ⚠️\n\nAre you absolutely sure you want to permanently delete student "${name}"?\n\nThis action CANNOT be undone and will permanently delete:\n- Their student profile & user account\n- All of their course enrollments & sections history\n- All their grades & transcript records\n- All attendance history\n- All associated invoices and payments\n\nType OK to confirm.`);
+    if (!doubleConfirm) return;
+
+    setIsDeleting(studentId);
+    try {
+      const res = await fetch(`/api/admin/students/delete?studentId=${studentId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to delete student.');
+      } else {
+        alert(data.message || 'Student permanently deleted.');
+        router.refresh();
+      }
+    } catch (err) {
+      alert('Network error deleting student.');
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -463,6 +612,14 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
                 >
                   📥 Import Active Students
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsOnboardingManual(true)}
+                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shadow-emerald-500/10 shrink-0"
+                >
+                  ＋ Add Student
+                </button>
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -505,12 +662,23 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
                         </select>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => setSelectedStudent(student)}
-                          className="px-4 py-2 bg-blue-50 text-blue-700 font-bold text-xs rounded-lg hover:bg-blue-100 transition whitespace-nowrap"
-                        >
-                          View Transcript
-                        </button>
+                        <div className="flex justify-end items-center gap-2 whitespace-nowrap">
+                          <button 
+                            onClick={() => setSelectedStudent(student)}
+                            className="px-4 py-2 bg-blue-50 text-blue-700 font-bold text-xs rounded-lg hover:bg-blue-100 transition whitespace-nowrap"
+                          >
+                            View Transcript
+                          </button>
+                          {isSuperAdmin && (
+                            <button
+                              onClick={() => handleDeleteStudent(student.id, `${student.user.firstName} ${student.user.lastName}`)}
+                              disabled={isDeleting === student.id}
+                              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg transition disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {isDeleting === student.id ? 'Deleting...' : 'Delete Student'}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -681,7 +849,7 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
               </div>
               <div className="text-right">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Academic Profile</p>
-                <p className="text-lg font-bold text-slate-800">ID: {selectedStudent.id.substring(0, 8).toUpperCase()}</p>
+                <p className="text-lg font-bold text-slate-800">ID: {selectedStudent.id.includes('-') || selectedStudent.id.length < 15 ? selectedStudent.id.toUpperCase() : selectedStudent.id.substring(0, 8).toUpperCase()}</p>
                 <p className="text-sm font-bold text-blue-600 mt-1 uppercase">{selectedStudent.track} TRACK</p>
                 <p className="text-sm text-slate-500 mt-1">Enrolled: {new Date(selectedStudent.enrollDate).toLocaleDateString()}</p>
               </div>
@@ -910,6 +1078,176 @@ export default function TranscriptClient({ students, withdrawalRequests = [] }: 
                 {isExcelActiveUploading ? 'Executing Batch Import...' : '⚡ Import Students & Send Invites'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Student Onboarding Modal */}
+      {isOnboardingManual && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-100 overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">Onboard Student Candidate</h3>
+                <p className="text-sm text-slate-500">Add a new student candidate manually and email their temporary login credentials.</p>
+              </div>
+              <button 
+                onClick={() => {
+                  setIsOnboardingManual(false);
+                  setOnboardingMessage(null);
+                }} 
+                className="text-slate-400 hover:text-rose-500 text-2xl font-bold"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <form onSubmit={handleManualOnboard} className="flex flex-col">
+              <div className="p-6 space-y-4">
+                {onboardingMessage && (
+                  <div className={`p-4 rounded-xl text-sm font-semibold border ${
+                    onboardingMessage.type === 'success' 
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                      : 'bg-rose-50 text-rose-800 border-rose-200'
+                  }`}>
+                    {onboardingMessage.type === 'success' ? '✓ ' : '⚠ '}
+                    {onboardingMessage.text}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">First Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={manualStudentForm.firstName}
+                      onChange={e => setManualStudentForm(prev => ({ ...prev, firstName: e.target.value }))}
+                      placeholder="e.g. Melkam"
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-semibold text-sm text-slate-800 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Last Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={manualStudentForm.lastName}
+                      onChange={e => setManualStudentForm(prev => ({ ...prev, lastName: e.target.value }))}
+                      placeholder="e.g. Seminary"
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-semibold text-sm text-slate-800 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address *</label>
+                  <input 
+                    type="email" 
+                    required
+                    value={manualStudentForm.email}
+                    onChange={e => setManualStudentForm(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="e.g. student@esderos.org"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-semibold text-sm text-slate-800 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Program Track *</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer font-semibold text-sm text-slate-700">
+                      <input 
+                        type="radio" 
+                        name="manual-track" 
+                        checked={manualStudentForm.track === 'THEOLOGY'}
+                        onChange={() => handleTrackChange('THEOLOGY')}
+                        className="text-emerald-600 focus:ring-emerald-500" 
+                      />
+                      Theology
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer font-semibold text-sm text-slate-700">
+                      <input 
+                        type="radio" 
+                        name="manual-track" 
+                        checked={manualStudentForm.track === 'GEEZ_LANGUAGE'}
+                        onChange={() => handleTrackChange('GEEZ_LANGUAGE')}
+                        className="text-emerald-600 focus:ring-emerald-500" 
+                      />
+                      Geez Language
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Cohort Class Assignment *</label>
+                  <select
+                    value={manualStudentForm.classId}
+                    onChange={e => setManualStudentForm(prev => ({ ...prev, classId: e.target.value }))}
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-semibold text-sm text-slate-800 focus:outline-none cursor-pointer"
+                  >
+                    {(() => {
+                      let filtered = classes.filter((c: any) => 
+                        manualStudentForm.track === 'THEOLOGY' 
+                          ? c.department?.code === 'THEO' || c.code.startsWith('TH')
+                          : c.department?.code === 'GEEZ' || c.code.startsWith('GZ')
+                      );
+                      if (filtered.length === 0) {
+                        filtered = classes;
+                      }
+                      return filtered.map((c: any) => (
+                        <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
+                      ));
+                    })()}
+                    {classes.length === 0 && (
+                      <option value="">— No matching classes found —</option>
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Temporary Password *</label>
+                    <button
+                      type="button"
+                      onClick={() => setManualStudentForm(prev => ({ ...prev, password: generateTempPassword() }))}
+                      className="text-xs font-bold text-emerald-600 hover:text-emerald-700"
+                    >
+                      ⚡ Regenerate
+                    </button>
+                  </div>
+                  <input 
+                    type="text" 
+                    required
+                    value={manualStudentForm.password}
+                    onChange={e => setManualStudentForm(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Temporary password"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-mono text-sm text-slate-800 focus:outline-none"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">This password will be immediately hashed upon save, and dispatched via welcome email invitation.</p>
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setIsOnboardingManual(false);
+                    setOnboardingMessage(null);
+                  }}
+                  disabled={isOnboardingSubmit}
+                  className="px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold transition disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isOnboardingSubmit || !manualStudentForm.classId}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
+                >
+                  {isOnboardingSubmit ? 'Adding Student...' : '⚡ Onboard Student & Send Email'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

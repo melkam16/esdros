@@ -36,11 +36,11 @@ export async function GET(req: Request) {
           { targetType: 'ALL_STUDENTS' },
           { 
             targetType: 'BATCH', 
-            targetValue: student.classId 
+            targetValue: student.classId || 'unassigned'
           },
           { 
             targetType: 'DEPARTMENT', 
-            targetValue: student.class.departmentId 
+            targetValue: student.class?.departmentId || 'unassigned'
           },
           { 
             targetType: 'INDIVIDUAL', 

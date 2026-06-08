@@ -7,20 +7,133 @@ export default function FacultyProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
+  // Form states
+  const [title, setTitle] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [pictureUrl, setPictureUrl] = useState('');
+  
+  // Feedback state
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Security / Password change states
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPass, setIsChangingPass] = useState(false);
+  const [passFeedback, setPassFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassFeedback(null);
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      passFeedback; // satisfy no-unused-vars if any
+      setPassFeedback({ type: 'error', text: 'All fields are required.' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPassFeedback({ type: 'error', text: 'New passwords do not match.' });
+      return;
+    }
+
+    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!passRegex.test(newPassword)) {
+      setPassFeedback({
+        type: 'error',
+        text: 'Password combination rules: must be more than 7 characters, include at least one uppercase letter, one lowercase letter, one number, and one special character.'
+      });
+      return;
+    }
+
+    setIsChangingPass(true);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPassFeedback({ type: 'success', text: data.message || 'Password changed successfully!' });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setPassFeedback({ type: 'error', text: data.error || 'Failed to change password.' });
+      }
+    } catch (err) {
+      setPassFeedback({ type: 'error', text: 'An unexpected network error occurred.' });
+    } finally {
+      setIsChangingPass(false);
+    }
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch('/api/faculty/profile');
+      const d = await res.json();
+      if (d.success) {
+        setProfile(d.data);
+        setTitle(d.data.title || '');
+        setFirstName(d.data.firstName || '');
+        setLastName(d.data.lastName || '');
+        setEmail(d.data.email || '');
+        setPictureUrl(d.data.pictureUrl || '');
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to fetch profile', err);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetch('/api/faculty/profile')
-      .then(res => res.json())
-      .then(d => {
-        if (d.success) setProfile(d.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to fetch profile', err);
-        setLoading(false);
-      });
+    fetchProfile();
   }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFeedback(null);
+    setIsSaving(true);
+
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      setFeedback({ type: 'error', text: 'First name, last name, and email are required fields.' });
+      setIsSaving(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/faculty/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title || undefined,
+          firstName,
+          lastName,
+          email,
+          pictureUrl: pictureUrl || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFeedback({ type: 'success', text: 'Your profile has been updated successfully!' });
+        fetchProfile(); // reload metrics and headers
+      } else {
+        setFeedback({ type: 'error', text: data.error || 'Failed to update profile.' });
+      }
+    } catch (error) {
+      setFeedback({ type: 'error', text: 'An unexpected network error occurred.' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -44,19 +157,31 @@ export default function FacultyProfilePage() {
       <main className="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
         {/* Premium Header Container */}
-        <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
+        <div className="bg-white rounded-3xl p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -mr-20 -mt-20"></div>
 
-          <div className="relative z-10 w-32 h-32 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-5xl shadow-lg shadow-indigo-500/30 text-white flex-shrink-0 border-4 border-white">
-            👨‍🏫
-          </div>
+          {pictureUrl ? (
+            <img
+              src={pictureUrl}
+              alt="Faculty Roster"
+              className="relative z-10 w-32 h-32 object-cover rounded-full shadow-lg shadow-indigo-500/20 border-4 border-white flex-shrink-0"
+              onError={(e) => {
+                // fall back to default emoji
+                (e.target as any).style.display = 'none';
+              }}
+            />
+          ) : (
+            <div className="relative z-10 w-32 h-32 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-5xl shadow-lg shadow-indigo-500/30 text-white flex-shrink-0 border-4 border-white">
+              👨‍🏫
+            </div>
+          )}
 
           <div className="relative z-10 flex-1 text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 mb-3 bg-emerald-50 border border-emerald-100 rounded-full text-xs font-bold text-emerald-700">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Active Faculty Profile
             </div>
             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-              {loading ? 'Loading Profile...' : profile ? `${profile.firstName} ${profile.lastName}` : 'Faculty Member'}
+              {loading ? 'Loading Profile...' : profile ? `${title ? title + ' ' : ''}${profile.firstName} ${profile.lastName}` : 'Faculty Member'}
             </h1>
             <p className="text-sm font-medium text-slate-500 mt-1">
               {profile?.departmentName || 'Department of Instruction'}
@@ -67,7 +192,7 @@ export default function FacultyProfilePage() {
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="px-6 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold rounded-xl shadow-sm transition-all disabled:opacity-50"
+              className="px-6 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold rounded-xl shadow-sm transition-all disabled:opacity-50 text-sm"
             >
               {isLoggingOut ? 'Logging out...' : 'Secure Exit Sign Out'}
             </button>
@@ -85,38 +210,219 @@ export default function FacultyProfilePage() {
             <p className="text-slate-500 mt-2">Could not retrieve your faculty identity data.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-lg shadow-slate-200/30 hover:-translate-y-1 transition-transform">
-              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 text-xl">📧</div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Institutional Email</p>
-              <p className="text-lg font-extrabold text-slate-800 font-mono">{profile.email}</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-lg shadow-slate-200/30 hover:-translate-y-1 transition-transform">
-              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-4 text-xl">🏛️</div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Department Affiliation</p>
-              <p className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
-                {profile.departmentName}
-                <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold font-mono border border-slate-200">
-                  {profile.departmentCode}
-                </span>
-              </p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-lg shadow-slate-200/30 md:col-span-2 hover:-translate-y-1 transition-transform">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                  <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-4 text-xl">📊</div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Assigned Teaching Load</p>
-                  <p className="text-lg font-extrabold text-slate-800 flex gap-2 items-center">
-                    <span className="text-emerald-600">{profile.activeCourses}</span> Active Course Sections
-                  </p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+               {/* Form Column Wrapper */}
+            <div className="lg:col-span-2 space-y-8">
+              
+              {/* Profile Details Card */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/30 space-y-6">
+                <div className="border-b border-slate-100 pb-4">
+                  <h2 className="text-xl font-extrabold text-slate-800">Update Profile Details</h2>
+                  <p className="text-xs text-slate-400 mt-1">Modify your instructional rank and core contact information.</p>
                 </div>
-                <div className="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 text-center">Total Students Managed</p>
-                  <p className="text-2xl font-black text-slate-700 text-center">{profile.totalStudents}</p>
+
+                {feedback && (
+                  <div
+                    className={`p-4 rounded-xl text-sm border font-medium ${
+                      feedback.type === 'success'
+                        ? 'bg-green-50 text-green-800 border-green-200'
+                        : 'bg-red-50 text-red-800 border-red-200'
+                    }`}
+                  >
+                    {feedback.text}
+                  </div>
+                )}
+
+                <form onSubmit={handleSave} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    {/* Title Select Section */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Faculty Title Prefix</label>
+                      <select
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 font-medium text-slate-700 transition"
+                      >
+                        <option value="">None (No Prefix)</option>
+                        <option value="Fr.">Fr.</option>
+                        <option value="Fr. Dr.">Fr. Dr.</option>
+                        <option value="Dn.">Dn.</option>
+                        <option value="Prof.">Prof.</option>
+                        <option value="Dn. Dr.">Dn. Dr.</option>
+                        <option value="Mr.">Mr.</option>
+                        <option value="Ms.">Ms.</option>
+                        <option value="Mrs.">Mrs.</option>
+                      </select>
+                    </div>
+
+                    {/* First Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">First Name</label>
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="Enter first name"
+                      />
+                    </div>
+
+                    {/* Last Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Last Name</label>
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="Enter last name"
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Contact Email Address</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 font-mono transition"
+                        placeholder="Enter email address"
+                      />
+                    </div>
+
+                    {/* Portrait URL */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Portrait Photo URL (Optional)</label>
+                      <input
+                        type="url"
+                        value={pictureUrl}
+                        onChange={(e) => setPictureUrl(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="https://example.com/photo.jpg"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                      <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Saving Profile Changes...</>
+                    ) : (
+                      'Save Profile Changes'
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              {/* Security & Password Card */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/30 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="border-b border-slate-100 pb-4">
+                  <h2 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+                    <span className="text-lg">🔐</span> Security & Authentication
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">Manage your account credentials and login safety settings.</p>
+                </div>
+
+                {passFeedback && (
+                  <div
+                    className={`p-4 rounded-xl text-sm border font-medium ${
+                      passFeedback.type === 'success'
+                        ? 'bg-green-50 text-green-800 border-green-200'
+                        : 'bg-red-50 text-red-800 border-red-200'
+                    }`}
+                  >
+                    {passFeedback.text}
+                  </div>
+                )}
+
+                <form onSubmit={handlePasswordChange} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Current Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400 font-medium">
+                    To satisfy institutional security compliance, your password must be at least 8 characters long and contain uppercase, lowercase, numbers, and special symbols.
+                  </p>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      disabled={isChangingPass}
+                      className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl transition text-xs uppercase tracking-wider disabled:opacity-50"
+                    >
+                      {isChangingPass ? 'Updating Credentials...' : 'Change Password'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+
+            {/* Sidebar Column */}
+            <div className="space-y-6">
+              
+              {/* Department Card */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/30">
+                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 text-xl">🏛️</div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Department Affiliation</p>
+                <p className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                  {profile.departmentName}
+                  <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-black font-mono border border-slate-200">
+                    {profile.departmentCode}
+                  </span>
+                </p>
+              </div>
+
+              {/* Statistics Card */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/30">
+                <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 text-xl">📊</div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Teaching Overview</p>
+                <p className="text-lg font-extrabold text-slate-800">
+                  <span className="text-emerald-600 font-black">{profile.activeCourses}</span> Assigned Course Sections
+                </p>
+                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-400">Total Enrolled Students</span>
+                  <span className="text-2xl font-black text-slate-700">{profile.totalStudents}</span>
                 </div>
               </div>
+
             </div>
           </div>
         )}
